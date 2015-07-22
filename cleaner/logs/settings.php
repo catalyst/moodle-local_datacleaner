@@ -15,28 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Add page to admin menu.
- *
- * @package    local_datacleaner
+ * @package    cleaner_logs
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
 
-if ($hassiteconfig) { // needs this condition or there is error on login page
-
-    $ADMIN->add('localplugins', new admin_category('datacleaner', get_string('pluginname', 'local_datacleaner')));
-
-    $ADMIN->add('datacleaner',
-        new admin_externalpage('local_datacleaner',
-        get_string('manage', 'local_datacleaner'),
-        new moodle_url('/local/datacleaner/index.php')));
-
-    foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plugin) {
-
-        $pagename = 'cleaner_' . $plugin->name . '_settings';
-        $plugin->load_settings($ADMIN, 'datacleaner', $hassiteconfig);
-    }
-}
+    $settings->add(new admin_setting_configcheckbox('cleaner_logs_enable', get_string('truncate', 'cleaner_logs'),
+                       get_string('truncate', 'cleaner_logs'), 0));
 

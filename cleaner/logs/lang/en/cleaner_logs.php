@@ -23,4 +23,5 @@
  */
 
 $string['pluginname'] = 'Logs';
+$string['truncate'] = 'Truncate all database logs';
 
