@@ -33,18 +33,38 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_datacleaner'));
 
 echo get_string('info', 'local_datacleaner');
 
-// core_plugin_manager->get_plugins_of_type('cleaner');
+$table = new html_table();
+$table->head = array(
+    get_string('name'),
+    get_string('plugin'),
+    get_string('settings'),
+    get_string('settings'),
+);
+$table->attributes['class'] = 'admintable generaltable';
+$data = array();
 foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plugin) {
-    /** @var \editor_atto\plugininfo\atto $plugin */
 
-echo '<h2>' . $plugin->displayname . '</h2>';
+    $settings = null;
+    if (file_exists($plugin->full_path('settings.php'))) {
+        $settings = 'crpa';
+    }
+    $row = new html_table_row(array(
+                $plugin->displayname,
+                $plugin->name,
+                $settings,
+                'Enable / disable',
+                // TODO relates to core or plugin?
+    ));
 
-echo '<pre>';
-echo var_dump( $plugin);
-echo '</pre>';
-    // $plugin->load_settings($ADMIN, 'editoratto', $hassiteconfig);
+    // TODO is plugin refers to a real plugin which is not installed.
+    $disabled = false;
+    if ($disabled) {
+        $row->attributes['class'] = 'disabled';
+    }
+    $data[] = $row;
 }
-
+$table->data = $data;
+echo html_writer::table($table);
 
 echo $OUTPUT->footer();
 

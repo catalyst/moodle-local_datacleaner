@@ -30,6 +30,7 @@ class user_cleaner extends \local_datacleaner\cleaner_base {
 
     public function execute() {
 
+        // Stuff. TODO.
 
     }
 }

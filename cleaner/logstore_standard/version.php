@@ -17,7 +17,7 @@
 /**
  * Version details.
  *
- * @package    cleaner_users
+ * @package    cleaner_logstore_standard
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,7 +28,7 @@ $plugin->version   = 2015072200;
 $plugin->release   = '2.3.2';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
-$plugin->component = 'cleaner_users';
-$plugin->context = CONTEXT_USER;
+$plugin->component = 'cleaner_logstore_standard';
+$plugin->context = CONTEXT_SYSTEM;
 
 

@@ -15,20 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Language strings
  *
- * @package    cleaner_users
+ * @package    cleaner_logstore_standard
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
-$plugin->version   = 2015072200;
-$plugin->release   = '2.3.2';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
-$plugin->component = 'cleaner_users';
-$plugin->context = CONTEXT_USER;
-
+$string['pluginname'] = 'Standard Log store';
+$string['truncate'] = 'Truncate all standard database logs';
 
