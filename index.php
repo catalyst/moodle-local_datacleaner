@@ -30,8 +30,8 @@ admin_externalpage_setup('local_datacleaner');
 
 // Allows the admin to configure subplugins (enable/disable, configure)
 
-$hide     = optional_param('hide', 0, PARAM_INT);
-$show     = optional_param('show', 0, PARAM_INT);
+$hide     = optional_param('hide', '', PARAM_ALPHAEXT);
+$show     = optional_param('show', '', PARAM_ALPHAEXT);
 
 /// Print headings
 
@@ -42,26 +42,18 @@ $strenable = get_string('enable', 'local_datacleaner');
 $strdisable = get_string('disable', 'local_datacleaner');
 $strsettings = get_string('settings');
 $strname = get_string('name');
-$strsettings = get_string('settings');
 
 /// If data submitted, then process and store.
 
-if (!empty($hide) && confirm_sesskey()) {
-    if (!$block = $DB->get_record('block', array('id'=>$hide))) {
-        print_error('blockdoesnotexist', 'error');
-    }
-    //@TODO $DB->set_field('block', 'visible', '0', array('id'=>$block->id));      // Hide block
-    core_plugin_manager::reset_caches();
-    admin_get_root(true, false);  // settings not required - only pages
-}
+if ((!empty($hide) || !empty($show)) && confirm_sesskey()) {
+    $plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
+    $pluginname = empty($hide) ? $show : $hide;
+    $state = empty($hide);
 
-if (!empty($show) && confirm_sesskey() ) {
-    if (!$block = $DB->get_record('block', array('id'=>$show))) {
-        print_error('blockdoesnotexist', 'error');
+    if (!isset($plugins[$pluginname])) {
+        print_error('plugindoesnotexist', 'error');
     }
-    $DB->set_field('block', 'visible', '1', array('id'=>$block->id));      // Show block
-    core_plugin_manager::reset_caches();
-    admin_get_root(true, false);  // settings not required - only pages
+    set_config('enabled', $state, 'clean_' . $pluginname);
 }
 
 echo $OUTPUT->header();
@@ -84,7 +76,7 @@ $table->head = array(
     get_string('name'),
     get_string('plugin'),
     get_string('settings'),
-    get_string('settings'),
+    get_string('enabledisable', 'local_datacleaner'),
 );
 $table->attributes['class'] = 'admintable generaltable';
 $data = array();
@@ -95,14 +87,14 @@ foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plu
         $settings = html_writer::link('/admin/settings.php?section=' . $settings, $strsettings);
     }
 
-    if ($plugin->disabled()) {
-        $visible = '<a href="local/datacleaner/index.php?show='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strenable.'">'.
-            '<img src="'.$OUTPUT->pix_url('t/show') . '" class="iconsmall" alt="'.$strenable.'" /></a>';
-        $class = 'dimmed_text';
+    if ($plugin->enabled()) {
+        $visible = '<a href="index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
+            '<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" alt="'.$strdisable.'" /></a>';
     }
     else {
-        $visible = '<a href="local/datacleaner/index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
-            '<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" alt="'.$strdisable.'" /></a>';
+        $visible = '<a href="index.php?show='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strenable.'">'.
+            '<img src="'.$OUTPUT->pix_url('t/show') . '" class="iconsmall" alt="'.$strenable.'" /></a>';
+        $class = 'dimmed_text';
     }
 
     $row = new html_table_row(array(

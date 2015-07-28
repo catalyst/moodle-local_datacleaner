@@ -29,12 +29,12 @@ defined('MOODLE_INTERNAL') || die();
 class cleaner extends base {
 
     /**
-     * Whether the subplugin is disabled.
+     * Whether the subplugin is enabled.
      *
-     * @return bool Whether disabled.
+     * @return bool Whether enabled.
      */
-    public function disabled() {
-        return false;
+    public function enabled() {
+        return get_config('clean_' . $this->name, 'enabled');
     }
 
     /**
