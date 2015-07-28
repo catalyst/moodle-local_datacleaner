@@ -55,6 +55,35 @@ class cleaner extends base {
     }
 
     /**
+     * Get enabled plugins, sorted by priority
+     *
+     * @return array Enabled plugins, sorted by priority
+     */
+    static public function get_enabled_plugins_by_priority()
+    {
+        $fileinfo = \core_plugin_manager::instance()->get_present_plugins('cleaner');
+        $versions = \core_plugin_manager::instance()->get_plugins_of_type('cleaner');
+        $enabled = self::get_enabled_plugins();
+
+        $grouped = array();
+        foreach ($enabled as $one) {
+            $priority = $fileinfo[$one]->priority;
+            $groups[$priority][] = $versions[$one];
+        }
+
+        // Sort
+        sort($groups, SORT_NUMERIC);
+
+        // Flatten
+        $final = array();
+        foreach ($groups as $group) {
+            $final = array_merge($final, $group);
+        }
+
+        return $final;
+    }
+
+    /**
      * Yes you can uninstall these plugins if you want.
      * @return \moodle_url
      */
