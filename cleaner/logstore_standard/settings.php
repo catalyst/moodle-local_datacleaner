@@ -15,12 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_logs
+ * @package    cleaner_logstore_standard
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
-    $settings->add(new admin_setting_configcheckbox('cleaner_logs_enable', get_string('truncate', 'cleaner_logs'),
-                       get_string('truncate', 'cleaner_logs'), 0));
+$settings->add(new admin_setting_configcheckbox('cleaner_logstore_standard_enable',
+                get_string('truncate', 'cleaner_logstore_standard'),
+                get_string('truncate', 'cleaner_logstore_standard'), 0));
 

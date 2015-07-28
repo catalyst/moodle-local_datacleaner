@@ -30,6 +30,7 @@ class users_cleaner extends \local_datacleaner\plugininfo\cleaner {
 
     public function execute() {
 
+        // Stuff. TODO.
 
     }
 }

@@ -40,6 +40,7 @@ $strversion = get_string('version');
 $strenabledisable = get_string('enabledisable');
 $strsettings = get_string('settings');
 $strname = get_string('name');
+$strsettings = get_string('settings');
 
 /// If data submitted, then process and store.
 
@@ -76,73 +77,38 @@ if (!$plugins) {
 
 /// Print the table of all subplugins
 
-$table = new flexible_table('admin-blocks-compatible');
+$table = new html_table();
+$table->head = array(
+    get_string('name'),
+    get_string('plugin'),
+    get_string('settings'),
+    get_string('settings'),
+);
+$table->attributes['class'] = 'admintable generaltable';
+$data = array();
+foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plugin) {
 
-$table->define_columns(array('name', 'version', 'hideshow', 'settings'));
-$table->define_headers(array($strname, $strversion, $strenabledisable, $strsettings));
-$table->define_baseurl($CFG->wwwroot.'/local/datacleaner/index.php');
-$table->set_attribute('class', 'admintable pluginstable generaltable');
-$table->set_attribute('id', 'compatibleblockstable');
-$table->setup();
-$tablerows = array();
+    $settings = $plugin->get_settings_section_name();
+    if (!is_null($settings)) {
+        $settings = html_writer::link($settings, $strsettings);
+    }
+    $row = new html_table_row(array(
+                $plugin->displayname,
+                $plugin->name,
+                $settings,
+                'Enable / disable',
+                // TODO relates to core or plugin?
+    ));
 
-// @TODO Sort plugins by priority.
-$cleaners = array();
-foreach ($plugins as $plugin) {
-	//require_once $plugin->typerootdir . '/' . $plugin->name . '/lib.php';
-    $pluginclass = '\local_datacleaner\plugininfo\\' . $plugin->name . '_cleaner';
-    $cleaners[$plugin->name] = new $pluginclass;
+    // TODO is plugin refers to a real plugin which is not installed.
+    $disabled = false;
+    if ($disabled) {
+        $row->attributes['class'] = 'disabled';
+    }
+    $data[] = $row;
 }
-core_collator::asort($cleanernames);
-
-foreach ($cleanernames as $pluginid=>$pluginname) {
-    $plugin = $plugins[$pluginid];
-    $pluginname = $plugin->name;
-    $dbversion = $plugin->versiondisk;
-
-    $settings = ''; // By default, no configuration
-    if ($plugin and $plugin->has_config()) {
-        $pluginsettings = admin_get_root()->locate('pluginsetting' . $plugin->name);
-
-        if ($pluginsettings instanceof admin_externalpage) {
-            $settings = '<a href="' . $pluginsettings->url .  '">' . get_string('settings') . '</a>';
-        } else if ($pluginsettings instanceof admin_settingpage) {
-            $settings = '<a href="'.$CFG->wwwroot.'/'.$CFG->admin.'/settings.php?section=pluginsetting'.$plugin->name.'">'.$strsettings.'</a>';
-        } else {
-            $settings = '<a href="block.php?block='.$blockid.'">'.$strsettings.'</a>';
-        }
-    }
-
-    $class = ''; // Nothing fancy, by default
-
-    if (!$blockobject) {
-        // ignore
-        $visible = '';
-    } else if ($plugins[$blockid]->visible) {
-        $visible = '<a href="plugins.php?hide='.$blockid.'&amp;sesskey='.sesskey().'" title="'.$strhide.'">'.
-            '<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" alt="'.$strhide.'" /></a>';
-    } else {
-        $visible = '<a href="plugins.php?show='.$blockid.'&amp;sesskey='.sesskey().'" title="'.$strshow.'">'.
-            '<img src="'.$OUTPUT->pix_url('t/show') . '" class="iconsmall" alt="'.$strshow.'" /></a>';
-        $class = 'dimmed_text';
-    }
-
-    if ($dbversion == $plugin->version) {
-        $version = $dbversion;
-    } else {
-        $version = "$dbversion ($plugin->version)";
-    }
-
-    $row = array(
-            $strblockname,
-            $version,
-            $visible,
-            $settings,
-            );
-    $table->add_data($row, $class);
-}
-
-$table->print_html();
+$table->data = $data;
+echo html_writer::table($table);
 
 echo $OUTPUT->footer();
 

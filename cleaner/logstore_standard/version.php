@@ -15,25 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_users
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ * Version details.
+ *
+ * @package    cleaner_logstore_standard
+ * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_datacleaner\plugininfo;
+defined('MOODLE_INTERNAL') || die;
 
-class logs_cleaner extends \local_datacleaner\plugininfo\cleaner {
-
-    public function get_priority() {
-        return 10;
-    }
-
-    public function execute() {
-
-
-    }
-}
-
+$plugin->version   = 2015072200;
+$plugin->release   = '2.3.2';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
+$plugin->component = 'cleaner_logstore_standard';
+$plugin->context = CONTEXT_SYSTEM;
 
 
