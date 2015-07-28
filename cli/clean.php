@@ -23,6 +23,16 @@
 // Check if host name is prod.
 // Check if cron is running or has run recently.
 // Check last user login.
+// if any of these are true then bail
+
+// grab list of all cleaner plugins, in priority order, which are enabled
+// record time stamps
+// run the clean() method of each plugin
+// ideally have an api for each plugin a standardish log function which it calls with incremental
+// data so all the plugins output stuff in the same format
+//
+// something like cleaner_status('what I'm doing', $X, $total);
+//
 
 
 
