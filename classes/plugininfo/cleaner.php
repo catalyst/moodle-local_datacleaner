@@ -81,9 +81,22 @@ class cleaner extends base {
      * @return null|string the settings section name.
      */
     public function get_settings_section_name() {
-        $settings_file = $this->full_path('settings.php');
         if (file_exists($this->full_path('settings.php'))) {
-            return 'cleaner_' . $this->name . '_settings';
+            return 'cleaner_' . $this->name;
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Get the settings section url.
+     *
+     * @return null|string the settings section name.
+     */
+    public function get_settings_section_url() {
+        if (file_exists($this->full_path('settings.php'))) {
+            return new \moodle_url('/admin/settings.php', array('section' => $this->get_settings_section_name()));
         }
         else {
             return null;

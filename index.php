@@ -88,7 +88,7 @@ $table->attributes['class'] = 'admintable generaltable';
 $data = array();
 foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plugin) {
 
-    $settings = $plugin->get_settings_section_name();
+    $settings = $plugin->get_settings_section_url();
     if (!is_null($settings)) {
         $settings = html_writer::link($settings, $strsettings);
     }
