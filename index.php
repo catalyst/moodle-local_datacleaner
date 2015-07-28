@@ -90,7 +90,7 @@ foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plu
 
     $settings = $plugin->get_settings_section_url();
     if (!is_null($settings)) {
-        $settings = html_writer::link($settings, $strsettings);
+        $settings = html_writer::link('/admin/settings.php?section=' . $settings, $strsettings);
     }
     $row = new html_table_row(array(
                 $plugin->displayname,

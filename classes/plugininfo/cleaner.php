@@ -15,8 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
- *
  * @package    local_datacleaner
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -76,7 +74,7 @@ class cleaner extends base {
 
     /**
      * Get the settings section name.
-     * It's used to get the setting links in the Atto sub-plugins table.
+     * It's used to get the setting links in the cleaner sub-plugins table.
      *
      * @return null|string the settings section name.
      */
