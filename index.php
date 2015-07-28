@@ -37,7 +37,9 @@ $show     = optional_param('show', 0, PARAM_INT);
 
 $strmanage = get_string('info');
 $strversion = get_string('version');
-$strenabledisable = get_string('enabledisable');
+$strenabledisable = get_string('enabledisable', 'local_datacleaner');
+$strenable = get_string('enable', 'local_datacleaner');
+$strdisable = get_string('disable', 'local_datacleaner');
 $strsettings = get_string('settings');
 $strname = get_string('name');
 $strsettings = get_string('settings');
@@ -92,11 +94,22 @@ foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plu
     if (!is_null($settings)) {
         $settings = html_writer::link('/admin/settings.php?section=' . $settings, $strsettings);
     }
+
+    if ($plugin->disabled()) {
+        $visible = '<a href="local/datacleaner/index.php?show='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strenable.'">'.
+            '<img src="'.$OUTPUT->pix_url('t/show') . '" class="iconsmall" alt="'.$strenable.'" /></a>';
+        $class = 'dimmed_text';
+    }
+    else {
+        $visible = '<a href="local/datacleaner/index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
+            '<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" alt="'.$strdisable.'" /></a>';
+    }
+
     $row = new html_table_row(array(
                 $plugin->displayname,
                 $plugin->name,
                 $settings,
-                'Enable / disable',
+                $visible,
                 // TODO relates to core or plugin?
     ));
 

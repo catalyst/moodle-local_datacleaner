@@ -29,6 +29,15 @@ defined('MOODLE_INTERNAL') || die();
 class cleaner extends base {
 
     /**
+     * Whether the subplugin is disabled.
+     *
+     * @return bool Whether disabled.
+     */
+    public function disabled() {
+        return false;
+    }
+
+    /**
      * Yes you can uninstall these plugins if you want.
      * @return \moodle_url
      */
