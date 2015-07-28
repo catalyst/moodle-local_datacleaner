@@ -23,7 +23,8 @@
  */
 
 $string['pluginname'] = 'Data cleaner';
+$string['enabledisable'] = 'Enable/disable';
 $string['info'] = 'You can configure what and how data will be cleaned after it is cloned from production';
 $string['manage'] = 'Manage cleaners';
-
+$string['noplugins'] = 'No data cleansing plugins found.';
 
