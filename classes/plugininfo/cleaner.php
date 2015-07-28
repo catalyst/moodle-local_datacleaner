@@ -34,7 +34,7 @@ class cleaner extends base {
      * @return bool Whether enabled.
      */
     public function enabled() {
-        return get_config('clean_' . $this->name, 'enabled');
+        return get_config('cleaner_' . $this->name, 'enabled');
     }
 
     /**

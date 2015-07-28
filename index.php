@@ -53,7 +53,7 @@ if ((!empty($hide) || !empty($show)) && confirm_sesskey()) {
     if (!isset($plugins[$pluginname])) {
         print_error('plugindoesnotexist', 'error');
     }
-    set_config('enabled', $state, 'clean_' . $pluginname);
+    set_config('enabled', $state, 'cleaner_' . $pluginname);
 }
 
 echo $OUTPUT->header();
