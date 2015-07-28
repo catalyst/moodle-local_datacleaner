@@ -84,5 +84,13 @@ class cleaner extends base {
         }
         return null;
     }
+
+    /*
+     *
+     */
+    public function get_priority() {
+        return 5;
+    }
+
 }
 
