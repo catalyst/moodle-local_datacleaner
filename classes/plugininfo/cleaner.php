@@ -38,6 +38,23 @@ class cleaner extends base {
     }
 
     /**
+     * Get a list of enabled plugins.
+     */
+    static function get_enabled_plugins() {
+        global $DB;
+        $where = $DB->sql_compare_text('plugin') . " LIKE ? AND " . $DB->sql_compare_text('name') . " = ? AND value = ? ";
+        $params = array('cleaner_%', 'enabled', 1);
+        $results = $DB->get_records_select_menu('config_plugins', $where, $params, 'plugin ASC', 'plugin, plugin AS val');
+        // Strip 'cleaner_' from the front
+        $final = array();
+        foreach ($results as $result) {
+            $key = substr($result, 8);
+            $final[$key] = $key;
+        }
+        return $final;
+    }
+
+    /**
      * Yes you can uninstall these plugins if you want.
      * @return \moodle_url
      */
