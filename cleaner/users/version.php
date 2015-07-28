@@ -30,5 +30,5 @@ $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
 $plugin->component = 'cleaner_users';
 $plugin->context = CONTEXT_USER;
-
+$plugin->priority = -210;
 
