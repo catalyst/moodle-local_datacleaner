@@ -20,9 +20,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once("$CFG->dirroot/local/datacleaner/lib.php");
+namespace local_datacleaner\plugininfo;
 
-class user_cleaner extends \local_datacleaner\cleaner_base {
+class users_cleaner extends \local_datacleaner\plugininfo\cleaner {
 
     public function get_priority() {
         return 10;

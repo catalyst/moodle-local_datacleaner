@@ -24,14 +24,58 @@
 
 require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('local_datacleaner');
 
+// Allows the admin to configure subplugins (enable/disable, configure)
+
+$hide     = optional_param('hide', 0, PARAM_INT);
+$show     = optional_param('show', 0, PARAM_INT);
+
+/// Print headings
+
+$strmanage = get_string('info');
+$strversion = get_string('version');
+$strenabledisable = get_string('enabledisable');
+$strsettings = get_string('settings');
+$strname = get_string('name');
+$strsettings = get_string('settings');
+
+/// If data submitted, then process and store.
+
+if (!empty($hide) && confirm_sesskey()) {
+    if (!$block = $DB->get_record('block', array('id'=>$hide))) {
+        print_error('blockdoesnotexist', 'error');
+    }
+    //@TODO $DB->set_field('block', 'visible', '0', array('id'=>$block->id));      // Hide block
+    core_plugin_manager::reset_caches();
+    admin_get_root(true, false);  // settings not required - only pages
+}
+
+if (!empty($show) && confirm_sesskey() ) {
+    if (!$block = $DB->get_record('block', array('id'=>$show))) {
+        print_error('blockdoesnotexist', 'error');
+    }
+    $DB->set_field('block', 'visible', '1', array('id'=>$block->id));      // Show block
+    core_plugin_manager::reset_caches();
+    admin_get_root(true, false);  // settings not required - only pages
+}
+
 echo $OUTPUT->header();
+echo $OUTPUT->heading($strmanage);
 
-echo $OUTPUT->heading(get_string('pluginname', 'local_datacleaner'));
+/// Main display starts here
 
-echo get_string('info', 'local_datacleaner');
+/// Get and sort the existing plugins
+
+$plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
+
+if (!$plugins) {
+    print_error('noplugins', 'error');  // Should never happen
+}
+
+/// Print the table of all subplugins
 
 $table = new html_table();
 $table->head = array(
@@ -44,9 +88,9 @@ $table->attributes['class'] = 'admintable generaltable';
 $data = array();
 foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plugin) {
 
-    $settings = null;
-    if (file_exists($plugin->full_path('settings.php'))) {
-        $settings = 'crpa';
+    $settings = $plugin->get_settings_section_name();
+    if (!is_null($settings)) {
+        $settings = html_writer::link($settings, $strsettings);
     }
     $row = new html_table_row(array(
                 $plugin->displayname,
@@ -67,4 +111,5 @@ $table->data = $data;
 echo html_writer::table($table);
 
 echo $OUTPUT->footer();
+
 
