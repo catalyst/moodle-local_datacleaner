@@ -79,13 +79,10 @@ class cleaner extends base {
      * @return null|string the settings section name.
      */
     public function get_settings_section_name() {
-        $settings_file = $this->full_path('settings.php');
         if (file_exists($this->full_path('settings.php'))) {
             return 'cleaner_' . $this->name . '_settings';
         }
-        else {
-            return null;
-        }
+        return null;
     }
 }
 
