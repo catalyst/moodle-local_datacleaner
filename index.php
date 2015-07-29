@@ -73,14 +73,20 @@ if (!$plugins) {
 
 $table = new html_table();
 $table->head = array(
+    get_string('enabledisable', 'local_datacleaner'),
     get_string('name'),
     get_string('plugin'),
+    get_string('priority', 'local_datacleaner'),
     get_string('settings'),
-    get_string('enabledisable', 'local_datacleaner'),
 );
 $table->attributes['class'] = 'admintable generaltable';
 $data = array();
-foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plugin) {
+
+$plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
+
+# sort em
+
+foreach ($plugins as $plugin) {
 
     $settings = $plugin->get_settings_section_url();
     if (!is_null($settings)) {
@@ -98,10 +104,11 @@ foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plu
     }
 
     $row = new html_table_row(array(
+                $visible,
                 $plugin->displayname,
                 $plugin->name,
+                $plugin->get_priority(),
                 $settings,
-                $visible,
                 // TODO relates to core or plugin?
     ));
 

@@ -15,22 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
- *
  * @package    local_datacleaner
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-$string['pluginname'] = 'Data cleaner';
-$string['cleaning'] = 'Cleaning';
-$string['enabledisable'] = 'Enabled';
-$string['enable'] = 'Enable';
-$string['disable'] = 'Disable';
-$string['info'] = '<p>You can configure what and how data will be cleaned after it is cloned from production. </p>' .
-'<p>After the database and sitedata are cloned into another environment a CLI is run which will perform the cleaning. ' .
-'Several checks are performed to ensure that this cannot be run on the production environment.</p>';
-$string['manage'] = 'Manage cleaning tasks';
-$string['priority'] = 'Priority';
-$string['noplugins'] = 'No data cleansing plugins found.';
-$string['progress'] = 'Progress';

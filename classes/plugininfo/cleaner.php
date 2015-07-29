@@ -151,9 +151,15 @@ class cleaner extends base {
         if (file_exists($this->full_path('settings.php'))) {
             return new \moodle_url('/admin/settings.php', array('section' => $this->get_settings_section_name()));
         }
-        else {
-            return null;
-        }
+        return null;
     }
+
+    /*
+     *
+     */
+    public function get_priority() {
+        return 5;
+    }
+
 }
 
