@@ -45,6 +45,7 @@ $table = new html_table();
 $table->head = array(
     get_string('plugin'),
     get_string('progress', 'local_datacleaner'),
+    get_string('notes', 'local_datacleaner')
 );
 $table->attributes['class'] = 'admintable generaltable';
 $data = array();
@@ -59,6 +60,7 @@ foreach ($plugins as $plugin) {
     $row = new html_table_row(array(
                 $plugin->displayname,
                 $progress,
+                html_writer::div('', 'cleaner_progress_notes'),
     ));
 
     $data[] = $row;
