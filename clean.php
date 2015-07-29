@@ -27,6 +27,9 @@ require_once($CFG->libdir.'/adminlib.php');
 
 admin_externalpage_setup('local_datacleaner');
 
+// Our module.js doesn't get autoloaded.
+$PAGE->requires->js('/local/datacleaner/module.js');
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('cleaning', 'local_datacleaner'));
 
@@ -63,6 +66,8 @@ foreach ($plugins as $plugin) {
                 html_writer::div('', 'cleaner_progress_notes'),
     ));
 
+    $row->id = 'cleaner_progress_' . $plugin->name;
+
     $data[] = $row;
 }
 $table->data = $data;
@@ -70,4 +75,16 @@ echo html_writer::table($table);
 
 echo $OUTPUT->footer();
 
+// Now that we have the page output, start the work. Ajax on the page will watch our progress.
 
+foreach ($plugins as $plugin) {
+    // Get the class that does the work.
+    $classname = 'cleaner_' . $plugin->name . '\clean';
+
+    if (!class_exists($classname)) {
+        continue;
+    }
+
+    $class = new $classname;
+    $class->execute();
+}

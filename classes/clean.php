@@ -19,3 +19,20 @@
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace local_datacleaner;
+
+use core\base;
+
+defined('MOODLE_INTERNAL') || die();
+
+abstract class clean {
+    static $status = '';
+    static $percent = 0;
+
+    static public function execute() {
+    }
+
+    static public function get_status() {
+    }
+}
