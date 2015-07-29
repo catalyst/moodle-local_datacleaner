@@ -34,5 +34,51 @@
 // something like cleaner_status('what I'm doing', $X, $total);
 //
 
+define('CLI_SCRIPT', true);
+require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once($CFG->libdir.'/clilib.php');      // cli only functions
+require_once($CFG->libdir.'/adminlib.php');
 
+// now get cli options
+list($options, $unrecognized) = cli_get_params(array('help'=>false),
+                                               array('h'=>'help'));
+
+if ($unrecognized) {
+    $unrecognized = implode("\n  ", $unrecognized);
+    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+}
+
+if ($options['help']) {
+    $help =
+"Perform a datawash.
+
+Options:
+-h, --help            Print out this help
+
+Example:
+\$sudo -u www-data /usr/bin/php local/datacleaner/cli/clean.php
+";
+
+    echo $help;
+    die;
+}
+
+/// Get and sort the existing plugins
+$plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_priority();
+
+if (!$plugins) {
+    print_error('noplugins', 'error');  // Should never happen
+}
+
+foreach ($plugins as $plugin) {
+    // Get the class that does the work.
+    $classname = 'cleaner_' . $plugin->name . '\clean';
+
+    if (!class_exists($classname)) {
+        continue;
+    }
+
+    $class = new $classname;
+    $class->execute();
+}
 
