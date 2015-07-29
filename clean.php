@@ -15,12 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Incomplete - gui for running cleaning.
  *
  * @package    local_datacleaner
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+// Not wanted at the moment.
+die();
 
 require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');

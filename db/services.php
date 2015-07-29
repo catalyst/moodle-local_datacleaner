@@ -24,7 +24,7 @@
 
 // We defined the web service functions to install.
 $functions = array(
-        'get_datacleaner_state' => array(
+        'local_datacleaner_get_datacleaner_state' => array(
                 'classname'   => 'local_datacleaner_external',
                 'methodname'  => 'get_datacleaner_state',
                 'classpath'   => 'local/datacleaner/externallib.php',

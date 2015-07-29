@@ -47,7 +47,7 @@ class local_datacleaner_external extends external_api {
 
         //Parameter validation
         //REQUIRED
-        $params = self::validate_parameters(self::datacleaner_parameters(),
+        $params = self::validate_parameters(self::get_datacleaner_state_parameters(),
                 array('cancel' => $cancel));
 
         //Capability checking
