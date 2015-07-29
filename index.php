@@ -73,11 +73,11 @@ if (!$plugins) {
 
 $table = new html_table();
 $table->head = array(
+    get_string('enabledisable', 'local_datacleaner'),
     get_string('name'),
     get_string('plugin'),
-    'Priority', # FIX
+    get_string('priority', 'local_datacleaner'),
     get_string('settings'),
-    get_string('enabledisable', 'local_datacleaner'),
 );
 $table->attributes['class'] = 'admintable generaltable';
 $data = array();
@@ -104,11 +104,11 @@ foreach ($plugins as $plugin) {
     }
 
     $row = new html_table_row(array(
+                $visible,
                 $plugin->displayname,
                 $plugin->name,
                 $plugin->get_priority(),
                 $settings,
-                $visible,
                 // TODO relates to core or plugin?
     ));
 

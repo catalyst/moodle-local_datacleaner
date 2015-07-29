@@ -38,6 +38,52 @@ class cleaner extends base {
     }
 
     /**
+     * Get a list of enabled plugins.
+     */
+    static function get_enabled_plugins() {
+        global $DB;
+        $where = $DB->sql_compare_text('plugin') . " LIKE ? AND " . $DB->sql_compare_text('name') . " = ? AND value = ? ";
+        $params = array('cleaner_%', 'enabled', 1);
+        $results = $DB->get_records_select_menu('config_plugins', $where, $params, 'plugin ASC', 'plugin, plugin AS val');
+        // Strip 'cleaner_' from the front
+        $final = array();
+        foreach ($results as $result) {
+            $key = substr($result, 8);
+            $final[$key] = $key;
+        }
+        return $final;
+    }
+
+    /**
+     * Get enabled plugins, sorted by priority
+     *
+     * @return array Enabled plugins, sorted by priority
+     */
+    static public function get_enabled_plugins_by_priority()
+    {
+        $fileinfo = \core_plugin_manager::instance()->get_present_plugins('cleaner');
+        $versions = \core_plugin_manager::instance()->get_plugins_of_type('cleaner');
+        $enabled = self::get_enabled_plugins();
+
+        $grouped = array();
+        foreach ($enabled as $one) {
+            $priority = $fileinfo[$one]->priority;
+            $groups[$priority][] = $versions[$one];
+        }
+
+        // Sort
+        sort($groups, SORT_NUMERIC);
+
+        // Flatten
+        $final = array();
+        foreach ($groups as $group) {
+            $final = array_merge($final, $group);
+        }
+
+        return $final;
+    }
+
+    /**
      * Yes you can uninstall these plugins if you want.
      * @return \moodle_url
      */
