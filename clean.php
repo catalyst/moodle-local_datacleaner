@@ -28,13 +28,11 @@ require_once($CFG->libdir.'/adminlib.php');
 admin_externalpage_setup('local_datacleaner');
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading($strmanage);
+echo $OUTPUT->heading(get_string('cleaning', 'local_datacleaner'));
 
 /// Main display starts here
 
 /// Get and sort the existing plugins
-
-//$plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_priority();
 
 if (!$plugins) {
@@ -52,7 +50,12 @@ $table->attributes['class'] = 'admintable generaltable';
 $data = array();
 
 foreach ($plugins as $plugin) {
-	$progress = new html_progress_trace($plugin->name, 500, false);
+	// Build our progress divs
+	$progress = html_writer::start_div('cleaner_progress ' . $plugin->name);
+	$progress .= html_writer::div('', 'cleaner_progress_bar');
+	$progress .= html_writer::span('0%', 'cleaner_label');
+	$progress .= html_writer::end_div();
+
     $row = new html_table_row(array(
                 $plugin->displayname,
                 $progress,

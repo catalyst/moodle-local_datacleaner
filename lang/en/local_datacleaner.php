@@ -23,6 +23,7 @@
  */
 
 $string['pluginname'] = 'Data cleaner';
+$string['cleaning'] = 'Cleaning';
 $string['enabledisable'] = 'Enable/disable';
 $string['enable'] = 'Enable';
 $string['disable'] = 'Disable';
@@ -31,4 +32,4 @@ $string['info'] = '<p>You can configure what and how data will be cleaned after 
 'Several checks are performed to ensure that this cannot be run on the production environment.</p>';
 $string['manage'] = 'Manage cleaners';
 $string['noplugins'] = 'No data cleansing plugins found.';
-
+$string['progress'] = 'Progress';

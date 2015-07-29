@@ -1,0 +1,28 @@
+div.cleaner_progress
+{
+position: relative;
+/* Simple default formatting for the theme to override */
+height: 20px;
+border: 1px solid;
+margin: 10px;
+}
+
+div.cleaner_progress_bar {
+display: block;
+height: 100%;
+position: relative;
+overflow: hidden;
+width: 0%;
+/* Simple default formatting for the theme to override */
+background: yellow;
+}
+
+span.cleaner_label {
+  position: absolute;
+  display: block;
+  width: 100%;
+  color: black;
+  text-align: center;
+  z-index: 2;
+  top: 0;
+}
