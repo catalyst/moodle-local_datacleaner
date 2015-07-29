@@ -32,12 +32,3 @@ $functions = array(
                 'type'        => 'read',
         )
 );
-
-// We define the services to install as pre-build services. A pre-build service is not editable by administrator.
-$services = array(
-        'Status' => array(
-                'functions' => array ('local_datacleaner_state'),
-                'restrictedusers' => 0,
-                'enabled'=>1,
-        )
-);
