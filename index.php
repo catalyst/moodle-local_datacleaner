@@ -15,8 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
- *
  * @package    local_datacleaner
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,12 +26,12 @@ require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('local_datacleaner');
 
-// Allows the admin to configure subplugins (enable/disable, configure)
+// Allows the admin to configure subplugins (enable/disable, configure).
 
 $hide     = optional_param('hide', '', PARAM_ALPHAEXT);
 $show     = optional_param('show', '', PARAM_ALPHAEXT);
 
-/// Print headings
+// Print headings.
 
 $strmanage = get_string('info');
 $strversion = get_string('version');
@@ -43,7 +41,7 @@ $strdisable = get_string('disable', 'local_datacleaner');
 $strsettings = get_string('settings');
 $strname = get_string('name');
 
-/// If data submitted, then process and store.
+// If data submitted, then process and store.
 
 if ((!empty($hide) || !empty($show)) && confirm_sesskey()) {
     $plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
@@ -59,17 +57,15 @@ if ((!empty($hide) || !empty($show)) && confirm_sesskey()) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strmanage);
 
-/// Main display starts here
-
-/// Get and sort the existing plugins
+// Main display starts here.
 
 $plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
 
 if (!$plugins) {
-    print_error('noplugins', 'error');  // Should never happen
+    print_error('noplugins', 'error');  // Should never happen.
 }
 
-/// Print the table of all subplugins
+// Print the table of all subplugins.
 
 $table = new html_table();
 $table->head = array(
@@ -84,7 +80,6 @@ $data = array();
 
 $plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
 
-# sort em
 
 foreach ($plugins as $plugin) {
 
@@ -96,8 +91,7 @@ foreach ($plugins as $plugin) {
     if ($plugin->enabled()) {
         $visible = '<a href="index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
             '<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" alt="'.$strdisable.'" /></a>';
-    }
-    else {
+    } else {
         $visible = '<a href="index.php?show='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strenable.'">'.
             '<img src="'.$OUTPUT->pix_url('t/show') . '" class="iconsmall" alt="'.$strenable.'" /></a>';
         $class = 'dimmed_text';
@@ -123,5 +117,4 @@ $table->data = $data;
 echo html_writer::table($table);
 
 echo $OUTPUT->footer();
-
 
