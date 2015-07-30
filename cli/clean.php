@@ -105,8 +105,8 @@ function safety_checks()
         $sql = "SELECT u.id, u.username, {$name_fields}
                   FROM {user} u
                  WHERE u.lastaccess > :timefrom
-                       AND u.lastaccess <= :now
-                       AND u.deleted = 0
+                   AND u.lastaccess <= :now
+                   AND u.deleted = 0
               GROUP BY u.id
               ORDER BY lastaccess DESC ";
         $users = $DB->get_records_sql($sql, $params);
