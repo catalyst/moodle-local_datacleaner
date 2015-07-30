@@ -40,12 +40,12 @@ class cleaner extends base {
     /**
      * Get a list of enabled plugins.
      */
-    static function get_enabled_plugins() {
+    static public function get_enabled_plugins() {
         global $DB;
         $where = $DB->sql_compare_text('plugin') . " LIKE ? AND " . $DB->sql_compare_text('name') . " = ? AND value = ? ";
         $params = array('cleaner_%', 'enabled', 1);
         $results = $DB->get_records_select_menu('config_plugins', $where, $params, 'plugin ASC', 'plugin, plugin AS val');
-        // Strip 'cleaner_' from the front
+        // Strip 'cleaner_' from the front.
         $final = array();
         foreach ($results as $result) {
             $key = substr($result, 8);
@@ -59,8 +59,7 @@ class cleaner extends base {
      *
      * @return array Enabled plugins, sorted by priority
      */
-    static public function get_enabled_plugins_by_priority()
-    {
+    static public function get_enabled_plugins_by_priority() {
         $fileinfo = \core_plugin_manager::instance()->get_present_plugins('cleaner');
         $versions = \core_plugin_manager::instance()->get_plugins_of_type('cleaner');
         $enabled = self::get_enabled_plugins();
@@ -71,10 +70,10 @@ class cleaner extends base {
             $groups[$priority][] = $versions[$one];
         }
 
-        // Sort
+        // Sort.
         sort($groups, SORT_NUMERIC);
 
-        // Flatten
+        // Flatten.
         $final = array();
         foreach ($groups as $group) {
             $final = array_merge($final, $group);
@@ -136,8 +135,7 @@ class cleaner extends base {
     public function get_settings_section_name() {
         if (file_exists($this->full_path('settings.php'))) {
             return 'cleaner_' . $this->name;
-        }
-        else {
+        } else {
             return null;
         }
     }

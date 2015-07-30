@@ -23,25 +23,18 @@
 // Check if host name is prod.
 // Check if cron is running or has run recently.
 // Check last user login.
-// if any of these are true then bail
+// If any of these are true then bail.
 
-// grab list of all cleaner plugins, in priority order, which are enabled
-// record time stamps
-// run the clean() method of each plugin
-// ideally have an api for each plugin a standardish log function which it calls with incremental
-// data so all the plugins output stuff in the same format
-//
-// something like cleaner_status('what I'm doing', $X, $total);
+// Record time stamps.
 //
 
 define('CLI_SCRIPT', true);
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');      // cli only functions
+require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->libdir.'/adminlib.php');
 
-// now get cli options
-list($options, $unrecognized) = cli_get_params(array('help'=>false),
-                                               array('h'=>'help'));
+list($options, $unrecognized) = cli_get_params(array('help' => false),
+                                               array('h' => 'help'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -49,8 +42,7 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Perform a datawash.
+    $help = "Perform a datawash.
 
 Options:
 -h, --help            Print out this help
@@ -63,7 +55,6 @@ Example:
     die;
 }
 
-/// Get and sort the existing plugins
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_priority();
 
 if (!$plugins) {
