@@ -41,8 +41,8 @@ require_once $CFG->libdir.'/adminlib.php';
  */
 function print_message($text, $highlight = false)
 {
-    $highlight_start = "\033[1m";
-    $highlight_end = "\033[0m";
+    $highlightstart = "\033[1m";
+    $highlightend = "\033[0m";
 
     if ($highlight) {
         echo "{$highlightstart}{$text}{$highlightend}\n";
