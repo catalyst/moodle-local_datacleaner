@@ -32,42 +32,7 @@ define('CLI_SCRIPT', true);
 require dirname(dirname(dirname(dirname(__FILE__)))).'/config.php';
 require_once $CFG->libdir.'/clilib.php';
 require_once $CFG->libdir.'/adminlib.php';
-
-/**
- * Print a message to the terminal.
- *
- * @param string $text      The text to print.
- * @param bool   $highlight Whether to add highlighting.
- */
-function print_message($text, $highlight = false)
-{
-    $highlightstart = "\033[1m";
-    $highlightend = "\033[0m";
-
-    if ($highlight) {
-        echo "{$highlightstart}{$text}{$highlightend}\n";
-    } else {
-        echo $text;
-    }
-}
-
-/**
- * Print a message about aborting.
- *
- * @param string $text      The text to print.
- * @param bool   $highlight Whether to highlight the text.
- */
-function abort_message($text, $highlight = false)
-{
-    static $have_run = false;
-
-    if (!$have_run) {
-        print_message("Aborting for the following reason(s):\n");
-        $have_run = true;
-    }
-
-    print_message($text, $highlight);
-}
+require_once dirname(__FILE__) . '/lib.php';
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
@@ -92,87 +57,6 @@ Example:
 
     echo $help;
     die;
-}
-
-/**
- * Safety checks.
- *
- * Make sure it's safe for us to continue. Don't wash prod!
- */
-function safety_checks()
-{
-    global $CFG, $DB;
-
-    $will_die = false;
-
-    // 1. Is $CFG->wwwroot the same as it was when this module was installed.
-    $saved = $CFG->original_wwwroot;
-
-    if (empty($saved)) {
-        print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
-    } else if ($CFG->wwwroot == $saved) {
-        abort_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
-        $will_die = true;
-    }
-
-    // 2. Non admins logged in recently? Same logic as online users block.
-    $timetoshowusers = 300; // Seconds default.
-    $minutes = $timetoshowusers / 60;
-    $now = time();
-    $timefrom = $now - $timetoshowusers; // Unlike original code, don't care about caches for this.
-    $params = array('now' => $now, 'timefrom' => $timefrom);
-
-    $csql = "SELECT COUNT(u.id)
-               FROM {user} u
-              WHERE u.lastaccess > :timefrom
-                AND u.lastaccess <= :now
-                AND u.deleted = 0";
-
-    if ($usercount = $DB->count_records_sql($csql, $params)) {
-        $namefields = "u." . implode(', u.', get_all_user_name_fields());
-
-        $sql = "SELECT u.id, u.username, {$namefields}
-                  FROM {user} u
-                 WHERE u.lastaccess > :timefrom
-                   AND u.lastaccess <= :now
-                   AND u.deleted = 0
-              GROUP BY u.id
-              ORDER BY lastaccess DESC ";
-        $users = $DB->get_records_sql($sql, $params);
-
-        $message = "The following users have logged in within the last {$minutes} minutes:\n";
-        $nonadmins = 0;
-        foreach ($users as $user) {
-            $message .= ' - ' . fullname($user) . ' (' . $user->username . ')';
-            if (is_siteadmin($user)) {
-                $message .= ' (siteadmin)';
-            } else {
-                $nonadmins++;
-            }
-            $message .= "\n";
-        }
-
-        if ($nonadmins) {
-            abort_message($message);
-            abort_message("Aborting because there are non site-administrators in the list of recent users.", true);
-            $will_die = true;
-        }
-    }
-
-    // 3. Has cron run recently?
-    $last_run = -1;
-    if ($CFG->version >= 2014051207) {
-        $last_run = $DB->get_field_sql("SELECT MAX(lastruntime) FROM {task_scheduled}");
-    }
-
-    if ($last_run > $timefrom) {
-        abort_message("Aborting because cron has run within the last {$minutes} minutes.", true);
-        $will_die = true;
-    }
-
-    if ($will_die) {
-        exit(1);
-    }
 }
 
 if ($options['force']) {
