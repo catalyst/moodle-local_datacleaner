@@ -74,7 +74,7 @@ Example:
  */
 function safety_checks()
 {
-    global $CFG;
+    global $CFG, $DB;
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
     $saved = $CFG->original_wwwroot;
@@ -86,6 +86,49 @@ function safety_checks()
         die();
     }
 
+    // 2. Non admins logged in recently? Same logic as online users block.
+    $timetoshowusers = 300; //Seconds default
+    $minutes = $timetoshowusers / 60;
+    $now = time();
+    $timefrom = $now - $timetoshowusers; // Unlike original code, don't care about caches for this.
+    $params = array('now' => $now, 'timefrom' => $timefrom);
+
+    $csql = "SELECT COUNT(u.id)
+               FROM {user} u
+              WHERE u.lastaccess > :timefrom
+                AND u.lastaccess <= :now
+                AND u.deleted = 0";
+
+    if ($usercount = $DB->count_records_sql($csql, $params)) {
+        $name_fields = "u." . implode(', u.', get_all_user_name_fields());
+
+        $sql = "SELECT u.id, u.username, {$name_fields}
+                  FROM {user} u
+                 WHERE u.lastaccess > :timefrom
+                       AND u.lastaccess <= :now
+                       AND u.deleted = 0
+              GROUP BY u.id
+              ORDER BY lastaccess DESC ";
+        $users = $DB->get_records_sql($sql, $params);
+
+        $message = "The following users have logged in within the last {$minutes} minutes:\n";
+        $nonadmins = 0;
+        foreach ($users as $user) {
+            $message .= ' - ' . fullname($user) . ' (' . $user->username . ')';
+            if (is_siteadmin($user)) {
+                $message .= ' (siteadmin)';
+            } else {
+                $nonadmins++;
+            }
+            $message .= "\n";
+        }
+
+        if ($nonadmins) {
+            print_message($message);
+            print_message("Aborting because there are non site-administrators in the list.\n", true);
+            die();
+        }
+    }
 }
 
 if ($options['force']) {
