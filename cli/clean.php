@@ -33,8 +33,20 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->libdir.'/adminlib.php');
 
-list($options, $unrecognized) = cli_get_params(array('help' => false),
-                                               array('h' => 'help'));
+function print_message($text, $highlight = false) {
+    $highlight_start = "\033[0;31m\033[47m";
+    $highlight_end = "\033[0m";
+
+    if ($highlight) {
+        echo "{$highlight_start}{$text}{$highlight_end}\n";
+    } else {
+        echo $text;
+    }
+}
+
+// now get cli options
+list($options, $unrecognized) = cli_get_params(array('help'=>false,'force'=>false),
+                                               array('h'=>'help'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -55,6 +67,34 @@ Example:
     die;
 }
 
+/**
+ * Safety checks.
+ *
+ * Make sure it's safe for us to continue. Don't wash prod!
+ */
+function safety_checks()
+{
+    global $CFG;
+
+    // 1. Is $CFG->wwwroot the same as it was when this module was installed.
+    $saved = $CFG->original_wwwroot;
+
+    if (empty($saved)) {
+        print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
+    } else if ($CFG->wwwroot == $saved) {
+        print_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
+        die();
+    }
+
+}
+
+if ($options['force']) {
+    print_message("Safety checks skipped due to --force command line option.\n", true);
+} else {
+    safety_checks();
+}
+
+// Get and sort the existing plugins
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
 
 if (!$plugins) {
