@@ -76,7 +76,6 @@ function safety_checks()
 {
     global $CFG;
 
-    echo "Safety checks...\n";
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
     $saved = get_config('original_wwwroot', 'local_datacleaner');
     if (empty($saved)) {
