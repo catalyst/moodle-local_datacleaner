@@ -28,11 +28,11 @@ class clean extends \local_datacleaner\clean {
 
     static public function execute() {
 
-        $task = 'Truncating logs';
+        global $DB;
 
-        self::update_status($task, 0, 1);
+        $task = 'Truncating standard logs';
 
-        sleep(1);
+        $DB->execute("DELETE FROM {logstore_standard_log}");
 
         self::update_status($task, 1, 1);
 
