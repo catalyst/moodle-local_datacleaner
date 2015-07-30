@@ -77,11 +77,12 @@ function safety_checks()
     global $CFG;
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
-    $saved = get_config('original_wwwroot', 'local_datacleaner');
+    $saved = $CFG->original_wwwroot;
+
     if (empty($saved)) {
         print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
     } else if ($CFG->wwwroot == $saved) {
-        print_message("$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
+        print_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
         die();
     }
 
