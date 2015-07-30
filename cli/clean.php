@@ -44,6 +44,17 @@ function print_message($text, $highlight = false) {
     }
 }
 
+function abort_message($text, $highlight = false) {
+    static $have_run = false;
+
+    if (!$have_run) {
+        print_message("Aborting for the following reason(s):\n");
+        $have_run = true;
+    }
+
+    print_message($text, $highlight);
+}
+
 // now get cli options
 list($options, $unrecognized) = cli_get_params(array('help'=>false,'force'=>false),
                                                array('h'=>'help'));
@@ -76,14 +87,16 @@ function safety_checks()
 {
     global $CFG, $DB;
 
+    $will_die = false;
+
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
     $saved = $CFG->original_wwwroot;
 
     if (empty($saved)) {
         print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
     } else if ($CFG->wwwroot == $saved) {
-        print_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
-        die();
+        abort_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
+        $will_die = true;
     }
 
     // 2. Non admins logged in recently? Same logic as online users block.
@@ -124,10 +137,14 @@ function safety_checks()
         }
 
         if ($nonadmins) {
-            print_message($message);
-            print_message("Aborting because there are non site-administrators in the list.\n", true);
-            die();
+            abort_message($message);
+            abort_message("Aborting because there are non site-administrators in the list of recent users.", true);
+            $will_die = true;
         }
+    }
+
+    if ($will_die) {
+        die();
     }
 }
 
