@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-if (!$hassiteconfig) { // needs this condition or there is error on login page
+if (!$hassiteconfig) { // Needs this condition or there is error on login page.
     return;
 }
 

@@ -23,20 +23,14 @@
 // Check if host name is prod.
 // Check if cron is running or has run recently.
 // Check last user login.
-// if any of these are true then bail
+// If any of these are true then bail.
 
-// grab list of all cleaner plugins, in priority order, which are enabled
-// record time stamps
-// run the clean() method of each plugin
-// ideally have an api for each plugin a standardish log function which it calls with incremental
-// data so all the plugins output stuff in the same format
-//
-// something like cleaner_status('what I'm doing', $X, $total);
+// Record time stamps.
 //
 
 define('CLI_SCRIPT', true);
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');      // cli only functions
+require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->libdir.'/adminlib.php');
 
 function print_message($text, $highlight = false) {
@@ -60,8 +54,7 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Perform a datawash.
+    $help = "Perform a datawash.
 
 Options:
 -h, --help            Print out this help
@@ -105,20 +98,21 @@ if ($options['force']) {
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_priority();
 
 if (!$plugins) {
-    print_error('noplugins', 'error');  // Should never happen
+    echo "No cleaner plugins enabled\n";
+    exit;
 }
 
 foreach ($plugins as $plugin) {
     // Get the class that does the work.
     $classname = 'cleaner_' . $plugin->name . '\clean';
 
+    echo "== Running {$plugin->name} cleaner ==\n";
     if (!class_exists($classname)) {
-        echo "Unable to locate {$plugin->name} class. Skipping.\n";
+        echo "ERROR: Unable to locate local/datacleaner/cleaner/{$plugin->name}/classes/clean.php class. Skipping.\n";
         continue;
     }
 
     $class = new $classname;
-    echo "Invoking {$plugin->name} cleaner.\n";
     $class->execute();
 }
 

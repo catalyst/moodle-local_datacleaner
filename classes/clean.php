@@ -32,12 +32,15 @@ abstract class clean {
 
     }
 
-
     /*
-     * 
+     *
      *
      */
-    static private function update_status($taskname, $itemno, $total) {
+    static protected function update_status($taskname, $itemno, $total) {
+
+        $perc = $itemno * 100 / $total;
+
+        printf (" %-20s %4d%% (%d/%d) \n", $taskname, $perc, $itemno, $total);
 
     }
 }
