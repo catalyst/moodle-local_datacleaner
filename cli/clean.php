@@ -29,11 +29,18 @@
 //
 
 define('CLI_SCRIPT', true);
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->libdir.'/adminlib.php');
+require dirname(dirname(dirname(dirname(__FILE__)))).'/config.php';
+require_once $CFG->libdir.'/clilib.php';
+require_once $CFG->libdir.'/adminlib.php';
 
-function print_message($text, $highlight = false) {
+/**
+ * Print a message to the terminal.
+ *
+ * @param string $text      The text to print.
+ * @param bool   $highlight Whether to add highlighting.
+ */
+function print_message($text, $highlight = false)
+{
     $highlight_start = "\033[1m";
     $highlight_end = "\033[0m";
 
@@ -44,7 +51,14 @@ function print_message($text, $highlight = false) {
     }
 }
 
-function abort_message($text, $highlight = false) {
+/**
+ * Print a message about aborting.
+ *
+ * @param string $text      The text to print.
+ * @param bool   $highlight Whether to highlight the text.
+ */
+function abort_message($text, $highlight = false)
+{
     static $have_run = false;
 
     if (!$have_run) {
@@ -56,8 +70,10 @@ function abort_message($text, $highlight = false) {
 }
 
 // Now get cli options.
-list($options, $unrecognized) = cli_get_params(array('help' => false, 'force' => false),
-                                               array('h' => 'help'));
+list($options, $unrecognized) = cli_get_params(
+    array('help' => false, 'force' => false),
+    array('h' => 'help')
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -83,7 +99,8 @@ Example:
  *
  * Make sure it's safe for us to continue. Don't wash prod!
  */
-function safety_checks() {
+function safety_checks()
+{
     global $CFG, $DB;
 
     $will_die = false;
