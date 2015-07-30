@@ -1,4 +1,7 @@
 
+* uninstall sub plugins, remove all config
+
+
 * Add global enable / disbale of data cleaner - saves prod host name
 * Store it in a way so it can't be accidentally search and replaced in another env
 
@@ -11,5 +14,15 @@
 * site data
 
 * event queues
+
+
+USER TASK:
+
+random username
+clean password - config item of what new universal password should be
+randomize email - config item of email template eg {id}@example.com - gets swapped to internal moodle id of user
+remote avatar - set to some random image,
+remove preferences -
+randomize names - set in batches of 100
 
 

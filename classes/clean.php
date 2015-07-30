@@ -27,12 +27,18 @@ use core\base;
 defined('MOODLE_INTERNAL') || die();
 
 abstract class clean {
-    static $status = '';
-    static $percent = 0;
 
     static public function execute() {
+
     }
 
-    static public function get_status() {
+
+    /*
+     * 
+     *
+     */
+    static private function update_status($taskname, $itemno, $total) {
+
     }
 }
+
