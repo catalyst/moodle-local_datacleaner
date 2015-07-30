@@ -34,7 +34,7 @@ require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->libdir.'/adminlib.php');
 
 function print_message($text, $highlight = false) {
-    $highlight_start = "\033[0;31m\033[47m";
+    $highlight_start = "\033[1m";
     $highlight_end = "\033[0m";
 
     if ($highlight) {
