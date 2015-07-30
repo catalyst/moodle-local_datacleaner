@@ -55,10 +55,10 @@ Example:
     die;
 }
 
-$plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_priority();
+$plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
 
 if (!$plugins) {
-    echo "No cleaner plugins enabled\n";
+    echo get_string('noplugins', 'local_datacleaner') . "\n";
     exit;
 }
 

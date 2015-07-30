@@ -32,6 +32,6 @@ $string['info'] = '<p>You can configure what and how data will be cleaned after 
 'Several checks are performed to ensure that this cannot be run on the production environment.</p>';
 $string['manage'] = 'Manage cleaning tasks';
 $string['notes'] = 'Notes';
-$string['priority'] = 'Priority';
+$string['sortorder'] = 'Sort order';
 $string['noplugins'] = 'No data cleansing plugins found.';
 $string['progress'] = 'Progress';

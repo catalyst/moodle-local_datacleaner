@@ -29,5 +29,5 @@ $plugin->release   = '2.3.2';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
 $plugin->component = 'cleaner_users';
-$plugin->priority = 10;
+$plugin->sortorder = 80;
 

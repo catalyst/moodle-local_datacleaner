@@ -38,48 +38,42 @@ class cleaner extends base {
     }
 
     /**
-     * Get a list of enabled plugins.
+     * Get enabled plugins, sorted by sortorder
+     *
+     * @return array Enabled plugins, sorted by sortorder
      */
-    static public function get_enabled_plugins() {
-        global $DB;
-        $where = $DB->sql_compare_text('plugin') . " LIKE ? AND " . $DB->sql_compare_text('name') . " = ? AND value = ? ";
-        $params = array('cleaner_%', 'enabled', 1);
-        $results = $DB->get_records_select_menu('config_plugins', $where, $params, 'plugin ASC', 'plugin, plugin AS val');
-        // Strip 'cleaner_' from the front.
-        $final = array();
-        foreach ($results as $result) {
-            $key = substr($result, 8);
-            $final[$key] = $key;
+    static public function get_plugins_by_sortorder() {
+
+        $fileinfo = \core_plugin_manager::instance()->get_present_plugins('cleaner');
+        $plugins = \core_plugin_manager::instance()->get_plugins_of_type('cleaner');
+
+        foreach ($plugins as $name => $plugin) {
+            if (isset($fileinfo[$name])) {
+                $plugin->sortorder = $fileinfo[$name]->sortorder;
+            }
         }
-        return $final;
+        usort($plugins, function($a, $b) {
+            return $a->sortorder - $b->sortorder;
+        });
+
+        return $plugins;
     }
 
     /**
-     * Get enabled plugins, sorted by priority
+     * Get enabled plugins, sorted by sort order
      *
-     * @return array Enabled plugins, sorted by priority
+     * @return array Enabled plugins, sorted by sort order
      */
-    static public function get_enabled_plugins_by_priority() {
-        $fileinfo = \core_plugin_manager::instance()->get_present_plugins('cleaner');
-        $versions = \core_plugin_manager::instance()->get_plugins_of_type('cleaner');
-        $enabled = self::get_enabled_plugins();
+    static public function get_enabled_plugins_by_sortorder() {
 
-        $grouped = array();
-        foreach ($enabled as $one) {
-            $priority = $fileinfo[$one]->priority;
-            $groups[$priority][] = $versions[$one];
-        }
+        $plugins = self::get_plugins_by_sortorder();
 
-        // Sort.
-        sort($groups, SORT_NUMERIC);
+        // Filter only enabled ones.
+        $plugins = array_filter($plugins, function($plugin) {
+            return $plugin->enabled();
+        });
 
-        // Flatten.
-        $final = array();
-        foreach ($groups as $group) {
-            $final = array_merge($final, $group);
-        }
-
-        return $final;
+        return $plugins;
     }
 
     /**
@@ -150,13 +144,6 @@ class cleaner extends base {
             return new \moodle_url('/admin/settings.php', array('section' => $this->get_settings_section_name()));
         }
         return null;
-    }
-
-    /*
-     *
-     */
-    public function get_priority() {
-        return 5;
     }
 
 }

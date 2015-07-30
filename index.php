@@ -59,10 +59,12 @@ echo $OUTPUT->heading($strmanage);
 
 // Main display starts here.
 
-$plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
+$plugins = \local_datacleaner\plugininfo\cleaner::get_plugins_by_sortorder();
 
 if (!$plugins) {
-    print_error('noplugins', 'error');  // Should never happen.
+    echo get_string('noplugins', 'local_datacleaner');
+    echo $OUTPUT->footer();
+    exit;
 }
 
 // Print the table of all subplugins.
@@ -72,13 +74,11 @@ $table->head = array(
     get_string('enabledisable', 'local_datacleaner'),
     get_string('name'),
     get_string('plugin'),
-    get_string('priority', 'local_datacleaner'),
+    get_string('sortorder', 'local_datacleaner'),
     get_string('settings'),
 );
 $table->attributes['class'] = 'admintable generaltable';
 $data = array();
-
-$plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
 
 
 foreach ($plugins as $plugin) {
@@ -101,7 +101,7 @@ foreach ($plugins as $plugin) {
                 $visible,
                 $plugin->displayname,
                 $plugin->name,
-                $plugin->get_priority(),
+                $plugin->sortorder,
                 $settings,
                 // TODO relates to core or plugin?
     ));
