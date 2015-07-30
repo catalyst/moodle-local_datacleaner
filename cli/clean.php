@@ -34,19 +34,19 @@ require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->libdir.'/adminlib.php');
 
 function print_message($text, $highlight = false) {
-    $highlight_start = "\033[0;31m\033[47m";
-    $highlight_end = "\033[0m";
+    $highlightstart = "\033[0;31m\033[47m";
+    $highlightend = "\033[0m";
 
     if ($highlight) {
-        echo "{$highlight_start}{$text}{$highlight_end}\n";
+        echo "{$highlightstart}{$text}{$highlightend}\n";
     } else {
         echo $text;
     }
 }
 
-// now get cli options
-list($options, $unrecognized) = cli_get_params(array('help'=>false,'force'=>false),
-                                               array('h'=>'help'));
+// Now get cli options.
+list($options, $unrecognized) = cli_get_params(array('help' => false, 'force' => false),
+                                               array('h' => 'help'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -72,8 +72,7 @@ Example:
  *
  * Make sure it's safe for us to continue. Don't wash prod!
  */
-function safety_checks()
-{
+function safety_checks() {
     global $CFG, $DB;
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
@@ -87,7 +86,7 @@ function safety_checks()
     }
 
     // 2. Non admins logged in recently? Same logic as online users block.
-    $timetoshowusers = 300; //Seconds default
+    $timetoshowusers = 300; // Seconds default.
     $minutes = $timetoshowusers / 60;
     $now = time();
     $timefrom = $now - $timetoshowusers; // Unlike original code, don't care about caches for this.
@@ -100,9 +99,9 @@ function safety_checks()
                 AND u.deleted = 0";
 
     if ($usercount = $DB->count_records_sql($csql, $params)) {
-        $name_fields = "u." . implode(', u.', get_all_user_name_fields());
+        $namefields = "u." . implode(', u.', get_all_user_name_fields());
 
-        $sql = "SELECT u.id, u.username, {$name_fields}
+        $sql = "SELECT u.id, u.username, {$namefields}
                   FROM {user} u
                  WHERE u.lastaccess > :timefrom
                    AND u.lastaccess <= :now
@@ -137,7 +136,7 @@ if ($options['force']) {
     safety_checks();
 }
 
-// Get and sort the existing plugins
+// Get and sort the existing plugins.
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
 
 if (!$plugins) {

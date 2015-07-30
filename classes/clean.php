@@ -59,7 +59,7 @@ abstract class clean {
         }
 
         // If first status record time stamp
-        // Do calculation of ETA based on first status
+        // Do calculation of ETA based on first status.
 
         printf (" %-20s %4d%% (%d/%d)    $timeleft\n", $taskname, $perc, $itemno, $total);
 
