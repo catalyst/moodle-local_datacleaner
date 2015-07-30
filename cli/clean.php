@@ -143,6 +143,17 @@ function safety_checks()
         }
     }
 
+    // 3. Has cron run recently?
+    $last_run = -1;
+    if ($CFG->version >= 2014051207) {
+        $last_run = $DB->get_field_sql("SELECT MAX(lastruntime) FROM {task_scheduled}");
+    }
+
+    if ($last_run > $timefrom) {
+        abort_message("Aborting because cron has run within the last {$minutes} minutes.", true);
+        $will_die = true;
+    }
+
     if ($will_die) {
         die();
     }
