@@ -67,20 +67,21 @@ Example:
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_priority();
 
 if (!$plugins) {
-    print_error('noplugins', 'error');  // Should never happen
+    echo "No cleaner plugins enabled\n";
+    exit;
 }
 
 foreach ($plugins as $plugin) {
     // Get the class that does the work.
     $classname = 'cleaner_' . $plugin->name . '\clean';
 
+    echo "== Running {$plugin->name} cleaner ==\n";
     if (!class_exists($classname)) {
-        echo "Unable to locate {$plugin->name} class. Skipping.\n";
+        echo "ERROR: Unable to locate local/datacleaner/cleaner/{$plugin->name}/classes/clean.php class. Skipping.\n";
         continue;
     }
 
     $class = new $classname;
-    echo "Invoking {$plugin->name} cleaner.\n";
     $class->execute();
 }
 
