@@ -88,7 +88,7 @@ foreach ($plugins as $plugin) {
 
     $settings = $plugin->get_settings_section_url();
     if (!is_null($settings)) {
-        $settings = html_writer::link('/admin/settings.php?section=' . $settings, $strsettings);
+        $settings = html_writer::link($settings, $strsettings);
     }
 
     if ($plugin->enabled()) {
