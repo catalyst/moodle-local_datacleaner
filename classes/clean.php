@@ -28,19 +28,40 @@ defined('MOODLE_INTERNAL') || die();
 
 abstract class clean {
 
+    private static $tasks = array(); // For storing task start times.
+
     static public function execute() {
 
     }
 
     /*
+     * $taskname String A unique name for a cleaning task
      *
-     *
+     * SHOULD be called at the start with an itemno of 0?
      */
     static protected function update_status($taskname, $itemno, $total) {
 
         $perc = $itemno * 100 / $total;
 
-        printf (" %-20s %4d%% (%d/%d) \n", $taskname, $perc, $itemno, $total);
+        $eta = null;
+        $delta = null;
+        $now = time();
+        $start = null;
+        $timeleft = null;
+        if (isset(self::$tasks[$taskname])) {
+
+            $start = self::$tasks[$taskname];
+            $eta = ($now - $start) * $total / $itemno + $start;
+            $timeleft = ($eta - $now) . ' seconds remaining';
+
+        } else {
+            self::$tasks[$taskname] = time();
+        }
+
+        // If first status record time stamp
+        // Do calculation of ETA based on first status
+
+        printf (" %-20s %4d%% (%d/%d)    $timeleft\n", $taskname, $perc, $itemno, $total);
 
     }
 }

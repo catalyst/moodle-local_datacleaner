@@ -1,12 +1,6 @@
 
 * uninstall sub plugins, remove all config
 
-
-* Add global enable / disbale of data cleaner - saves prod host name
-* Store it in a way so it can't be accidentally search and replaced in another env
-
-* show in order
-
 * delete courses
 * delete users
 * grades
