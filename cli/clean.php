@@ -75,10 +75,14 @@ foreach ($plugins as $plugin) {
     $classname = 'cleaner_' . $plugin->name . '\clean';
 
     if (!class_exists($classname)) {
+        echo "Unable to locate {$plugin->name} class. Skipping.\n";
         continue;
     }
 
     $class = new $classname;
+    echo "Invoking {$plugin->name} cleaner.\n";
     $class->execute();
 }
+
+echo "Done.\n";
 
