@@ -29,12 +29,19 @@
 //
 
 define('CLI_SCRIPT', true);
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->libdir.'/adminlib.php');
+require dirname(dirname(dirname(dirname(__FILE__)))).'/config.php';
+require_once $CFG->libdir.'/clilib.php';
+require_once $CFG->libdir.'/adminlib.php';
 
-function print_message($text, $highlight = false) {
-    $highlightstart = "\033[0;31m\033[47m";
+/**
+ * Print a message to the terminal.
+ *
+ * @param string $text      The text to print.
+ * @param bool   $highlight Whether to add highlighting.
+ */
+function print_message($text, $highlight = false)
+{
+    $highlightstart = "\033[1m";
     $highlightend = "\033[0m";
 
     if ($highlight) {
@@ -44,9 +51,29 @@ function print_message($text, $highlight = false) {
     }
 }
 
+/**
+ * Print a message about aborting.
+ *
+ * @param string $text      The text to print.
+ * @param bool   $highlight Whether to highlight the text.
+ */
+function abort_message($text, $highlight = false)
+{
+    static $have_run = false;
+
+    if (!$have_run) {
+        print_message("Aborting for the following reason(s):\n");
+        $have_run = true;
+    }
+
+    print_message($text, $highlight);
+}
+
 // Now get cli options.
-list($options, $unrecognized) = cli_get_params(array('help' => false, 'force' => false),
-                                               array('h' => 'help'));
+list($options, $unrecognized) = cli_get_params(
+    array('help' => false, 'force' => false),
+    array('h' => 'help')
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -72,8 +99,11 @@ Example:
  *
  * Make sure it's safe for us to continue. Don't wash prod!
  */
-function safety_checks() {
+function safety_checks()
+{
     global $CFG, $DB;
+
+    $will_die = false;
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
     $saved = $CFG->original_wwwroot;
@@ -81,8 +111,8 @@ function safety_checks() {
     if (empty($saved)) {
         print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
     } else if ($CFG->wwwroot == $saved) {
-        print_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
-        die();
+        abort_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
+        $will_die = true;
     }
 
     // 2. Non admins logged in recently? Same logic as online users block.
@@ -123,10 +153,25 @@ function safety_checks() {
         }
 
         if ($nonadmins) {
-            print_message($message);
-            print_message("Aborting because there are non site-administrators in the list.\n", true);
-            die();
+            abort_message($message);
+            abort_message("Aborting because there are non site-administrators in the list of recent users.", true);
+            $will_die = true;
         }
+    }
+
+    // 3. Has cron run recently?
+    $last_run = -1;
+    if ($CFG->version >= 2014051207) {
+        $last_run = $DB->get_field_sql("SELECT MAX(lastruntime) FROM {task_scheduled}");
+    }
+
+    if ($last_run > $timefrom) {
+        abort_message("Aborting because cron has run within the last {$minutes} minutes.", true);
+        $will_die = true;
+    }
+
+    if ($will_die) {
+        die();
     }
 }
 
