@@ -76,9 +76,11 @@ $table = new html_table();
 $table->head = array(
     get_string('enabledisable', 'local_datacleaner'),
     get_string('name'),
-    get_string('plugin'),
-    get_string('sortorder', 'local_datacleaner'),
     get_string('settings'),
+    get_string('plugin'),
+    get_string('version'),
+    get_string('sortorder', 'local_datacleaner'),
+    get_string('uninstallplugin', 'core_admin'),
 );
 $table->attributes['class'] = 'admintable generaltable';
 $data = array();
@@ -100,12 +102,20 @@ foreach ($plugins as $plugin) {
         $class = 'dimmed_text';
     }
 
+    $uninstall = '';
+    if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('cleaner_'.$plugin->name, 'manage')) {
+        $uninstall = html_writer::link($uninstallurl, get_string('uninstallplugin', 'core_admin'));
+    }
+    // $uninstall = $plugin->get_uninstall_url();
+
     $row = new html_table_row(array(
                 $visible,
                 $plugin->displayname,
-                $plugin->name,
-                $plugin->sortorder,
                 $settings,
+                $plugin->name,
+                $plugin->versiondb,
+                $plugin->sortorder,
+                $uninstall,
                 // TODO relates to core or plugin?
     ));
 
