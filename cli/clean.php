@@ -39,6 +39,17 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');      // cli only functions
 require_once($CFG->libdir.'/adminlib.php');
 
+function print_message($text, $highlight = false) {
+    $highlight_start = "\033[0;31m\033[47m";
+    $highlight_end = "\033[0m";
+
+    if ($highlight) {
+        echo "{$highlight_start}{$text}{$highlight_end}\n";
+    } else {
+        echo $text;
+    }
+}
+
 // now get cli options
 list($options, $unrecognized) = cli_get_params(array('help'=>false),
                                                array('h'=>'help'));
