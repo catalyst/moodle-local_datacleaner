@@ -171,7 +171,7 @@ function safety_checks()
     }
 
     if ($will_die) {
-        die();
+        exit(1);
     }
 }
 
