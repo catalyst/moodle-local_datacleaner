@@ -156,9 +156,29 @@ class clean extends \local_datacleaner\clean {
 
         self::update_status(self::TASK, 0, 5);
 
+        // Get the settings, handling the case where new ones (dev) haven't been set yet.
+        $config = get_config('cleaner_users');
+
+        $interval = isset($config->minimumage) ? $config->minimumage : 365;
+        $keepsiteadmins = isset($config->keepsiteadmins) ? $config->keepsiteadmins : true;
+        $keepuids = trim(isset($config->keepuids) ? $config->keepuids : "");
+
+        // Build the array of ids to keep.
+        $keepuids = empty($keepuids) ? array() : explode(',', $keepuids);
+
+        if ($keepsiteadmins) {
+            $keepuids = array_merge($keepuids, explode(',', $CFG->siteadmins));
+        }
+
+        // Build the array of criteria.
         $criteria = array();
-        $criteria['timestamp'] = time();
-        $criteria['ignored'] = explode(',', $CFG->siteadmins);
+        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
+
+        if (!empty($keepuids)) {
+            $criteria['ignored'] = $keepuids;
+        }
+
+        // Any users need undeleting before we properly delete them?
         $criteria['deleted'] = true;
         $users = self::get_users($criteria);
 
@@ -166,9 +186,13 @@ class clean extends \local_datacleaner\clean {
         self::undelete_users($users);
 
         unset($criteria['deleted']);
+
+        // Get on with the real work!
         $users = self::get_users($criteria);
         self::delete_users($users);
 
         self::update_status(self::TASK, 5, 5);
+
+        echo 'Deleted ' . count($users) . " users.\n";
     }
 }
