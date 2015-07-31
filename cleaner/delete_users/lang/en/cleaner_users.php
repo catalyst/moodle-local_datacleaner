@@ -15,20 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_courses
+ * Language strings
+ *
+ * @package    cleaner_delete_users
  * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ * @author     Nigel Cunningham
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+$string['pluginname'] = 'Delete Users';
+$string['minimumage'] = 'Minimum age';
+$string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';
+$string['keepsiteadmins'] = 'Keep site admins';
+$string['keepsiteadminsdesc'] = 'Tick to retain site administrator accounts.';
+$string['keepuids'] = 'Non site administrator UIDs';
+$string['keepuidsdesc'] = 'A comma separated list of non site administrator UIDs that should be retained.';
 
-if (!$ADMIN->fulltree) {
-    return;
-}
-
-$settings->add(new admin_setting_configcheckbox('cleaner_users/keepsiteadmins', new lang_string('keepsiteadmins', 'cleaner_users'),
-            new lang_string('keepsiteadminsdesc', 'cleaner_users'), 1));
-
-$settings->add(new admin_setting_configtext('cleaner_users/keepuids', new lang_string('keepuids', 'cleaner_users'),
-            new lang_string('keepuidsdesc', 'cleaner_users'), '', PARAM_SEQUENCE));

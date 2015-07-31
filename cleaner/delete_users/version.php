@@ -15,20 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_courses
+ * Version details.
+ *
+ * @package    cleaner_delete_users
  * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ * @author     Nigel Cunningham
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-if (!$ADMIN->fulltree) {
-    return;
-}
+$plugin->version   = 2015072200;
+$plugin->release   = '2.3.2';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
+$plugin->component = 'cleaner_delete_users';
+$plugin->sortorder = 5;
 
-$settings->add(new admin_setting_configcheckbox('cleaner_users/keepsiteadmins', new lang_string('keepsiteadmins', 'cleaner_users'),
-            new lang_string('keepsiteadminsdesc', 'cleaner_users'), 1));
-
-$settings->add(new admin_setting_configtext('cleaner_users/keepuids', new lang_string('keepuids', 'cleaner_users'),
-            new lang_string('keepuidsdesc', 'cleaner_users'), '', PARAM_SEQUENCE));
