@@ -25,14 +25,26 @@ namespace cleaner_users;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
+    const TASK = 'Removing old users';
+
     /**
-     * Return the ID for an item.
+     * Undelete a group of users
      *
-     * @param  object item The item from which to return the ID.
-     * @return int    id   The item id.
+     * There's an undelete_user function in Totara, but it only does one user at a time and
+     * fires events that we don't care about.
+     *
+     * @param array $users Users who need to have their delete flag reset.
      */
-    protected static function get_item_id($item) {
-        return $item->id;
+    protected static function undelete_users(array $users) {
+        global $DB;
+
+        if (empty($users)) {
+            return;
+        }
+
+        $userids = array_keys($users);
+        list($sql, $params) = $DB->get_in_or_equal($userids);
+        $DB->set_field_select('user', 'deleted', 0, 'id ' . $sql, $params);
     }
 
     /**
@@ -42,20 +54,17 @@ class clean extends \local_datacleaner\clean {
      *
      * @param array $users User IDs to delete.
      */
-    private function delete_users(array $users) {
+    private static function delete_users(array $users) {
         global $DB;
 
         if (empty($users)) {
             return;
         }
 
-        foreach ($users as $user) {
-            delete_user($user);
-        }
-
         // Clean up Assignment stuff.
-        $userids = array_map(self::get_item_id, $users);
+        $userids = array_keys($users);
         list($userinequal, $userparams) = $DB->get_in_or_equal($userids);
+        $userinequal = 'userid ' . $userinequal;
 
         $submissions = $DB->get_fieldset_select("assign_submission", "id", $userinequal, $userparams);
         if (!empty($submissions)) {
@@ -64,9 +73,11 @@ class clean extends \local_datacleaner\clean {
             $DB->delete_records_list('assignsubmission_onlinetext', 'submission', $submissions);
         }
 
+        self::update_status(self::TASK, 2, 5);
+
         $DB->delete_records_list('assign_submission', 'userid', $userids);
 
-        $grades = $DB->get_fieldset_select("assign_grades", "userid", $userinequal, $userparams);
+        $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
         if (!empty($grades)) {
             $DB->delete_records_list('assignfeedback_comments', 'grade', $grades);
             // TODO: Actually delete the files.
@@ -74,15 +85,29 @@ class clean extends \local_datacleaner\clean {
             $DB->delete_records_list('assignfeedback_editpdf_annot', 'gradeid', $grades);
             $DB->delete_records_list('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
         }
+
+        self::update_status(self::TASK, 3, 5);
+
         $DB->delete_records_list('assign_grades', 'userid', $userids);
         $DB->delete_records_list('assign_user_flags', 'userid', $userids);
         $DB->delete_records_list('assign_user_mapping', 'userid', $userids);
         $DB->delete_records_list('assignfeedback_editpdf_quick', 'userid', $userids);
-        // Clean up local messages.
-        $DB->delete_records_list('local_messages_sent', 'userid', $userids);
-        // Clean up leaderboard.
-        $DB->delete_records_list('block_leaderboard_data', 'userid', $userids);
-        $DB->delete_records_list('block_leaderboard_points', 'userid', $userids);
+
+        // Clean up other tables that might be around and need it.
+        $dbman = $DB->get_manager();
+
+        foreach (array('local_messages_sent', 'block_leaderboard_data', 'block_leaderboard_points') as $table) {
+            if ($dbman->table_exists($table)) {
+                $DB->delete_records_list($table, 'userid', $userids);
+            }
+        }
+
+        self::update_status(self::TASK, 4, 5);
+
+        foreach ($users as $user) {
+            delete_user($user);
+        }
+
         // Finally clean up user table.
         $DB->delete_records_list('user', 'id', $userids);
 
@@ -92,26 +117,58 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
+     * Get an array of user objects meeting the criteria provided
+     *
+     * @param  array $criteria An array of criteria to apply.
+     * @return array $result   The array of matching user objects.
+     */
+    private static function get_users($criteria = array()) {
+        global $DB;
+
+        $extrasql = '';
+        $params = array();
+
+        if (isset($criteria['timestamp'])) {
+            $extrasql = ' AND lastaccess < :timestamp ';
+            $params['timestamp'] = $criteria['timestamp'];
+        }
+
+        if (isset($criteria['ignored'])) {
+            list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored'], SQL_PARAMS_NAMED, 'userid_', false);
+            $extrasql .= ' AND id ' . $newextrasql;
+            $params = array_merge($params, $extraparams);
+        }
+
+        if (isset($criteria['deleted'])) {
+            $extrasql .= ' AND deleted = :deleted ';
+            $params['deleted'] = $criteria['deleted'];
+        }
+
+        return $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
+    }
+
+    /**
      * Do the hard work of cleaning up users.
      */
     static public function execute() {
 
-        global $DB;
+        global $DB, $CFG;
 
-        $task = 'Removing old users';
+        self::update_status(self::TASK, 0, 5);
 
-        self::update_status($task, 0, 5);
-        sleep(1);
-        self::update_status($task, 1, 5);
-        sleep(1);
-        self::update_status($task, 2, 5);
-        sleep(1);
-        self::update_status($task, 3, 5);
-        sleep(1);
-        self::update_status($task, 4, 5);
-        sleep(1);
-        self::update_status($task, 5, 5);
+        $criteria = array();
+        $criteria['timestamp'] = time();
+        $criteria['ignored'] = explode(',', $CFG->siteadmins);
+        $criteria['deleted'] = true;
+        $users = self::get_users($criteria);
 
+        self::update_status(self::TASK, 1, 5);
+        self::undelete_users($users);
+
+        unset($criteria['deleted']);
+        $users = self::get_users($criteria);
+        self::delete_users($users);
+
+        self::update_status(self::TASK, 5, 5);
     }
 }
-
