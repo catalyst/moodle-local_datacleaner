@@ -73,8 +73,6 @@ class clean extends \local_datacleaner\clean {
             $DB->delete_records_list('assignsubmission_onlinetext', 'submission', $submissions);
         }
 
-        self::update_status(self::TASK, 2, 5);
-
         $DB->delete_records_list('assign_submission', 'userid', $userids);
 
         $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
@@ -85,8 +83,6 @@ class clean extends \local_datacleaner\clean {
             $DB->delete_records_list('assignfeedback_editpdf_annot', 'gradeid', $grades);
             $DB->delete_records_list('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
         }
-
-        self::update_status(self::TASK, 3, 5);
 
         $DB->delete_records_list('assign_grades', 'userid', $userids);
         $DB->delete_records_list('assign_user_flags', 'userid', $userids);
@@ -102,11 +98,24 @@ class clean extends \local_datacleaner\clean {
             }
         }
 
-        self::update_status(self::TASK, 4, 5);
+        // This transaction is purely for speed, hence the committing in the middle of the loop.
+        $transaction = $DB->start_delegated_transaction();
+
+        $index = 0;
+        $numusers = count($users);
+        $steps = max($numusers / 20, 5);
+        $interval = $numusers / $steps;
 
         foreach ($users as $user) {
             delete_user($user);
+
+            $index ++;
+            if (!($index % $interval)) {
+                self::update_status(self::TASK, $index, $numusers);
+            }
         }
+
+        $transaction->allow_commit();
 
         // Finally clean up user table.
         $DB->delete_records_list('user', 'id', $userids);
@@ -154,8 +163,6 @@ class clean extends \local_datacleaner\clean {
 
         global $DB, $CFG;
 
-        self::update_status(self::TASK, 0, 5);
-
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_users');
 
@@ -182,16 +189,21 @@ class clean extends \local_datacleaner\clean {
         $criteria['deleted'] = true;
         $users = self::get_users($criteria);
 
-        self::update_status(self::TASK, 1, 5);
         self::undelete_users($users);
 
         unset($criteria['deleted']);
 
         // Get on with the real work!
         $users = self::get_users($criteria);
-        self::delete_users($users);
+        $numusers = count($users);
 
-        self::update_status(self::TASK, 5, 5);
+        if ($numusers) {
+            self::update_status(self::TASK, 0, $numusers);
+
+            self::delete_users($users);
+
+            self::update_status(self::TASK, $numusers, $numusers);
+        }
 
         echo 'Deleted ' . count($users) . " users.\n";
     }
