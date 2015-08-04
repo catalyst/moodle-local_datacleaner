@@ -66,7 +66,7 @@ class clean extends \local_datacleaner\clean {
     // - name fields
     // - city, country and timezone
     private static $SCRAMBLE = array(
-        'usernames' => array('username'),
+        /* 'usernames' => array('username'), */
         'idnumbers' => array('idnumber'),
         'name fields' => array('firstname', 'lastname'),
         'department' => array('institution', 'department'),
@@ -104,7 +104,7 @@ class clean extends \local_datacleaner\clean {
             $params['deleted'] = $criteria['deleted'];
         }
 
-        return $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
+        return $DB->get_records_select_menu('user', 'id > 2 ' . $extrasql, $params, '', 'id, id');
     }
 
     /**
@@ -125,14 +125,15 @@ class clean extends \local_datacleaner\clean {
 
         // Pick the rows to use.
         if (count($available_users > 50)) {
-            $picked_users = array_rand($users);
+            $picked_users = array_rand($users, 50);
         }
         else {
             $picked_users = $available_users;
         }
 
         // Get data for picked users.
-        $data = $DB->get_records_select('users', 'id', $picked_users);
+        $data = $DB->get_records_list('user', 'id', $picked_users);
+        $data = array_values($data);
 
         // We want to do this quickly, so we first figure out what values will be used for each
         // record, then do set_field_select for the records that will receive each value.
@@ -140,15 +141,15 @@ class clean extends \local_datacleaner\clean {
 
         $mappings = array();
 
-        foreach($users as $uid) {
-            $mappings[rand(0, 49)] = $uid;
+        foreach($users as $uid => $user) {
+            $mappings[rand(0, 49)][] = $uid;
         }
 
         // @TODO: Can I make this into a smaller number of queries that will work with either PGSql or MySQL?
         foreach($mappings as $id => $uids) {
             list($sql, $params) = $DB->get_in_or_equal($uids);
             foreach($fields as $field) {
-                $DB->set_field_select('user', $field, $data[$id]->$field, ' WHERE uid ' . $sql, $params);
+                $DB->set_field_select('user', $field, $data[$id]->$field, 'id ' . $sql, $params);
             }
         }
     }
@@ -202,7 +203,7 @@ class clean extends \local_datacleaner\clean {
         // Apply the fixed values
         list($sql, $params) = $DB->get_in_or_equal($users);
         foreach (self::$FIXED_MODS as $field => $value) {
-            $DB->set_field_select('user', $field, $value, 'WHERE ' . $sql, $params);
+            $DB->set_field_select('user', $field, $value, $sql, $params);
             self::update_status(self::TASK, $thisstep, $num_steps);
             $thisstep++;
         }
