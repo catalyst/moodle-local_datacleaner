@@ -1,0 +1,12 @@
+
+
+* config item: course category to keep (probably best bang for buck)
+* config item: course category to throw away?
+* white list of course shortcodes to always keep
+* don't kill course = 1! :)
+
+This is either a potentially slowish ansi sql or maybe do per DB custom sql
+
+
+
+
