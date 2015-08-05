@@ -68,7 +68,8 @@ class clean extends \local_datacleaner\clean {
     private static $scramble = array(
         /* 'usernames' => array('username'), */
         'idnumbers' => array('idnumber'),
-        'name fields' => array('firstname', 'lastname'),
+        'firstname fields' => array('firstname'),
+        'surname fields' => array('lastname'),
         'department' => array('institution', 'department'),
         'address' => array('address', 'city', 'country', 'lang', 'calendartype', 'timezone')
     );
