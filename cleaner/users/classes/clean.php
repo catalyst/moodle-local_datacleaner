@@ -34,11 +34,11 @@ class clean extends \local_datacleaner\clean {
     // - Email address undeliverable
     // - Emailstop on
     // - Clear firstaccess, lastaccess, lastlogin, currentlogin, picture, description  and lastip
-    // - Empty other contact details
+    // - Empty other contact details.
 
     const PASS = 'F4k3p3s5w0rD%';
 
-    private static $FIXED_MODS = array(
+    private static $fixedmods = array(
         'auth' => 'manual',
         'mnethostid' => 1,
         'password' => '',
@@ -64,8 +64,8 @@ class clean extends \local_datacleaner\clean {
     // - usernames
     // - idnumbers
     // - name fields
-    // - city, country and timezone
-    private static $SCRAMBLE = array(
+    // - city, country and timezone.
+    private static $scramble = array(
         /* 'usernames' => array('username'), */
         'idnumbers' => array('idnumber'),
         'name fields' => array('firstname', 'lastname'),
@@ -74,7 +74,7 @@ class clean extends \local_datacleaner\clean {
     );
 
     public function __construct() {
-        self::$FIXED_MODS['password'] = hash_internal_user_password(self::PASS);
+        self::$fixedmods['password'] = hash_internal_user_password(self::PASS);
     }
     /**
      * Get an array of user objects meeting the criteria provided
@@ -108,7 +108,7 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Scramble the contents of a field.
+     * scramble the contents of a field.
      *
      * The algorithm is:
      * - Randomly pick up to 50 rows to use as the values for the resulting data (keep memory use lower)
@@ -116,23 +116,23 @@ class clean extends \local_datacleaner\clean {
      * - For each user being scrambled, assign one of the randomised values but never
      *   use the original value of the field.
      *
-     * @param array $users - The UIDS of users who will be modified and from whom data will be selected
-     * @param array $fields - The names of user tables fields that will be changed. More than one means values will be changed together
-     * (ie keep the city, country and timezone making sense together).
+     * @param array $users  - The UIDS of users who will be modified and from whom data will be selected
+     * @param array $fields - The names of user tables fields that will be changed. More than one means
+     *                        values will be changed together  (ie keep the city, country and timezone
+     *                        making sense together).
      */
     static public function randomise_fields($users = array(), $fields = array()) {
         global $DB;
 
         // Pick the rows to use.
-        if (count($available_users > 50)) {
-            $picked_users = array_rand($users, 50);
-        }
-        else {
-            $picked_users = $available_users;
+        if (count($availableusers > 50)) {
+            $pickedusers = array_rand($users, 50);
+        } else {
+            $pickedusers = $availableusers;
         }
 
         // Get data for picked users.
-        $data = $DB->get_records_list('user', 'id', $picked_users);
+        $data = $DB->get_records_list('user', 'id', $pickedusers);
         $data = array_values($data);
 
         // We want to do this quickly, so we first figure out what values will be used for each
@@ -141,14 +141,14 @@ class clean extends \local_datacleaner\clean {
 
         $mappings = array();
 
-        foreach($users as $uid => $user) {
+        foreach ($users as $uid => $user) {
             $mappings[rand(0, 49)][] = $uid;
         }
 
-        // @TODO: Can I make this into a smaller number of queries that will work with either PGSql or MySQL?
-        foreach($mappings as $id => $uids) {
+        // TODO: make this into a smaller number of queries that will work with either PGSql or MySQL.
+        foreach ($mappings as $id => $uids) {
             list($sql, $params) = $DB->get_in_or_equal($uids);
-            foreach($fields as $field) {
+            foreach ($fields as $field) {
                 $DB->set_field_select('user', $field, $data[$id]->$field, 'id ' . $sql, $params);
             }
         }
@@ -191,22 +191,22 @@ class clean extends \local_datacleaner\clean {
         }
 
         // Scramble the eggs.
-        $num_steps =  count(self::$FIXED_MODS) + count(self::$SCRAMBLE);
-        self::update_status(self::TASK, 0, $num_steps);
+        $numsteps = count(self::$fixedmods) + count(self::$scramble);
+        self::update_status(self::TASK, 0, $numsteps);
         $thisstep = 1;
-        foreach (self::$SCRAMBLE as $setoffields) {
+        foreach (self::$scramble as $setoffields) {
             self::randomise_fields($users, $setoffields);
-            self::update_status(self::TASK, $thisstep, $num_steps);
+            self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
         }
 
-        // Apply the fixed values
+        // Apply the fixed values.
         list($sql, $params) = $DB->get_in_or_equal($users);
-        foreach (self::$FIXED_MODS as $field => $value) {
+        foreach (self::$fixedmods as $field => $value) {
             $DB->set_field_select('user', $field, $value, $sql, $params);
-            self::update_status(self::TASK, $thisstep, $num_steps);
+            self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
         }
-        self::update_status(self::TASK, $num_steps, $num_steps);
+        self::update_status(self::TASK, $numsteps, $numsteps);
     }
 }
