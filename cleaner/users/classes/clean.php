@@ -208,6 +208,5 @@ class clean extends \local_datacleaner\clean {
             self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
         }
-        self::update_status(self::TASK, $numsteps, $numsteps);
     }
 }
