@@ -27,11 +27,14 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configtext('cleaner_delete_users/minimumage', new lang_string('minimumage', 'cleaner_delete_users'),
+$settings->add(new admin_setting_configtext('cleaner_delete_users/minimumage',
+            new lang_string('minimumage', 'cleaner_delete_users'),
             new lang_string('minimumagedesc', 'cleaner_delete_users'), 365, PARAM_INT));
 
-$settings->add(new admin_setting_configcheckbox('cleaner_delete_users/keepsiteadmins', new lang_string('keepsiteadmins', 'cleaner_delete_users'),
+$settings->add(new admin_setting_configcheckbox('cleaner_delete_users/keepsiteadmins',
+            new lang_string('keepsiteadmins', 'cleaner_delete_users'),
             new lang_string('keepsiteadminsdesc', 'cleaner_delete_users'), 1));
 
-$settings->add(new admin_setting_configtext('cleaner_delete_users/keepuids', new lang_string('keepuids', 'cleaner_delete_users'),
+$settings->add(new admin_setting_configtext('cleaner_delete_users/keepuids',
+            new lang_string('keepuids', 'cleaner_delete_users'),
             new lang_string('keepuidsdesc', 'cleaner_delete_users'), '', PARAM_SEQUENCE));
