@@ -204,9 +204,9 @@ class clean extends \local_datacleaner\clean {
         }
 
         // Apply the fixed values.
-        list($sql, $params) = $DB->get_in_or_equal($users);
+        list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
         foreach (self::$fixedmods as $field => $value) {
-            $DB->set_field_select('user', $field, $value, $field . ' ' . $sql, $params);
+            $DB->set_field_select('user', $field, $value, 'id ' . $sql, $params);
             self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
         }
