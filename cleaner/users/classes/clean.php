@@ -125,10 +125,10 @@ class clean extends \local_datacleaner\clean {
         global $DB;
 
         // Pick the rows to use.
-        if (count($availableusers > 50)) {
+        if (count($users) > 50) {
             $pickedusers = array_rand($users, 50);
         } else {
-            $pickedusers = $availableusers;
+            $pickedusers = $users;
         }
 
         // Get data for picked users.
@@ -175,7 +175,7 @@ class clean extends \local_datacleaner\clean {
 
         // Build the array of criteria.
         $criteria = array();
-        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
+        $criteria['timestamp'] = time() - ($config->minimumage * 24 * 60 * 60);
 
         if (!empty($keepuids)) {
             $criteria['ignored'] = $keepuids;
@@ -194,7 +194,7 @@ class clean extends \local_datacleaner\clean {
         $numsteps = count(self::$fixedmods) + count(self::$scramble);
         self::update_status(self::TASK, 0, $numsteps);
         $thisstep = 1;
-        foreach (self::$scramble as $setoffields) {
+        foreach (self::$scramble as $description => $setoffields) {
             self::randomise_fields($users, $setoffields);
             self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
@@ -203,7 +203,7 @@ class clean extends \local_datacleaner\clean {
         // Apply the fixed values.
         list($sql, $params) = $DB->get_in_or_equal($users);
         foreach (self::$fixedmods as $field => $value) {
-            $DB->set_field_select('user', $field, $value, $sql, $params);
+            $DB->set_field_select('user', $field, $value, $field . ' ' . $sql, $params);
             self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
         }
