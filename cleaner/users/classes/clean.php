@@ -206,7 +206,7 @@ class clean extends \local_datacleaner\clean {
         echo "Scrambling the data of {$numusers} users.\n";
 
         // Scramble the eggs.
-        $numsteps = count(self::$fixedmods) + count(self::$scramble);
+        $numsteps = count(self::$scramble) + 1;
         self::update_status(self::TASK, 0, $numsteps);
         $thisstep = 1;
         foreach (self::$scramble as $description => $setoffields) {
@@ -215,17 +215,16 @@ class clean extends \local_datacleaner\clean {
             $thisstep++;
         }
 
-        // Apply the fixed values.
+        // Apply the fixed values. One step for what remains because this is fast.
         list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
         foreach (self::$fixedmods as $field => $value) {
             $DB->set_field_select('user', $field, $value, 'id ' . $sql, $params);
-            self::update_status(self::TASK, $thisstep, $numsteps);
-            $thisstep++;
         }
 
         // Apply the functions.
         foreach (self::$functions as $field => $fnname) {
             self::$fnname($users);
         }
+        self::update_status(self::TASK, $thisstep, $numsteps);
     }
 }
