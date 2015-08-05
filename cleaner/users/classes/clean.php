@@ -148,7 +148,13 @@ class clean extends \local_datacleaner\clean {
 
         // TODO: make this into a smaller number of queries that will work with either PGSql or MySQL.
         foreach ($mappings as $id => $uids) {
+
+            if (empty($uids)) {
+                continue;
+            }
+
             list($sql, $params) = $DB->get_in_or_equal($uids);
+
             foreach ($fields as $field) {
                 $DB->set_field_select('user', $field, $data[$id]->$field, 'id ' . $sql, $params);
             }
