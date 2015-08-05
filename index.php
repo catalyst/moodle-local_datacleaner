@@ -93,6 +93,7 @@ foreach ($plugins as $plugin) {
         $settings = html_writer::link($settings, $strsettings);
     }
 
+    $class = '';
     if ($plugin->enabled()) {
         $visible = '<a href="index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
             '<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" alt="'.$strdisable.'" /></a>';
@@ -106,7 +107,6 @@ foreach ($plugins as $plugin) {
     if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('cleaner_'.$plugin->name, 'manage')) {
         $uninstall = html_writer::link($uninstallurl, get_string('uninstallplugin', 'core_admin'));
     }
-    // $uninstall = $plugin->get_uninstall_url();
 
     $row = new html_table_row(array(
                 $visible,
@@ -119,11 +119,7 @@ foreach ($plugins as $plugin) {
                 // TODO relates to core or plugin?
     ));
 
-    // TODO is plugin refers to a real plugin which is not installed.
-    $disabled = false;
-    if ($disabled) {
-        $row->attributes['class'] = 'disabled';
-    }
+    $row->attributes['class'] = $class;
     $data[] = $row;
 }
 $table->data = $data;
