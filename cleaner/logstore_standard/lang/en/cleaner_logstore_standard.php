@@ -22,6 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Standard Log store';
+$string['pluginname'] = 'Remove standard logs';
 $string['truncate'] = 'Truncate all standard database logs';
 

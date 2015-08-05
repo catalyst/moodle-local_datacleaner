@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Delete Users';
+$string['pluginname'] = 'Remove users';
 $string['minimumage'] = 'Minimum age';
 $string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';
 $string['keepsiteadmins'] = 'Keep site admins';
