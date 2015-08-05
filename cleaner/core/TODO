@@ -1,5 +1,13 @@
 
+Remove all transient temp core data
+
 * remove event queue backlog
 * remove ad hoc tasks queue
+* remove mdl_message_* queues
+* remove mdl_back_* crap
+* remove mdl_sessions_
+* remove mdl_stats_*
+* mdl_tool_monitor
+* mdl_webdav_locks_
 
 
