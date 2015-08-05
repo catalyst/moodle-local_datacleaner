@@ -177,7 +177,6 @@ class clean extends \local_datacleaner\clean {
 
         // Build the array of criteria.
         $criteria = array();
-        $criteria['timestamp'] = time() - ($config->minimumage * 24 * 60 * 60);
 
         if (!empty($keepuids)) {
             $criteria['ignored'] = $keepuids;
