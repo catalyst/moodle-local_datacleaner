@@ -67,7 +67,6 @@ class clean extends \local_datacleaner\clean {
     // - name fields
     // - city, country and timezone.
     private static $scramble = array(
-        /* 'usernames' => array('username'), */
         'idnumbers' => array('idnumber'),
         'firstname fields' => array('firstname'),
         'surname fields' => array('lastname'),
@@ -75,9 +74,21 @@ class clean extends \local_datacleaner\clean {
         'address' => array('address', 'city', 'country', 'lang', 'calendartype', 'timezone')
     );
 
+    private static $functions = array(
+        'usernames' => 'username_substitution',
+    );
+
     public function __construct() {
         self::$fixedmods['password'] = hash_internal_user_password(self::PASS);
     }
+
+    private static function username_substitution($users = array()) {
+        global $DB;
+
+        list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
+        $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $sql, $params);
+    }
+
     /**
      * Get an array of user objects meeting the criteria provided
      *
@@ -210,6 +221,11 @@ class clean extends \local_datacleaner\clean {
             $DB->set_field_select('user', $field, $value, 'id ' . $sql, $params);
             self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
+        }
+
+        // Apply the functions.
+        foreach (self::$functions as $field => $fnname) {
+            self::$fnname($users);
         }
     }
 }
