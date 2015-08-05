@@ -192,6 +192,8 @@ class clean extends \local_datacleaner\clean {
             return;
         }
 
+        echo "Scrambling the data of {$numusers} users.\n";
+
         // Scramble the eggs.
         $numsteps = count(self::$fixedmods) + count(self::$scramble);
         self::update_status(self::TASK, 0, $numsteps);
