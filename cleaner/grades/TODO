@@ -1,0 +1,11 @@
+
+* config checkbox: remove all grade history
+* config checkbox: randomise grades - easy to do in gradebook but hard in each module?
+ - idea: set to something pseudo random based on the persons user id, or enrolment id
+ eg UPDATE {grade_grade} SET; finalgrade = id % 100, rawgrade = id % 100
+ 
+
+
+
+
+
