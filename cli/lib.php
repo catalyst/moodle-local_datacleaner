@@ -27,8 +27,7 @@
  * @param string $text      The text to print.
  * @param bool   $highlight Whether to add highlighting.
  */
-function print_message($text, $highlight = false)
-{
+function print_message($text, $highlight = false) {
     $highlightstart = "\033[1m";
     $highlightend = "\033[0m";
 
@@ -45,13 +44,12 @@ function print_message($text, $highlight = false)
  * @param string $text      The text to print.
  * @param bool   $highlight Whether to highlight the text.
  */
-function abort_message($text, $highlight = false)
-{
-    static $have_run = false;
+function abort_message($text, $highlight = false) {
+    static $haverun = false;
 
-    if (!$have_run) {
+    if (!$haverun) {
         print_message("Aborting for the following reason(s):\n");
-        $have_run = true;
+        $haverun = true;
     }
 
     print_message($text, $highlight);
@@ -62,11 +60,10 @@ function abort_message($text, $highlight = false)
  *
  * Make sure it's safe for us to continue. Don't wash prod!
  */
-function safety_checks()
-{
+function safety_checks() {
     global $CFG, $DB;
 
-    $will_die = false;
+    $willdie = false;
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
     $saved = $CFG->original_wwwroot;
@@ -75,7 +72,7 @@ function safety_checks()
         print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
     } else if ($CFG->wwwroot == $saved) {
         abort_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
-        $will_die = true;
+        $willdie = true;
     }
 
     // 2. Non admins logged in recently? Same logic as online users block.
@@ -118,22 +115,22 @@ function safety_checks()
         if ($nonadmins) {
             abort_message($message);
             abort_message("Aborting because there are non site-administrators in the list of recent users.", true);
-            $will_die = true;
+            $willdie = true;
         }
     }
 
     // 3. Has cron run recently?
-    $last_run = -1;
+    $lastrun = -1;
     if ($CFG->version >= 2014051207) {
-        $last_run = $DB->get_field_sql("SELECT MAX(lastruntime) FROM {task_scheduled}");
+        $lastrun = $DB->get_field_sql("SELECT MAX(lastruntime) FROM {task_scheduled}");
     }
 
-    if ($last_run > $timefrom) {
+    if ($lastrun > $timefrom) {
         abort_message("Aborting because cron has run within the last {$minutes} minutes.", true);
-        $will_die = true;
+        $willdie = true;
     }
 
-    if ($will_die) {
+    if ($willdie) {
         exit(1);
     }
 }

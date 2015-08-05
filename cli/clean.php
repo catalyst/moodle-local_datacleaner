@@ -20,23 +20,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// Check if host name is prod.
-// Check if cron is running or has run recently.
-// Check last user login.
-// If any of these are true then bail.
-
-// Record time stamps.
-//
-
 define('CLI_SCRIPT', true);
-require dirname(dirname(dirname(dirname(__FILE__)))).'/config.php';
-require_once $CFG->libdir.'/clilib.php';
-require_once $CFG->libdir.'/adminlib.php';
-require_once dirname(__FILE__) . '/lib.php';
+require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once($CFG->libdir.'/clilib.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once(dirname(__FILE__) . '/lib.php');
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
-    array('help' => false, 'force' => false),
+    array(
+        'help' => false,
+        'force' => false,
+        'run' => false,
+        'dryrun' => false,
+    ),
     array('h' => 'help')
 );
 
@@ -45,16 +42,27 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
-if ($options['help']) {
-    $help = "Perform a datawash.
+$help = "Perform a datawash.
+
+To configure this plugin goto $CFG->wwwroot/local/datacleaner/
 
 Options:
--h, --help            Print out this help
+ -h, --help     Print out this help
+     --run      Actually run the clean process
+     --dryrun   Print an overview of what would run
+     --force    Skip all prod detection safety checks
 
 Example:
-\$sudo -u www-data /usr/bin/php local/datacleaner/cli/clean.php
+\$sudo -u www-data /usr/bin/php local/datacleaner/cli/clean.php --run
 ";
 
+if (!$options['run'] &&
+    !$options['dryrun']) {
+    echo $help;
+    die;
+}
+
+if ($options['help']) {
     echo $help;
     die;
 }
@@ -65,12 +73,15 @@ if ($options['force']) {
     safety_checks();
 }
 
-// Get and sort the existing plugins.
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
 
 if (!$plugins) {
     echo get_string('noplugins', 'local_datacleaner') . "\n";
     exit;
+}
+
+if ($options['dryrun']) {
+    echo "=== DRY RUN ===\n";
 }
 
 foreach ($plugins as $plugin) {
@@ -83,8 +94,10 @@ foreach ($plugins as $plugin) {
         continue;
     }
 
-    $class = new $classname;
-    $class->execute();
+    if (!$options['dryrun']) {
+        $class = new $classname;
+        $class->execute();
+    }
 }
 
 echo "Done.\n";
