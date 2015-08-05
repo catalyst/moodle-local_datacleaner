@@ -1,0 +1,6 @@
+
+* remove anything we can, like cache files and tmp dirs where possible
+* This will look for any orphaned files no longer referenced by the DB
+
+
+
