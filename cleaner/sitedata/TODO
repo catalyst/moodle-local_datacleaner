@@ -1,6 +1,12 @@
 
 * remove anything we can, like cache files and tmp dirs where possible
+
+* delete all backup files anywhere at all
+
 * This will look for any orphaned files no longer referenced by the DB
+
+See https://github.com/elearningstudio/moodle-report_filetrash/
+for a possible implementation
 
 
 
