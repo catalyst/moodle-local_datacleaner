@@ -58,6 +58,7 @@ class clean extends \local_datacleaner\clean {
         'msn' => '',
         'phone1' => '',
         'phone2' => '',
+        'idnumber' => '',
     );
 
     // Plus scramble
