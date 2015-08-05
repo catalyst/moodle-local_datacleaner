@@ -89,11 +89,6 @@ class clean extends \local_datacleaner\clean {
         $extrasql = '';
         $params = array();
 
-        if (isset($criteria['timestamp'])) {
-            $extrasql = ' AND lastaccess < :timestamp ';
-            $params['timestamp'] = $criteria['timestamp'];
-        }
-
         if (isset($criteria['ignored'])) {
             list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored'], SQL_PARAMS_NAMED, 'userid_', false);
             $extrasql .= ' AND id ' . $newextrasql;
