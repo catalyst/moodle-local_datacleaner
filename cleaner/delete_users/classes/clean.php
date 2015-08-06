@@ -93,9 +93,20 @@ class clean extends \local_datacleaner\clean {
         // Clean up other tables that might be around and need it.
         $dbman = $DB->get_manager();
 
-        foreach (array('local_messages_sent', 'block_leaderboard_data', 'block_leaderboard_points') as $table) {
-            if ($dbman->table_exists($table)) {
-                $DB->delete_records_list($table, 'userid', $userids);
+        foreach (array('userid' => array('local_messages_sent', 'block_leaderboard_data', 'block_leaderboard_points',
+                        'assignment_submissions', 'block_totara_stats', 'config_log', 'course_completion_crit_compl',
+                        'course_completions', 'course_modules_completion', 'facetoface_signups',
+                        'grade_grades', 'grade_grades_history', 'log', 'logstore_standard_log', 'message_contacts',
+                        'my_pages', 'post', 'prog_completion', 'prog_pos_assignment', 'prog_user_assignment',
+                        'report_builder_saved', 'role_assignments', 'scorm_scoes_track', 'sessions', 'stats_user_daily',
+                        'stats_user_monthly', 'stats_user_weekly'
+                        ),
+                    'useridfrom' => array('message', 'message_read'),
+                    'useridto' => array('message', 'message_read')) as $field => $tables) {
+            foreach ($tables as $table) {
+                if ($dbman->table_exists($table)) {
+                    $DB->delete_records_list($table, $field, $userids);
+                }
             }
         }
 
