@@ -20,5 +20,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
 
+if (!$ADMIN->fulltree) {
+    return;
+}
+
+$settings->add(new admin_setting_configtext('cleaner_courses/minimumage',
+            new lang_string('minimumage', 'cleaner_courses'),
+            new lang_string('minimumagedesc', 'cleaner_courses'), 365, PARAM_INT));
 

@@ -23,4 +23,5 @@
  */
 
 $string['pluginname'] = 'Remove courses';
-
+$string['minimumage'] = 'Minimum age';
+$string['minimumagedesc'] = 'Keep courses with start dates within the last <i>n</i> days.';
