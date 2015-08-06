@@ -15,15 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
- *
  * @package    cleaner_replace_urls
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2015 Catalyst IT
+ * @author     Nigel Cunningham
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Replace URLs';
-$string['origsiteurl'] = 'Original site URL';
-$string['origsiteurldesc'] = 'The URL of the production site.';
-$string['newsiteurl'] = 'New site URL';
-$string['newsiteurldesc'] = 'The URL of the datacleansed site.';
+defined('MOODLE_INTERNAL') || die;
+
+if (!$ADMIN->fulltree) {
+    return;
+}
+
+$settings->add(new admin_setting_configtext('cleaner_replace_urls/origsiteurl',
+            new lang_string('origsiteurl', 'cleaner_replace_urls'),
+            new lang_string('origsiteurldesc', 'cleaner_replace_urls'), 'http://', PARAM_URL));
+
+$settings->add(new admin_setting_configtext('cleaner_replace_urls/newsiteurl',
+            new lang_string('newsiteurl', 'cleaner_replace_urls'),
+            new lang_string('newsiteurldesc', 'cleaner_replace_urls'), 'http://localhost', PARAM_URL));
+
