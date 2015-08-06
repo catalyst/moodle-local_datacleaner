@@ -110,7 +110,6 @@ class clean extends \local_datacleaner\clean {
             }
         }
 
-
         // This transaction is purely for speed, hence the committing in the middle of the loop.
         $transaction = $DB->start_delegated_transaction();
 
@@ -134,7 +133,7 @@ class clean extends \local_datacleaner\clean {
         $DB->delete_records_list('user', 'id', $userids);
 
         foreach ($users as $user) {
-            mtrace(" Deleted user for ".fullname($user, true)." ($user->id)");
+            mtrace(" Deleted user ".fullname($user, true)." ($user->id)");
         }
     }
 
