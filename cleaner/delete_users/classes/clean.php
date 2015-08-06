@@ -110,6 +110,7 @@ class clean extends \local_datacleaner\clean {
             }
         }
 
+
         // This transaction is purely for speed, hence the committing in the middle of the loop.
         $transaction = $DB->start_delegated_transaction();
 
