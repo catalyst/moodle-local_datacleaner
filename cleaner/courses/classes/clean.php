@@ -79,7 +79,7 @@ class clean extends \local_datacleaner\clean {
         self::update_status($task, 0, $numcourses);
         $done = 0;
 
-        foreach($courses as $id => $course) {
+        foreach ($courses as $id => $course) {
             self::delete_course($id);
             $done++;
         self::update_status($task, $done, $numcourses);
