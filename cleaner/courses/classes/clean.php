@@ -26,24 +26,64 @@ defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
 
-    static public function execute() {
+    /**
+     * Delete a single course.
+     *
+     * @param int $id The course id.
+     */
+    static private function delete_course($id) {
+        delete_course($id, false);
+    }
 
+    /**
+     * Get an array of course objects meeting the criteria provided
+     *
+     * @param  array $criteria An array of criteria to apply.
+     * @return array $result   The array of matching course objects.
+     */
+    private static function get_courses($criteria = array()) {
+        global $DB;
+
+        $extrasql = '';
+        $params = array();
+
+        if (isset($criteria['minimumage'])) {
+            $extrasql .= ' AND startdate <= :startdate ';
+            $params['startdate'] = $criteria['startdate'];
+        }
+
+        return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
+    }
+
+    static public function execute() {
         global $DB;
 
         $task = 'Removing old courses';
 
-        self::update_status($task, 0, 5);
-        sleep(1);
-        self::update_status($task, 1, 5);
-        sleep(1);
-        self::update_status($task, 2, 5);
-        sleep(1);
-        self::update_status($task, 3, 5);
-        sleep(1);
-        self::update_status($task, 4, 5);
-        sleep(1);
-        self::update_status($task, 5, 5);
+        // Get the settings, handling the case where new ones (dev) haven't been set yet.
+        $config = get_config('cleaner_courses');
 
+        $interval = isset($config->minimumage) ? $config->minimumage : 365;
+
+        $criteria = array();
+        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
+
+        $courses = self::get_courses($criteria);
+        $numcourses = count($courses);
+
+        if (!$numcourses) {
+            echo "No courses need deletion.\n";
+            return;
+        }
+
+        self::update_status($task, 0, $numcourses);
+        $done = 0;
+
+        foreach($courses as $id => $course) {
+            self::delete_course($id);
+            $done++;
+        self::update_status($task, $done, $numcourses);
+        }
     }
 }
 
