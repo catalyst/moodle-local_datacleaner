@@ -47,9 +47,9 @@ class clean extends \local_datacleaner\clean {
         $extrasql = '';
         $params = array();
 
-        if (isset($criteria['minimumage'])) {
+        if (isset($criteria['timestamp'])) {
             $extrasql .= ' AND startdate <= :startdate ';
-            $params['startdate'] = $criteria['startdate'];
+            $params['startdate'] = $criteria['timestamp'];
         }
 
         return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
