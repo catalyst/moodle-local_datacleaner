@@ -78,10 +78,18 @@ class clean extends \local_datacleaner\clean {
         'usernames' => 'username_substitution',
     );
 
+    /**
+     * Constructor - hash the password.
+     */
     public function __construct() {
         self::$fixedmods['password'] = hash_internal_user_password(self::PASS);
     }
 
+    /**
+     * username_substitution - Replace usernames with user_XXX
+     *
+     * @param array $users - The userIDs on which to operate.
+     */
     private static function username_substitution($users = array()) {
         global $DB;
 
