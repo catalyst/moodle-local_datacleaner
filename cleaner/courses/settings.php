@@ -32,9 +32,9 @@ $settings->add(new admin_setting_configtext('cleaner_courses/minimumage',
             new lang_string('minimumage', 'cleaner_courses'),
             new lang_string('minimumagedesc', 'cleaner_courses'), 365, PARAM_INT));
 
+// Categories of courses to delete
 $categories = core_course_external::get_categories();
 
-// Default to all
 $defaultcategories = array();
 
 foreach ($categories as $category) {
@@ -49,4 +49,45 @@ $settings->add(new admin_setting_configmulticheckbox(
             new lang_string('categoriesdesc', 'cleaner_courses'),
             $defaultcategories,
             $categoriesbyname
+            ));
+
+// Courses to always keep
+$courses = $DB->get_records_select('course', 'id > 1');
+
+$defaultcourses = array();
+
+foreach ($courses as $id => $course) {
+   /**
+     * Try to print the shortname and the fullname nicely. If one contains
+     * the other, use the longer string. Otherwise enclose the shortname
+     * in brackets. Finally, make the name a link to the course so that
+     * further checking is easy.
+     */
+    if (strpos($course->fullname, $course->shortname) !== false) {
+        $linktext = $course->fullname;
+    }
+    elseif (strpos($course->shortname, $course->fullname) !== false) {
+        $linktext = $course->shortname;
+    }
+    else {
+        $linktext = $course->fullname . ' (\'' . $course->shortname . '\')';
+    }
+    $coursesbyname[$id] = $linktext;
+    $defaultcourses[$id] = 0;
+}
+
+asort($coursesbyname, SORT_LOCALE_STRING);
+
+// Convert linktext to URL
+$writer = new html_writer();
+foreach ($coursesbyname as $id => &$linktext) {
+    $linktext = $writer->link(course_get_url($id), $linktext);
+}
+
+$settings->add(new admin_setting_configmulticheckbox(
+            'cleaner_courses/courses',
+            new lang_string('courses', 'cleaner_courses'),
+            new lang_string('coursesdesc', 'cleaner_courses'),
+            $defaultcourses,
+            $coursesbyname
             ));

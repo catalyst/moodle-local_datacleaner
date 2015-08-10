@@ -58,6 +58,12 @@ class clean extends \local_datacleaner\clean {
             $params = array_merge($params, $sql_params);
         }
 
+        if (isset($criteria['courses'])) {
+            list($sql, $sql_params) = $DB->get_in_or_equal(explode(",", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
+            $extrasql .= ' AND id ' . $sql;
+            $params = array_merge($params, $sql_params);
+        }
+
         return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
     }
 
@@ -81,6 +87,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         $criteria['categories'] = $config->categories;
+        $criteria['courses'] = $config->courses;
 
         $courses = self::get_courses($criteria);
         $numcourses = count($courses);
