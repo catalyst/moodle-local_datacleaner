@@ -52,6 +52,12 @@ class clean extends \local_datacleaner\clean {
             $params['startdate'] = $criteria['timestamp'];
         }
 
+        if (isset($criteria['categories'])) {
+            list($sql, $sql_params) = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
+            $extrasql .= ' AND category ' . $sql;
+            $params = array_merge($params, $sql_params);
+        }
+
         return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
     }
 
@@ -68,6 +74,14 @@ class clean extends \local_datacleaner\clean {
         $criteria = array();
         $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
 
+        if (empty($config->categories)) {
+            // No categories = nothing to do.
+            echo "No course categories selected for deletion.\n";
+            return;
+        }
+
+        $criteria['categories'] = $config->categories;
+
         $courses = self::get_courses($criteria);
         $numcourses = count($courses);
 
@@ -80,7 +94,12 @@ class clean extends \local_datacleaner\clean {
         $done = 0;
 
         foreach ($courses as $id => $course) {
-            self::delete_course($id);
+            try {
+                self::delete_course($id);
+            }
+            catch(Exception $e) {
+                echo 'Caught exception: ', $e->getMessage(), '\n';
+            }
             $done++;
         self::update_status($task, $done, $numcourses);
         }

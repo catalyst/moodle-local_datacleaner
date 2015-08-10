@@ -26,7 +26,27 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
+include_once "{$CFG->dirroot}/course/externallib.php";
+
 $settings->add(new admin_setting_configtext('cleaner_courses/minimumage',
             new lang_string('minimumage', 'cleaner_courses'),
             new lang_string('minimumagedesc', 'cleaner_courses'), 365, PARAM_INT));
 
+$categories = core_course_external::get_categories();
+
+// Default to all
+$defaultcategories = array();
+
+foreach ($categories as $category) {
+    $categoriesbyname[$category['id']] = $category['name'];
+    $defaultcategories[$category['id']] = 0;
+}
+asort($categoriesbyname, SORT_LOCALE_STRING);
+
+$settings->add(new admin_setting_configmulticheckbox(
+            'cleaner_courses/categories',
+            new lang_string('categories', 'cleaner_courses'),
+            new lang_string('categoriesdesc', 'cleaner_courses'),
+            $defaultcategories,
+            $categoriesbyname
+            ));
