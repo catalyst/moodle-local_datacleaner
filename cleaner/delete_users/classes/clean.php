@@ -190,8 +190,7 @@ class clean extends \local_datacleaner\clean {
             }
             list($sql, $params) = $DB->get_in_or_equal($keepusernames);
             $keepuserids = array_keys($DB->get_records_select_menu('user', 'username ' . $sql, $params));
-        }
-        else {
+        } else {
             $keepuserids = array();
         }
 
