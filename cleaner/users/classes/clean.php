@@ -67,9 +67,9 @@ class clean extends \local_datacleaner\clean {
     // - name fields
     // - city, country and timezone.
     private static $scramble = array(
-        'idnumbers' => array('idnumber'),
-        'firstname fields' => array('firstname'),
-        'surname fields' => array('lastname'),
+        'firstname fields' => array('firstname', 'firstnamephonetic', 'alternatename'),
+        'middlename fields' => array('middlename'),
+        'surname fields' => array('lastname', 'lastnamephonetic'),
         'department' => array('institution', 'department'),
         'address' => array('address', 'city', 'country', 'lang', 'calendartype', 'timezone')
     );
@@ -77,6 +77,11 @@ class clean extends \local_datacleaner\clean {
     private static $functions = array(
         'usernames' => 'username_substitution',
     );
+
+    /**
+     * The last prime number used in scrambling field contents.
+     */
+    private static $lastprime = 0;
 
     /**
      * Constructor - hash the password.
@@ -133,7 +138,6 @@ class clean extends \local_datacleaner\clean {
             if ($primes[$base + $i] <= $lowerlimit) {
                 $base += $i;
             }
-            //echo 'Lies between ' . $primes[$base] . " ({$base}) and " . $primes[$base + $i] . ' (' . ($base + $i) . ")\n";
         }
 
         return $primes[$base + 1] <= $lowerlimit ? $primes[$base + 2] : $primes[$base + 1];
@@ -166,13 +170,50 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * scramble the contents of a field.
+     * Load an install.xml file, checking that it exists, and that the structure is OK.
+     *
+     * This is copied from lib/ddl/database_manager.php because it's a private method there.
+     *
+     * @param string $file the full path to the XMLDB file.
+     * @return xmldbfile the loaded file.
+     */
+    static private function load_xmldbfile($file) {
+        global $CFG;
+
+        $xmldbfile = new \xmldb_file($file);
+
+        if (!$xmldbfile->fileExists()) {
+            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
+        }
+
+        $loaded = $xmldbfile->loadXMLStructure();
+        if (!$loaded || !$xmldbfile->isLoaded()) {
+            // Show info about the error if we can find it.
+            if ($structure = $xmldbfile->getStructure()) {
+                if ($errors = $structure->getAllErrors()) {
+                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
+                }
+            }
+            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
+        }
+
+        return $xmldbfile;
+    }
+
+    /**
+     * Scramble the contents of a set of fields.
      *
      * The algorithm is:
-     * - Randomly pick up to 50 rows to use as the values for the resulting data (keep memory use lower)
-     * - Get the values from those rows
-     * - For each user being scrambled, assign one of the randomised values but never
-     *   use the original value of the field.
+     * - Take the number of users and get the next largest prime after the sqrt of that number or the last one used.
+     * - This primes are used to control the cycle frequency of the field(s)
+     * - Copy the required number of unique values into a temporary table. If there are not enough
+     *   unique values, replace the prime number with the number we have.
+     * - Use SQL to replace existing values with the mixed up data from the tables.
+     *
+     * So for 10,000 users with 2 fields - firstname and lastname, the process is:
+     * - sqrt(10,000) = 100. Next 2 primes are 101 and 103. 101 will be used on the first call to this function, 103 on the second.
+     * - Copy first 101 unique firstnames to 1 temporary table and first 103 unique lastnames to another
+     * - Use a single SQL statement to update the original fields in a cycle.
      *
      * @param array $users  - The UIDS of users who will be modified and from whom data will be selected
      * @param array $fields - The names of user tables fields that will be changed. More than one means
@@ -180,43 +221,72 @@ class clean extends \local_datacleaner\clean {
      *                        making sense together).
      */
     static public function randomise_fields($users = array(), $fields = array()) {
-        global $DB;
+        global $DB, $CFG;
+        $tmptables = array();
+        $dbmanager = $DB->get_manager();
 
-        // Pick the rows to use.
-        if (count($users) > 50) {
-            $pickedusers = array_rand($users, 50);
-        } else {
-            $pickedusers = $users;
+        // Get the user table definition from the XMLDB file so we can pull
+        // out fields and create temporary tables with the same definition.
+        $xmldbfile = self::load_xmldbfile($CFG->dirroot . '/lib/db/install.xml');
+        $xmldbstructure = $xmldbfile->getStructure();
+        $userstructure = $xmldbstructure->getTable('user');
+        $userkeys = $userstructure->getKeys();
+
+        $numusers = count($users);
+        $lastprime = max(sqrt($numusers), self::$lastprime);
+
+        $thisprime = self::next_prime($lastprime);
+        self::$lastprime = $thisprime;
+
+        echo('Field set ' . implode(',', $fields) . ' wants to use a sequence length of ' . $thisprime . "\n");
+
+        // Create a temporary table into which to pull the values
+        // Get the details of the field config from the XMLDB structure.
+        $temptablestruct = new \xmldb_table('temp_table');
+
+        $fieldlist = array($userstructure->getField('id'));
+
+        for ($i = 0; $i < count($fields); $i++) {
+            $fieldlist[] = $userstructure->getField($fields[$i]);
         }
 
-        // Get data for picked users.
-        $data = $DB->get_records_list('user', 'id', $pickedusers);
-        $data = array_values($data);
+        $temptablestruct->setFields($fieldlist);
 
-        // We want to do this quickly, so we first figure out what values will be used for each
-        // record, then do set_field_select for the records that will receive each value.
-        // Thus, a maximum of 50 queries per field being updated.
+        // Copy the userID key and index. This assumes they are the first key/index.
+        $temptablestruct->setKeys(array($userkeys[0]));
+        $dbmanager->create_temp_table($temptablestruct);
 
-        $mappings = array();
+        $fieldlist = implode(',', $fields);
 
-        foreach ($users as $uid => $user) {
-            $mappings[rand(0, 49)][] = $uid;
+        $sql = "INSERT INTO {temp_table} ({$fieldlist}) (
+            SELECT DISTINCT ${fieldlist} FROM {user}
+                   ORDER BY ${fieldlist}
+                      LIMIT {$thisprime}
+                      )";
+        $DB->execute($sql);
+
+        $distinctvalues = $DB->count_records('temp_table');
+        echo 'Got ' . $distinctvalues . " distinct sets of values.\n";
+
+        // Now that we have the temporary tables, use them to update the original table.
+        $sets = array();
+        $conditions = array();
+
+        foreach ($fields as $field) {
+            $sets[] = "{$field} = {temp_table}.{$field}";
         }
 
-        // TODO: make this into a smaller number of queries that will work with either PGSql or MySQL.
-        foreach ($mappings as $id => $uids) {
+        list($inequalsql, $params) = $DB->get_in_or_equal(array_keys($users));
 
-            if (empty($uids)) {
-                continue;
-            }
+        $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
+            " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
+              AND u.id {$inequalsql}";
 
-            list($sql, $params) = $DB->get_in_or_equal($uids);
+        $DB->execute($sql, $params);
 
-            foreach ($fields as $field) {
-                $DB->set_field_select('user', $field, $data[$id]->$field, 'id ' . $sql, $params);
-            }
-        }
+        $dbmanager->drop_table($temptablestruct);
     }
+
     /**
      * Do the hard work of cleaning up users.
      */
