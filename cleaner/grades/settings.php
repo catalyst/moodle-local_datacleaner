@@ -15,13 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
- *
- * @package    cleaner_grades
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @package    cleaner_delete_users
+ * @copyright  2015 Catalyst IT
+ * @author     Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Clean grades';
-$string['deleteall'] = 'Delete all';
-$string['deletealldesc'] = 'Delete all grade history';
+defined('MOODLE_INTERNAL') || die;
+
+if (!$ADMIN->fulltree) {
+    return;
+}
+
+$settings->add(new admin_setting_configcheckbox('cleaner_grades/deleteall',
+            new lang_string('deleteall', 'cleaner_grades'),
+            new lang_string('deletealldesc', 'cleaner_grades'), 1));
