@@ -155,7 +155,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         if (isset($criteria['ignored'])) {
-            list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored'], SQL_PARAMS_NAMED, 'userid_', false);
+            list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored'], SQL_PARAMS_NAMED, 'uid_', false);
             $extrasql .= ' AND id ' . $newextrasql;
             $params = array_merge($params, $extraparams);
         }
@@ -180,21 +180,31 @@ class clean extends \local_datacleaner\clean {
 
         $interval = isset($config->minimumage) ? $config->minimumage : 365;
         $keepsiteadmins = isset($config->keepsiteadmins) ? $config->keepsiteadmins : true;
-        $keepuids = trim(isset($config->keepuids) ? $config->keepuids : "");
+        $keepusernames = trim(isset($config->keepusernames) ? $config->keepusernames : "");
 
         // Build the array of ids to keep.
-        $keepuids = empty($keepuids) ? array() : explode(',', $keepuids);
+        $keepusernames = empty($keepusernames) ? array() : explode(',', $keepusernames);
+        if (!empty($keepusernames)) {
+            foreach ($keepusernames as &$name) {
+                $name = clean_param($name, PARAM_USERNAME);
+            }
+            list($sql, $params) = $DB->get_in_or_equal($keepusernames);
+            $keepuserids = array_keys($DB->get_records_select_menu('user', 'username ' . $sql, $params));
+        }
+        else {
+            $keepuserids = array();
+        }
 
         if ($keepsiteadmins) {
-            $keepuids = array_merge($keepuids, explode(',', $CFG->siteadmins));
+            $keepuserids = array_merge($keepuserids, explode(',', $CFG->siteadmins));
         }
 
         // Build the array of criteria.
         $criteria = array();
         $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
 
-        if (!empty($keepuids)) {
-            $criteria['ignored'] = $keepuids;
+        if (!empty($keepuserids)) {
+            $criteria['ignored'] = $keepuserids;
         }
 
         // Any users need undeleting before we properly delete them?

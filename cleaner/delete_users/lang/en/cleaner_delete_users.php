@@ -28,6 +28,6 @@ $string['minimumage'] = 'Minimum age';
 $string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';
 $string['keepsiteadmins'] = 'Keep site admins';
 $string['keepsiteadminsdesc'] = 'Tick to retain site administrator accounts.';
-$string['keepuids'] = 'Non site administrator UIDs';
-$string['keepuidsdesc'] = 'A comma separated list of non site administrator UIDs that should be retained.';
+$string['keepusernames'] = 'Non site administrator usernames';
+$string['keepusernamesdesc'] = 'A comma separated list of non site administrator usernames that should be retained.';
 
