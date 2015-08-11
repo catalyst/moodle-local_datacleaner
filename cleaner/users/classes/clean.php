@@ -238,8 +238,6 @@ class clean extends \local_datacleaner\clean {
         $thisprime = self::next_prime($lastprime);
         self::$lastprime = $thisprime;
 
-        echo('Field set ' . implode(',', $fields) . ' wants to use a sequence length of ' . $thisprime . "\n");
-
         // Create a temporary table into which to pull the values
         // Get the details of the field config from the XMLDB structure.
         $temptablestruct = new \xmldb_table('temp_table');
@@ -266,7 +264,6 @@ class clean extends \local_datacleaner\clean {
         $DB->execute($sql);
 
         $distinctvalues = $DB->count_records('temp_table');
-        echo 'Got ' . $distinctvalues . " distinct sets of values.\n";
 
         // Now that we have the temporary tables, use them to update the original table.
         $sets = array();
@@ -326,7 +323,7 @@ class clean extends \local_datacleaner\clean {
         echo "Scrambling the data of {$numusers} users.\n";
 
         // Scramble the eggs.
-        $numsteps = count(self::$scramble) + 1;
+        $numsteps = count(self::$scramble) + count(self::$fixedmods) + 1;
         self::update_status(self::TASK, 0, $numsteps);
         $thisstep = 1;
         foreach (self::$scramble as $description => $setoffields) {
@@ -339,6 +336,8 @@ class clean extends \local_datacleaner\clean {
         list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
         foreach (self::$fixedmods as $field => $value) {
             $DB->set_field_select('user', $field, $value, 'id ' . $sql, $params);
+            self::update_status(self::TASK, $thisstep, $numsteps);
+            $thisstep++;
         }
 
         // Apply the functions.
