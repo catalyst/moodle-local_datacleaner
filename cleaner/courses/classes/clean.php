@@ -53,15 +53,15 @@ class clean extends \local_datacleaner\clean {
         }
 
         if (isset($criteria['categories'])) {
-            list($sql, $sql_params) = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
+            list($sql, $sqlparams) = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
             $extrasql .= ' AND category ' . $sql;
-            $params = array_merge($params, $sql_params);
+            $params = array_merge($params, $sqlparams);
         }
 
         if (isset($criteria['courses'])) {
-            list($sql, $sql_params) = $DB->get_in_or_equal(explode(",", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
+            list($sql, $sqlparams) = $DB->get_in_or_equal(explode(",", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
             $extrasql .= ' AND id ' . $sql;
-            $params = array_merge($params, $sql_params);
+            $params = array_merge($params, $sqlparams);
         }
 
         return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
@@ -103,12 +103,11 @@ class clean extends \local_datacleaner\clean {
         foreach ($courses as $id => $course) {
             try {
                 self::delete_course($id);
-            }
-            catch(Exception $e) {
+            } catch (Exception $e) {
                 echo 'Caught exception: ', $e->getMessage(), '\n';
             }
             $done++;
-        self::update_status($task, $done, $numcourses);
+            self::update_status($task, $done, $numcourses);
         }
     }
 }
