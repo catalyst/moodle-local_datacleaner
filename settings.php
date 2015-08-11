@@ -35,7 +35,8 @@ $ADMIN->add('datacleaner',
             get_string('manage', 'local_datacleaner'),
             new moodle_url('/local/datacleaner/index.php')));
 
-foreach (core_plugin_manager::instance()->get_plugins_of_type('cleaner') as $plugin) {
+$plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
+foreach ($plugins as $plugin) {
 
     $pagename = 'cleaner_' . $plugin->name . '_settings';
     $plugin->load_settings($ADMIN, 'datacleaner', $hassiteconfig);
