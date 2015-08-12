@@ -21,4 +21,10 @@
  */
 
 $string['pluginname'] = 'Remove config';
+$string['names'] = 'Config items to remove';
+$string['namesdesc'] = 'A list of config item names, one per line, which if matched will be removed. You can use the % wildcard to match multiple names.';
+$string['vals'] = 'Config values to remove';
+$string['valsdesc'] = 'A list of config item values, one per line, which if found in any config item will be removed. You can use the % wildcard to match multiple values.';
 
+$string['name'] = 'Config name';
+$string['value'] = 'Config value to be removed';
