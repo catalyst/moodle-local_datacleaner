@@ -65,12 +65,18 @@ if ($ADMIN->fulltree) {
     }
 
     if ($where) {
-        $itemstoremove = $DB->get_records_sql("SELECT * FROM {config} WHERE $where");
+        $itemstoremove = $DB->get_records_sql("SELECT *
+                                                 FROM {config}
+                                                WHERE $where
+                                             ORDER BY name ");
         foreach ($itemstoremove as $r) {
             $table->data[] = array('core', $r->name, $r->value);
         }
 
-        $itemstoremove = $DB->get_records_sql("SELECT * FROM {config_plugins} WHERE ($where) AND plugin!= 'cleaner_config'");
+        $itemstoremove = $DB->get_records_sql("SELECT *
+                                                 FROM {config_plugins}
+                                                WHERE ($where)
+                                             ORDER BY plugin, name");
         foreach ($itemstoremove as $r) {
             $table->data[] = array($r->plugin, $r->name, $r->value);
         }
