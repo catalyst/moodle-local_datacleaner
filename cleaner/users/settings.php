@@ -30,5 +30,6 @@ if (!$ADMIN->fulltree) {
 $settings->add(new admin_setting_configcheckbox('cleaner_users/keepsiteadmins', new lang_string('keepsiteadmins', 'cleaner_users'),
             new lang_string('keepsiteadminsdesc', 'cleaner_users'), 1));
 
-$settings->add(new admin_setting_configtext('cleaner_users/keepuids', new lang_string('keepuids', 'cleaner_users'),
-            new lang_string('keepuidsdesc', 'cleaner_users'), '', PARAM_SEQUENCE));
+$settings->add(new admin_setting_configtext('cleaner_users/keepusernames',
+            new lang_string('keepusernames', 'cleaner_users'),
+            new lang_string('keepusernamesdesc', 'cleaner_users'), '', PARAM_RAW));

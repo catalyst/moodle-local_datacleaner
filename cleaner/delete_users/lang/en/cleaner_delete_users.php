@@ -30,4 +30,3 @@ $string['keepsiteadmins'] = 'Keep site admins';
 $string['keepsiteadminsdesc'] = 'Tick to retain site administrator accounts.';
 $string['keepusernames'] = 'Non site administrator usernames';
 $string['keepusernamesdesc'] = 'A comma separated list of non site administrator usernames that should be retained.';
-

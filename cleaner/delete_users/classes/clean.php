@@ -138,73 +138,13 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Get an array of user objects meeting the criteria provided
-     *
-     * @param  array $criteria An array of criteria to apply.
-     * @return array $result   The array of matching user objects.
-     */
-    private static function get_users($criteria = array()) {
-        global $DB;
-
-        $extrasql = '';
-        $params = array();
-
-        if (isset($criteria['timestamp'])) {
-            $extrasql = ' AND lastaccess < :timestamp ';
-            $params['timestamp'] = $criteria['timestamp'];
-        }
-
-        if (isset($criteria['ignored'])) {
-            list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored'], SQL_PARAMS_NAMED, 'uid_', false);
-            $extrasql .= ' AND id ' . $newextrasql;
-            $params = array_merge($params, $extraparams);
-        }
-
-        if (isset($criteria['deleted'])) {
-            $extrasql .= ' AND deleted = :deleted ';
-            $params['deleted'] = $criteria['deleted'];
-        }
-
-        return $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
-    }
-
-    /**
      * Do the hard work of cleaning up users.
      */
     static public function execute() {
-
-        global $DB, $CFG;
-
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_delete_users');
 
-        $interval = isset($config->minimumage) ? $config->minimumage : 365;
-        $keepsiteadmins = isset($config->keepsiteadmins) ? $config->keepsiteadmins : true;
-        $keepusernames = trim(isset($config->keepusernames) ? $config->keepusernames : "");
-
-        // Build the array of ids to keep.
-        $keepusernames = empty($keepusernames) ? array() : explode(',', $keepusernames);
-        if (!empty($keepusernames)) {
-            foreach ($keepusernames as &$name) {
-                $name = clean_param($name, PARAM_USERNAME);
-            }
-            list($sql, $params) = $DB->get_in_or_equal($keepusernames);
-            $keepuserids = array_keys($DB->get_records_select_menu('user', 'username ' . $sql, $params));
-        } else {
-            $keepuserids = array();
-        }
-
-        if ($keepsiteadmins) {
-            $keepuserids = array_merge($keepuserids, explode(',', $CFG->siteadmins));
-        }
-
-        // Build the array of criteria.
-        $criteria = array();
-        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
-
-        if (!empty($keepuserids)) {
-            $criteria['ignored'] = $keepuserids;
-        }
+        $criteria = self::get_criteria($config);
 
         // Any users need undeleting before we properly delete them?
         $criteria['deleted'] = true;

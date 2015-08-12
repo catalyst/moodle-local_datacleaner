@@ -144,32 +144,6 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Get an array of user objects meeting the criteria provided
-     *
-     * @param  array $criteria An array of criteria to apply.
-     * @return array $result   The array of matching user objects.
-     */
-    private static function get_users($criteria = array()) {
-        global $DB;
-
-        $extrasql = '';
-        $params = array();
-
-        if (isset($criteria['ignored'])) {
-            list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored'], SQL_PARAMS_NAMED, 'userid_', false);
-            $extrasql .= ' AND id ' . $newextrasql;
-            $params = array_merge($params, $extraparams);
-        }
-
-        if (isset($criteria['deleted'])) {
-            $extrasql .= ' AND deleted = :deleted ';
-            $params['deleted'] = $criteria['deleted'];
-        }
-
-        return $DB->get_records_select_menu('user', 'id > 2 ' . $extrasql, $params, '', 'id, id');
-    }
-
-    /**
      * Load an install.xml file, checking that it exists, and that the structure is OK.
      *
      * This is copied from lib/ddl/database_manager.php because it's a private method there.
@@ -294,22 +268,7 @@ class clean extends \local_datacleaner\clean {
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_users');
 
-        $keepsiteadmins = isset($config->keepsiteadmins) ? $config->keepsiteadmins : true;
-        $keepuids = trim(isset($config->keepuids) ? $config->keepuids : "");
-
-        // Build the array of ids to keep.
-        $keepuids = empty($keepuids) ? array() : explode(',', $keepuids);
-
-        if ($keepsiteadmins) {
-            $keepuids = array_merge($keepuids, explode(',', $CFG->siteadmins));
-        }
-
-        // Build the array of criteria.
-        $criteria = array();
-
-        if (!empty($keepuids)) {
-            $criteria['ignored'] = $keepuids;
-        }
+        $criteria = self::get_criteria($config);
 
         // Get the list of users on which to work.
         $users = self::get_users($criteria);

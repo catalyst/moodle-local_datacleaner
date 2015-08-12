@@ -64,5 +64,80 @@ abstract class clean {
         printf (" %-20s %4d%% (%d/%d)    $timeleft\n", $taskname, $perc, $itemno, $total);
 
     }
+
+    /**
+     * Build an array of criteria for get_users from the module config.
+     *
+     * @return array $criteria Criteria to pass to get_users.
+     */
+    public static function get_criteria($config) {
+        global $CFG;
+
+        $criteria = array();
+
+        /* Minimum age? */
+        if (isset($config->minimumage)) {
+            $interval = $config->minimumage;
+            $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
+        }
+
+        /* Keep site admins? */
+        $keepsiteadmins = isset($config->keepsiteadmins) ? $config->keepsiteadmins : true;
+        if ($keepsiteadmins) {
+            $criteria['ignored_uids'] = explode(',', $CFG->siteadmins);
+        }
+
+        /* Keep user names */
+        $keepusernames = isset($config->keepusernames) ? trim($config->keepusernames) : "";
+        if (!empty($keepusernames)) {
+            $criteria['ignored_usernames'] = $keepusernames;
+        }
+
+        return $criteria;
+    }
+
+    /**
+     * Get an array of user objects meeting the criteria provided
+     *
+     * @param  array $criteria An array of criteria to apply.
+     * @return array $result   The array of matching user objects.
+     */
+    public static function get_users($criteria = array()) {
+        global $DB;
+
+        $extrasql = '';
+        $params = array();
+
+        if (isset($criteria['timestamp'])) {
+            $extrasql = ' AND lastaccess < :timestamp ';
+            $params['timestamp'] = $criteria['timestamp'];
+        }
+
+        if (isset($criteria['ignored_uids'])) {
+            list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored_uids'], SQL_PARAMS_NAMED, 'uid', false);
+            $extrasql .= ' AND id ' . $newextrasql;
+            $params = array_merge($params, $extraparams);
+        }
+
+        if (isset($criteria['ignored_usernames'])) {
+            $keepusernames = explode(',', $criteria['ignored_usernames']);
+            if (!empty($keepusernames)) {
+                foreach ($keepusernames as &$name) {
+                    $name = clean_param($name, PARAM_USERNAME);
+                }
+                list($newextrasql, $extraparams) = $DB->get_in_or_equal($keepusernames, SQL_PARAMS_NAMED, 'uname', false);
+                $extrasql .= ' AND username ' . $newextrasql;
+                $params = array_merge($params, $extraparams);
+            }
+        }
+
+        if (isset($criteria['deleted'])) {
+            $extrasql .= ' AND deleted = :deleted ';
+            $params['deleted'] = $criteria['deleted'];
+        }
+
+        return $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
+    }
+
 }
 
