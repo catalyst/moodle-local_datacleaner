@@ -30,6 +30,8 @@ abstract class clean {
 
     private static $tasks = array(); // For storing task start times.
 
+    protected static $numusers = 0;
+
     static public function execute() {
 
     }
@@ -97,6 +99,13 @@ abstract class clean {
         }
 
         return $criteria;
+    }
+
+    /**
+     * Get the number of users that were returned by get_users below
+     */
+    public static function get_num_users() {
+        return self::$numusers;
     }
 
     /**
