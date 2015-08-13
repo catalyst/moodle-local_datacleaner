@@ -44,8 +44,11 @@ class clean extends \local_datacleaner\clean {
         }
 
         $userids = array_keys($users);
-        list($sql, $params) = $DB->get_in_or_equal($userids);
-        $DB->set_field_select('user', 'deleted', 0, 'id ' . $sql, $params);
+        $chunks = array_chunk($userids, 65000);
+        foreach ($chunks as $chunk) {
+            list($sql, $params) = $DB->get_in_or_equal($chunk);
+            $DB->set_field_select('user', 'deleted', 0, 'id ' . $sql, $params);
+        }
     }
 
     /**
@@ -64,48 +67,51 @@ class clean extends \local_datacleaner\clean {
 
         // Clean up Assignment stuff.
         $userids = array_keys($users);
-        list($userinequal, $userparams) = $DB->get_in_or_equal($userids);
-        $userinequal = 'userid ' . $userinequal;
+        $chunks = array_chunk($userids, 65000);
+        foreach ($chunks as $chunk) {
+            list($userinequal, $userparams) = $DB->get_in_or_equal($chunk);
+            $userinequal = 'userid ' . $userinequal;
 
-        $submissions = $DB->get_fieldset_select("assign_submission", "id", $userinequal, $userparams);
-        if (!empty($submissions)) {
-            // TODO: Actually delete the files.
-            $DB->delete_records_list('assignsubmission_file', 'submission', $submissions);
-            $DB->delete_records_list('assignsubmission_onlinetext', 'submission', $submissions);
-        }
+            $submissions = $DB->get_fieldset_select("assign_submission", "id", $userinequal, $userparams);
+            if (!empty($submissions)) {
+                // TODO: Actually delete the files.
+                $DB->delete_records_list('assignsubmission_file', 'submission', $submissions);
+                $DB->delete_records_list('assignsubmission_onlinetext', 'submission', $submissions);
+            }
 
-        $DB->delete_records_list('assign_submission', 'userid', $userids);
+            $DB->delete_records_list('assign_submission', 'userid', $chunk);
 
-        $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
-        if (!empty($grades)) {
-            $DB->delete_records_list('assignfeedback_comments', 'grade', $grades);
-            // TODO: Actually delete the files.
-            $DB->delete_records_list('assignfeedback_file', 'grade', $grades);
-            $DB->delete_records_list('assignfeedback_editpdf_annot', 'gradeid', $grades);
-            $DB->delete_records_list('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
-        }
+            $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
+            if (!empty($grades)) {
+                $DB->delete_records_list('assignfeedback_comments', 'grade', $grades);
+                // TODO: Actually delete the files.
+                $DB->delete_records_list('assignfeedback_file', 'grade', $grades);
+                $DB->delete_records_list('assignfeedback_editpdf_annot', 'gradeid', $grades);
+                $DB->delete_records_list('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
+            }
 
-        $DB->delete_records_list('assign_grades', 'userid', $userids);
-        $DB->delete_records_list('assign_user_flags', 'userid', $userids);
-        $DB->delete_records_list('assign_user_mapping', 'userid', $userids);
-        $DB->delete_records_list('assignfeedback_editpdf_quick', 'userid', $userids);
+            $DB->delete_records_list('assign_grades', 'userid', $chunk);
+            $DB->delete_records_list('assign_user_flags', 'userid', $chunk);
+            $DB->delete_records_list('assign_user_mapping', 'userid', $chunk);
+            $DB->delete_records_list('assignfeedback_editpdf_quick', 'userid', $chunk);
 
-        // Clean up other tables that might be around and need it.
-        $dbman = $DB->get_manager();
+            // Clean up other tables that might be around and need it.
+            $dbman = $DB->get_manager();
 
-        foreach (array('userid' => array('local_messages_sent', 'block_leaderboard_data', 'block_leaderboard_points',
-                        'assignment_submissions', 'block_totara_stats', 'config_log', 'course_completion_crit_compl',
-                        'course_completions', 'course_modules_completion', 'facetoface_signups',
-                        'grade_grades', 'grade_grades_history', 'log', 'logstore_standard_log', 'message_contacts',
-                        'my_pages', 'post', 'prog_completion', 'prog_pos_assignment', 'prog_user_assignment',
-                        'report_builder_saved', 'role_assignments', 'scorm_scoes_track', 'sessions', 'stats_user_daily',
-                        'stats_user_monthly', 'stats_user_weekly'
-                        ),
-                    'useridfrom' => array('message', 'message_read'),
-                    'useridto' => array('message', 'message_read')) as $field => $tables) {
-            foreach ($tables as $table) {
-                if ($dbman->table_exists($table)) {
-                    $DB->delete_records_list($table, $field, $userids);
+            foreach (array('userid' => array('local_messages_sent', 'block_leaderboard_data', 'block_leaderboard_points',
+                            'assignment_submissions', 'block_totara_stats', 'config_log', 'course_completion_crit_compl',
+                            'course_completions', 'course_modules_completion', 'facetoface_signups',
+                            'grade_grades', 'grade_grades_history', 'log', 'logstore_standard_log', 'message_contacts',
+                            'my_pages', 'post', 'prog_completion', 'prog_pos_assignment', 'prog_user_assignment',
+                            'report_builder_saved', 'role_assignments', 'scorm_scoes_track', 'sessions', 'stats_user_daily',
+                            'stats_user_monthly', 'stats_user_weekly'
+                            ),
+                        'useridfrom' => array('message', 'message_read'),
+                        'useridto' => array('message', 'message_read')) as $field => $tables) {
+                foreach ($tables as $table) {
+                    if ($dbman->table_exists($table)) {
+                        $DB->delete_records_list($table, $field, $chunk);
+                    }
                 }
             }
         }
@@ -130,10 +136,8 @@ class clean extends \local_datacleaner\clean {
         $transaction->allow_commit();
 
         // Finally clean up user table.
-        $DB->delete_records_list('user', 'id', $userids);
-
-        foreach ($users as $user) {
-            mtrace(" Deleted user ".fullname($user, true)." ($user->id)");
+        foreach ($chunks as $chunk) {
+            $DB->delete_records_list('user', 'id', $chunk);
         }
     }
 

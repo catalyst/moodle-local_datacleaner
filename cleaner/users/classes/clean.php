@@ -98,8 +98,12 @@ class clean extends \local_datacleaner\clean {
     private static function username_substitution($users = array()) {
         global $DB;
 
-        list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
-        $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $sql, $params);
+        $userids = array_keys($users);
+        $chunks = array_chunk($userids, 65000);
+        foreach ($chunks as $chunk) {
+            list($sql, $params) = $DB->get_in_or_equal($chunk);
+            $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $sql, $params);
+        }
     }
 
     /**
@@ -247,13 +251,17 @@ class clean extends \local_datacleaner\clean {
             $sets[] = "{$field} = {temp_table}.{$field}";
         }
 
-        list($inequalsql, $params) = $DB->get_in_or_equal(array_keys($users));
+        $userids = array_keys($users);
+        $chunks = array_chunk($userids, 65000);
+        foreach ($chunks as $chunk) {
+            list($inequalsql, $params) = $DB->get_in_or_equal($chunk);
 
-        $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
-            " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
-              AND u.id {$inequalsql}";
+            $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
+                " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
+                AND u.id {$inequalsql}";
 
-        $DB->execute($sql, $params);
+            $DB->execute($sql, $params);
+        }
 
         $dbmanager->drop_table($temptablestruct);
     }
@@ -292,9 +300,13 @@ class clean extends \local_datacleaner\clean {
         }
 
         // Apply the fixed values. One step for what remains because this is fast.
-        list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
+        $userids = array_keys($users);
+        $chunks = array_chunk($userids, 65000);
         foreach (self::$fixedmods as $field => $value) {
-            $DB->set_field_select('user', $field, $value, 'id ' . $sql, $params);
+            foreach ($chunks as $chunk) {
+                list($sql, $params) = $DB->get_in_or_equal($chunk);
+                $DB->set_field_select('user', $field, $value, 'id ' . $sql, $params);
+            }
             self::update_status(self::TASK, $thisstep, $numsteps);
             $thisstep++;
         }
