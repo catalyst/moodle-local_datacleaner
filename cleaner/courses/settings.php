@@ -33,6 +33,11 @@ $settings->add(new admin_setting_configtext('cleaner_courses/minimumage',
             new lang_string('minimumagedesc', 'cleaner_courses'), 365, PARAM_INT));
 
 // Categories of courses to delete.
+// If $CFG->slasharguments is not set at all, this will trigger a warning in PHP unit testing
+// when admin/tool/phpunit/cli/init.php is invoked.
+if (!isset($CFG->slasharguments)) {
+    $CFG->slasharguments = false;
+}
 $categories = core_course_external::get_categories();
 
 $defaultcategories = array();
@@ -55,6 +60,7 @@ $settings->add(new admin_setting_configmulticheckbox(
 $courses = $DB->get_records_select('course', 'id > 1');
 
 $defaultcourses = array();
+$coursesbyname = array();
 
 foreach ($courses as $id => $course) {
     /*
