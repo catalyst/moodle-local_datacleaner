@@ -1,4 +1,21 @@
 
+
+* Matt had a pretty cool idea to make sitedata cleanup really fast:
+
+- spit sitedata in two plugins:
+
+1) runs very ealry before any API calls in other plugins
+2) grind through the entire file table and file all unique file types
+3) create an ampty file or test file for each type, maybe have a few examples in code in the cleaner code dir
+4) point all files of each type at that file
+
+By running this first we can work with pure DB refreshes without any site data at all (in theory, need to test)
+
+
+
+The second file plugin would do the orphaned files cleanup as follows:
+
+
 * remove anything we can, like cache files and tmp dirs where possible
 
 * delete all backup files anywhere at all
