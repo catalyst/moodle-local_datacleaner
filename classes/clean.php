@@ -112,7 +112,7 @@ abstract class clean {
      * Get an array of user objects meeting the criteria provided
      *
      * @param  array $criteria An array of criteria to apply.
-     * @return array $result   The array of matching user objects.
+     * @return array $result   The array of sql fragments & named parameters to add into queries.
      */
     public static function get_users($criteria = array()) {
         global $DB;
@@ -148,8 +148,20 @@ abstract class clean {
             $params['deleted'] = $criteria['deleted'];
         }
 
-        return $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
-    }
+        $uids = $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
+        if (empty($uids)) {
+            return array();
+        }
 
+        $uids = array_keys($uids);
+        self::$numusers = count($uids);
+        $chunks = array_chunk($uids, 65000);
+        foreach ($chunks as &$chunk) {
+            list($sql, $params) = $DB->get_in_or_equal($chunk);
+            $chunk = array('sql' => $sql, 'params' => $params, 'size' => count($chunk));
+        }
+
+        return $chunks;
+    }
 }
 

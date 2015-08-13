@@ -43,11 +43,8 @@ class clean extends \local_datacleaner\clean {
             return;
         }
 
-        $userids = array_keys($users);
-        $chunks = array_chunk($userids, 65000);
-        foreach ($chunks as $chunk) {
-            list($sql, $params) = $DB->get_in_or_equal($chunk);
-            $DB->set_field_select('user', 'deleted', 0, 'id ' . $sql, $params);
+        foreach ($users as $chunk) {
+            $DB->set_field_select('user', 'deleted', 0, 'id ' . $chunk['sql'], $chunk['params']);
         }
     }
 
@@ -66,11 +63,9 @@ class clean extends \local_datacleaner\clean {
         }
 
         // Clean up Assignment stuff.
-        $userids = array_keys($users);
-        $chunks = array_chunk($userids, 65000);
-        foreach ($chunks as $chunk) {
-            list($userinequal, $userparams) = $DB->get_in_or_equal($chunk);
-            $userinequal = 'userid ' . $userinequal;
+        foreach ($users as $chunk) {
+            $userinequal = 'userid ' . $chunk['sql'];
+            $userparams = $chunk['params'];
 
             $submissions = $DB->get_fieldset_select("assign_submission", "id", $userinequal, $userparams);
             if (!empty($submissions)) {
@@ -79,7 +74,7 @@ class clean extends \local_datacleaner\clean {
                 $DB->delete_records_list('assignsubmission_onlinetext', 'submission', $submissions);
             }
 
-            $DB->delete_records_list('assign_submission', 'userid', $chunk);
+            $DB->delete_records_select('assign_submission', 'userid' . $chunk['sql'], $chunk['params']);
 
             $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
             if (!empty($grades)) {
@@ -90,10 +85,10 @@ class clean extends \local_datacleaner\clean {
                 $DB->delete_records_list('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
             }
 
-            $DB->delete_records_list('assign_grades', 'userid', $chunk);
-            $DB->delete_records_list('assign_user_flags', 'userid', $chunk);
-            $DB->delete_records_list('assign_user_mapping', 'userid', $chunk);
-            $DB->delete_records_list('assignfeedback_editpdf_quick', 'userid', $chunk);
+            $DB->delete_records_select('assign_grades', 'userid ' . $chunk['sql'], $chunk['params']);
+            $DB->delete_records_select('assign_user_flags', 'userid ' . $chunk['sql'], $chunk['params']);
+            $DB->delete_records_select('assign_user_mapping', 'userid ' . $chunk['sql'], $chunk['params']);
+            $DB->delete_records_select('assignfeedback_editpdf_quick', 'userid ' . $chunk['sql'], $chunk['params']);
 
             // Clean up other tables that might be around and need it.
             $dbman = $DB->get_manager();
@@ -120,7 +115,7 @@ class clean extends \local_datacleaner\clean {
         $transaction = $DB->start_delegated_transaction();
 
         $index = 0;
-        $numusers = count($users);
+        $numusers = self::get_num_users();
         $steps = max($numusers / 20, 5);
         $interval = $numusers / $steps;
 
@@ -136,8 +131,8 @@ class clean extends \local_datacleaner\clean {
         $transaction->allow_commit();
 
         // Finally clean up user table.
-        foreach ($chunks as $chunk) {
-            $DB->delete_records_list('user', 'id', $chunk);
+        foreach ($users as $chunk) {
+            $DB->delete_records_select('user', 'id ' . $chunk['sql'], $chunk['params']);
         }
     }
 
@@ -160,7 +155,7 @@ class clean extends \local_datacleaner\clean {
 
         // Get on with the real work!
         $users = self::get_users($criteria);
-        $numusers = count($users);
+        $numusers = self::get_num_users();
 
         if ($numusers) {
             self::update_status(self::TASK, 0, $numusers);
