@@ -58,10 +58,6 @@ class clean extends \local_datacleaner\clean {
     private static function delete_users(array $users) {
         global $DB;
 
-        if (empty($users)) {
-            return;
-        }
-
         // Clean up Assignment stuff.
         foreach ($users as $chunk) {
             $userinequal = 'userid ' . $chunk['sql'];
@@ -109,6 +105,7 @@ class clean extends \local_datacleaner\clean {
                     }
                 }
             }
+            self::next_step();
         }
 
         // This transaction is purely for speed, hence the committing in the middle of the loop.
@@ -119,20 +116,27 @@ class clean extends \local_datacleaner\clean {
         $steps = max($numusers / 20, 5);
         $interval = $numusers / $steps;
 
-        foreach ($users as $user) {
-            delete_user($user);
+        foreach ($users as $chunk) {
+            foreach ($chunk['params'] as $user) {
+                delete_user($user);
 
-            $index ++;
-            if (!($index % $interval)) {
-                self::update_status(self::TASK, $index, $numusers);
+                $index ++;
+                if (!($index % $interval)) {
+                    $transaction->allow_commit();
+                    $transaction = $DB->start_delegated_transaction();
+
+                    self::next_step();
+                }
             }
         }
 
         $transaction->allow_commit();
+        self::next_step();
 
         // Finally clean up user table.
         foreach ($users as $chunk) {
             $DB->delete_records_select('user', 'id ' . $chunk['sql'], $chunk['params']);
+            self::next_step();
         }
     }
 
@@ -157,12 +161,10 @@ class clean extends \local_datacleaner\clean {
         $users = self::get_users($criteria);
         $numusers = self::get_num_users();
 
+        self::new_task(count($users) + intval($numusers/20) + 1 + count($users));
+
         if ($numusers) {
-            self::update_status(self::TASK, 0, $numusers);
-
             self::delete_users($users);
-
-            self::update_status(self::TASK, $numusers, $numusers);
         }
 
         echo 'Deleted ' . count($users) . " users.\n";

@@ -256,6 +256,7 @@ class clean extends \local_datacleaner\clean {
                 AND u.id " . $chunk['sql'];
 
             $DB->execute($sql, $chunk['params']);
+            self::next_step();
         }
 
         $dbmanager->drop_table($temptablestruct);
@@ -286,28 +287,25 @@ class clean extends \local_datacleaner\clean {
         echo "Scrambling the data of {$numusers} users.\n";
 
         // Scramble the eggs.
-        $numsteps = count($users) * (count(self::$scramble) + count(self::$fixedmods) + 1);
-        self::update_status(self::TASK, 0, $numsteps);
-        $thisstep = 1;
+        $numsteps = count($users) * (count(self::$scramble) + count(self::$fixedmods)) + count(self::$functions);
+        self::new_task($numsteps);
+
         foreach (self::$scramble as $description => $setoffields) {
             self::randomise_fields($users, $setoffields);
-            self::update_status(self::TASK, $thisstep, $numsteps);
-            $thisstep++;
         }
 
         // Apply the fixed values. One step for what remains because this is fast.
         foreach (self::$fixedmods as $field => $value) {
             foreach ($users as $chunk) {
                 $DB->set_field_select('user', $field, $value, 'id ' . $chunk['sql'], $chunk['params']);
+                self::next_step();
             }
-            self::update_status(self::TASK, $thisstep, $numsteps);
-            $thisstep++;
         }
 
         // Apply the functions.
         foreach (self::$functions as $field => $fnname) {
             self::$fnname($users);
+            self::next_step();
         }
-        self::update_status(self::TASK, $thisstep, $numsteps);
     }
 }

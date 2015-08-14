@@ -32,6 +32,9 @@ abstract class clean {
 
     protected static $numusers = 0;
 
+    protected static $step = 0;
+    protected static $maxsteps = 0;
+
     static public function execute() {
 
     }
@@ -68,6 +71,17 @@ abstract class clean {
         if ($itemno == $total) {
             printf("\n");
         }
+    }
+
+    static protected function new_task($maxsteps) {
+        static::$step = 0;
+        static::$maxsteps = $maxsteps;
+        static::update_status(static::TASK, static::$step, static::$maxsteps);
+    }
+
+    static protected function next_step() {
+        static::$step++;
+        static::update_status(static::TASK, static::$step, static::$maxsteps);
     }
 
     /**

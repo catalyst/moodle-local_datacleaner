@@ -25,6 +25,7 @@ namespace cleaner_courses;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
+    const TASK = 'Removing old courses';
 
     /**
      * Delete a single course.
@@ -70,8 +71,6 @@ class clean extends \local_datacleaner\clean {
     static public function execute() {
         global $DB;
 
-        $task = 'Removing old courses';
-
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_courses');
 
@@ -97,8 +96,7 @@ class clean extends \local_datacleaner\clean {
             return;
         }
 
-        self::update_status($task, 0, $numcourses);
-        $done = 0;
+        self::new_task($numcourses);
 
         foreach ($courses as $id => $course) {
             try {
@@ -106,8 +104,7 @@ class clean extends \local_datacleaner\clean {
             } catch (Exception $e) {
                 echo 'Caught exception: ', $e->getMessage(), '\n';
             }
-            $done++;
-            self::update_status($task, $done, $numcourses);
+            self::next_step();
         }
     }
 }

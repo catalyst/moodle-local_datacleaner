@@ -25,6 +25,7 @@ namespace cleaner_logstore_standard;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
+    const TASK = 'Removing standard logs';
 
     static public function execute() {
 

@@ -26,6 +26,7 @@ namespace cleaner_replace_urls;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
+    const TASK = 'Replacing production URLs';
 
     static public function execute() {
         global $DB;
