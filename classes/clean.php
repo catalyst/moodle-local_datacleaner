@@ -34,6 +34,7 @@ abstract class clean {
 
     protected static $step = 0;
     protected static $maxsteps = 0;
+    protected static $exectime = 0;
 
     static public function execute() {
 
@@ -77,11 +78,18 @@ abstract class clean {
         static::$step = 0;
         static::$maxsteps = $maxsteps;
         static::update_status(static::TASK, static::$step, static::$maxsteps);
+        static::$exectime = -microtime(true);
     }
 
     static protected function next_step() {
         static::$step++;
         static::update_status(static::TASK, static::$step, static::$maxsteps);
+
+        // Print the execution time if we're done.
+        if (static::$step == static::$maxsteps) {
+            static::$exectime += microtime(true);
+            echo "Execution took ", sprintf('%f', static::$exectime), " seconds.", PHP_EOL;
+        }
     }
 
     /**
