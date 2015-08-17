@@ -290,22 +290,30 @@ class clean extends \local_datacleaner\clean {
         $numsteps = count($users) * (count(self::$scramble) + count(self::$fixedmods)) + count(self::$functions);
         self::new_task($numsteps);
 
+        $transaction = $DB->start_delegated_transaction();
+
         foreach (self::$scramble as $description => $setoffields) {
             self::randomise_fields($users, $setoffields);
         }
 
+        $transaction->allow_commit();
+
         // Apply the fixed values. One step for what remains because this is fast.
+        $transaction = $DB->start_delegated_transaction();
         foreach (self::$fixedmods as $field => $value) {
             foreach ($users as $chunk) {
                 $DB->set_field_select('user', $field, $value, 'id ' . $chunk['sql'], $chunk['params']);
                 self::next_step();
             }
         }
+        $transaction->allow_commit();
 
         // Apply the functions.
+        $transaction = $DB->start_delegated_transaction();
         foreach (self::$functions as $field => $fnname) {
             self::$fnname($users);
             self::next_step();
         }
+        $transaction->allow_commit();
     }
 }
