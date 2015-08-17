@@ -177,5 +177,22 @@ abstract class clean {
 
         return $chunks;
     }
+
+    /**
+     * Delete a list of records in chunks.
+     *
+     * @param string $table The table from which to delete records
+     * @param string $field The field against which to compare values
+     * @param array $ids An array of IDs to match
+     */
+    public static function delete_records_list_chunked($table, $field, $ids) {
+        global $DB;
+
+        $chunks = array_chunk($ids, 65000);
+        foreach ($chunks as &$chunk) {
+            list($sql, $params) = $DB->get_in_or_equal($chunk);
+            $DB->delete_records_list($table, $field, $params);
+        }
+    }
 }
 

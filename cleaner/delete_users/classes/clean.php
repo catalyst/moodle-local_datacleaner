@@ -29,6 +29,20 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Removing old users';
 
     /**
+     * Calculate the number of steps that will be displayed
+     */
+    protected static function num_steps($numusers) {
+        $steps = max(intval($numusers / 20), 5); /* Consider 14 => 5 */
+        $interval = intval($numusers / $steps); /* 2 */
+        if (!$interval) {
+            $interval = 1;
+        }
+        $steps = intval($numusers / $interval); /* 7 - the actual number of steps that will be shown */
+
+        return array($interval, $steps);
+    }
+
+    /**
      * Undelete a group of users
      *
      * There's an undelete_user function in Totara, but it only does one user at a time and
@@ -64,27 +78,46 @@ class clean extends \local_datacleaner\clean {
             $userparams = $chunk['params'];
 
             $submissions = $DB->get_fieldset_select("assign_submission", "id", $userinequal, $userparams);
+            self::next_step();
+
             if (!empty($submissions)) {
                 // TODO: Actually delete the files.
-                $DB->delete_records_list('assignsubmission_file', 'submission', $submissions);
-                $DB->delete_records_list('assignsubmission_onlinetext', 'submission', $submissions);
+                static::delete_records_list_chunked('assignsubmission_file', 'submission', $submissions);
+                static::delete_records_list_chunked('assignsubmission_onlinetext', 'submission', $submissions);
             }
 
-            $DB->delete_records_select('assign_submission', 'userid' . $chunk['sql'], $chunk['params']);
+            self::next_step();
+
+            $DB->delete_records_select('assign_submission', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
 
             $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
             if (!empty($grades)) {
-                $DB->delete_records_list('assignfeedback_comments', 'grade', $grades);
+                static::delete_records_list_chunked('assignfeedback_comments', 'grade', $grades);
                 // TODO: Actually delete the files.
-                $DB->delete_records_list('assignfeedback_file', 'grade', $grades);
-                $DB->delete_records_list('assignfeedback_editpdf_annot', 'gradeid', $grades);
-                $DB->delete_records_list('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
+                static::delete_records_list_chunked('assignfeedback_file', 'grade', $grades);
+                static::delete_records_list_chunked('assignfeedback_editpdf_annot', 'gradeid', $grades);
+                static::delete_records_list_chunked('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
             }
 
+            self::next_step();
+
             $DB->delete_records_select('assign_grades', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
+
             $DB->delete_records_select('assign_user_flags', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
+
             $DB->delete_records_select('assign_user_mapping', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
+
             $DB->delete_records_select('assignfeedback_editpdf_quick', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
 
             // Clean up other tables that might be around and need it.
             $dbman = $DB->get_manager();
@@ -101,11 +134,11 @@ class clean extends \local_datacleaner\clean {
                         'useridto' => array('message', 'message_read')) as $field => $tables) {
                 foreach ($tables as $table) {
                     if ($dbman->table_exists($table)) {
-                        $DB->delete_records_list($table, $field, $chunk);
+                        static::delete_records_list_chunked($table, $field, $chunk['params']);
                     }
+                    self::next_step();
                 }
             }
-            self::next_step();
         }
 
         // This transaction is purely for speed, hence the committing in the middle of the loop.
@@ -113,14 +146,14 @@ class clean extends \local_datacleaner\clean {
 
         $index = 0;
         $numusers = self::get_num_users();
-        $steps = max($numusers / 20, 5);
-        $interval = $numusers / $steps;
+        list($interval, $steps) = self::num_steps($numusers);
 
         foreach ($users as $chunk) {
-            foreach ($chunk['params'] as $user) {
+            $recs = $DB->get_records_select('user', 'id ' . $chunk['sql'], $chunk['params']);
+            foreach ($recs as $user) {
                 delete_user($user);
 
-                $index ++;
+                $index++;
                 if (!($index % $interval)) {
                     $transaction->allow_commit();
                     $transaction = $DB->start_delegated_transaction();
@@ -161,12 +194,13 @@ class clean extends \local_datacleaner\clean {
         $users = self::get_users($criteria);
         $numusers = self::get_num_users();
 
-        self::new_task(count($users) + intval($numusers/20) + 1 + count($users));
-
         if ($numusers) {
+            list($interval, $steps) = self::num_steps($numusers);
+            self::new_task((count($users) * 39) + $steps + 1 + count($users));
+
             self::delete_users($users);
         }
 
-        echo 'Deleted ' . count($users) . " users.\n";
+        echo 'Deleted ' . $numusers . " users.\n";
     }
 }
