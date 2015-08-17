@@ -86,7 +86,10 @@ class clean extends \local_datacleaner\clean {
         }
 
         $criteria['categories'] = $config->categories;
-        $criteria['courses'] = $config->courses;
+
+        if (!empty($config->courses)) {
+            $criteria['courses'] = $config->courses;
+        }
 
         $courses = self::get_courses($criteria);
         $numcourses = count($courses);
