@@ -58,7 +58,8 @@ abstract class clean {
 
             $start = self::$tasks[$taskname];
             $eta = ($now - $start) * $total / $itemno + $start;
-            $timeleft = intval($eta - $now) . ' seconds remaining';
+            $elapsed = $now - $start;
+            $timeleft = intval($elapsed) . ' seconds elapsed, ' . intval($eta - $now) . ' seconds remaining';
 
         } else {
             self::$tasks[$taskname] = time();
