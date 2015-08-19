@@ -63,11 +63,11 @@ $settings->add(new admin_setting_configmulticheckbox(
 $coursecache = cache::make('local_datacleaner', 'courses');
 $coursesbyname = $coursecache->get('courses');
 $courses = $DB->get_records_select('course', 'id > 1');
+$defaultcourses = array();
 
 // Only regenerate the cache if it's empty or a course has been added/deleted.
 if (count($courses) != count($coursesbyname)) {
 
-    $defaultcourses = array();
     $coursesbyname = array();
 
     foreach ($courses as $id => $course) {
