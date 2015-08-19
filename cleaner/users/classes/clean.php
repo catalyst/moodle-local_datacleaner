@@ -145,37 +145,6 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Load an install.xml file, checking that it exists, and that the structure is OK.
-     *
-     * This is copied from lib/ddl/database_manager.php because it's a private method there.
-     *
-     * @param string $file the full path to the XMLDB file.
-     * @return xmldbfile the loaded file.
-     */
-    static private function load_xmldbfile($file) {
-        global $CFG;
-
-        $xmldbfile = new \xmldb_file($file);
-
-        if (!$xmldbfile->fileExists()) {
-            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
-        }
-
-        $loaded = $xmldbfile->loadXMLStructure();
-        if (!$loaded || !$xmldbfile->isLoaded()) {
-            // Show info about the error if we can find it.
-            if ($structure = $xmldbfile->getStructure()) {
-                if ($errors = $structure->getAllErrors()) {
-                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
-                }
-            }
-            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
-        }
-
-        return $xmldbfile;
-    }
-
-    /**
      * Scramble the contents of a set of fields.
      *
      * The algorithm is:

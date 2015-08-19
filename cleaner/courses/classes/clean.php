@@ -28,15 +28,6 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Removing old courses';
 
     /**
-     * Delete a single course.
-     *
-     * @param int $id The course id.
-     */
-    static private function delete_course($id) {
-        delete_course($id, false);
-    }
-
-    /**
      * Get an array of course objects meeting the criteria provided
      *
      * @param  array $criteria An array of criteria to apply.
@@ -68,6 +59,29 @@ class clean extends \local_datacleaner\clean {
         return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
     }
 
+    /**
+     * Delete a bunch of courses at once.
+     *
+     * delete_course is faaaaaaaaaaaaaaaar too slow. This plugin gets around this by using the XML schema
+     * info to set up cascade deletion, use it to delete the affected courses and then revert the schema changes.
+     */
+    static public function delete_courses($courses = array())
+    {
+        global $DB;
+
+        $schema = self::get_xml_schema();
+
+        self::add_cascade_deletion($schema);
+
+        list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
+        $DB->delete_records_select('course', 'id ' . $sql, $params);
+
+        self::remove_cascade_deletion($schema);
+    }
+
+    /**
+     * Do the work of deleting courses.
+     */
     static public function execute() {
         global $DB;
 
@@ -101,14 +115,7 @@ class clean extends \local_datacleaner\clean {
 
         self::new_task($numcourses);
 
-        foreach ($courses as $id => $course) {
-            try {
-                self::delete_course($id);
-            } catch (Exception $e) {
-                echo 'Caught exception: ', $e->getMessage(), '\n';
-            }
-            self::next_step();
-        }
+        self::delete_courses($courses);
     }
 }
 

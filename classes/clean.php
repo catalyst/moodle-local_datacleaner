@@ -203,5 +203,231 @@ abstract class clean {
             $DB->delete_records_list($table, $field, $params);
         }
     }
+
+    /**
+     * Load an install.xml file, checking that it exists, and that the structure is OK.
+     *
+     * This is copied from lib/ddl/database_manager.php because it's a private method there.
+     *
+     * @param string $file the full path to the XMLDB file.
+     * @return xmldbfile the loaded file.
+     */
+    public static function load_xmldbfile($file) {
+        global $CFG;
+
+        $xmldbfile = new \xmldb_file($file);
+
+        if (!$xmldbfile->fileExists()) {
+            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
+        }
+
+        $loaded = $xmldbfile->loadXMLStructure();
+        if (!$loaded || !$xmldbfile->isLoaded()) {
+            // Show info about the error if we can find it.
+            if ($structure = $xmldbfile->getStructure()) {
+                if ($errors = $structure->getAllErrors()) {
+                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
+                }
+            }
+            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
+        }
+
+        return $xmldbfile;
+    }
+
+    /**
+     * Based on get_install_xml_schema in lib/ddl/database_manager.php.
+     *
+     * Reads the install.xml files for Moodle core and modules and returns an array of
+     * xmldb_structure object with xmldb_table from these files.
+     * @return xmldb_structure schema from install.xml files
+     */
+    static public function get_xml_schema() {
+        global $CFG;
+
+        $cache = \cache::make('local_datacleaner', 'schema');
+        $schema = $cache->get('schema');
+
+        if ($schema) {
+            return $schema;
+        }
+
+        require_once($CFG->libdir.'/adminlib.php');
+
+        $schema = new \xmldb_structure('export');
+        $schema->setVersion($CFG->version);
+        $dbdirs = get_db_directories();
+        foreach ($dbdirs as $dbdir) {
+            $xmldb_file = new \xmldb_file($dbdir.'/install.xml');
+            if (!$xmldb_file->fileExists() or !$xmldb_file->loadXMLStructure()) {
+                continue;
+            }
+            $structure = $xmldb_file->getStructure();
+            $tables = $structure->getTables();
+            foreach ($tables as $table) {
+                $table->setPrevious(null);
+                $table->setNext(null);
+                $schema->addTable($table);
+            }
+        }
+
+        $cache->set('schema', $schema);
+
+        return $schema;
+    }
+
+    /**
+     * Add cascade deletion to courseIDs.
+     */
+    static public function add_cascade_deletion($schema, $parent = 'course', $depth = 1) {
+        global $DB;
+
+        if ($depth > 8) {
+            return;
+        }
+
+        echo ">> Setting up cascade deletion for {$parent}\n";
+        $dbmanager = $DB->get_manager();
+
+        // Add index.
+        try {
+            echo "Adding index to {$parent} for id ... ";
+            $DB->execute("CREATE INDEX {$parent}id ON {{$parent}} USING btree (id)");
+            echo "success.\n";
+        } catch (\dml_write_exception $e) {
+            // We don't mind if it already exists.
+            if (substr($e->error, -14) == "already exists") {
+                echo "already exists\n";
+            } else {
+                echo "failed {$e->error}.\n";
+            }
+        }
+        // Iterate over tables in the schema ...
+        foreach($schema->getTables() as $table) {
+            $tableName = $table->getName();
+            if ($tableName == $parent) {
+                continue;
+            }
+            $fields = $table->getFields();
+            // ... and over fields in the table ...
+            foreach ($fields as $field) {
+                $fieldName = $field->getName();
+                // ... looking for a field of interest ...
+                if ($fieldName == $parent || $fieldName == "{$parent}id" || $fieldName == "{$parent}instance" ||
+                        ($fieldName == 'assignment' && substr($tableName, 0, 7) == 'assign_')) {
+                    // Got one? Get the matching foreign key.
+                    $indices = $table->getIndexes();
+                    $indexName = false;
+                    foreach ($indices as $index) {
+                        $indexFields = $index->getFields();
+                        if (count($indexFields) == 1 && $indexFields[0] == $fieldName) {
+                            $indexName = $index->getName();
+                        }
+                    }
+
+                    if (!$indexName) {
+                        $indexName = "u_{$parent}";
+                    }
+
+                    try {
+                        /* Before we try to add the index, look for records that will prevent it */
+                        $conflicts = $DB->count_records_sql(
+                                "SELECT COUNT('x') FROM {{$tableName}}
+                                LEFT JOIN {{$parent}} ON {{$tableName}}.{$fieldName} = {{$parent}}.id
+                                WHERE {{$parent}}.id IS NULL");
+                        if ($conflicts) {
+                            $total = $DB->count_records($tableName);
+                            if ($total > 100 && ($conflicts / $total) < 0.05) {
+                                echo "Deleting {$conflicts} of {$total} records from {$tableName} that don't match {$parent} ... ";
+                                $DB->execute(
+                                        "DELETE FROM {{$tableName}} WHERE NOT EXISTS (
+                                    SELECT 1 FROM {{$parent}} WHERE {{$tableName}}.{$fieldName} = {{$parent}}.id)");
+                            } else {
+                                echo "{$conflicts}/{$total} records from {$tableName} don't match. Assuming this is not really a candidate for referential integrity).\n";
+                                continue;
+                            }
+                        }
+                        echo "Adding index to {$tableName} for field {$fieldName} ... ";
+                        $DB->execute("ALTER TABLE {{$tableName}}
+                                ADD CONSTRAINT c_{$indexName}
+                                FOREIGN KEY ({$fieldName})
+                                REFERENCES {{$parent}}(id)
+                                ON DELETE CASCADE");
+                        echo "success\n";
+                    } catch (\dml_write_exception $e) {
+                        // TODO: Double check that already exists.
+                        if (substr($e->error, -14) == "already exists") {
+                            echo "already exists\n";
+                        } else {
+                            echo "failed ({$e->error})\n";
+                        }
+                    } catch (\dml_read_exception $e) {
+                        // Trying to match fields of different types?
+                        if (substr($e->error, 0, 32) == "ERROR:  operator does not exist:") {
+                            echo "different data types.\n";
+                        } else if (substr($e->error, 0, 16) == "ERROR:  relation") {
+                            echo "{$tableName} table missing?! Perhaps there's an upgrade to be done.";
+                        } else {
+                            echo "failed ({$e->error})\n";
+                        }
+                    }
+
+                    self::add_cascade_deletion($schema, $tableName, $depth + 1);
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove cascade deletion from courseIDs.
+     */
+    static public function remove_cascade_deletion($schema, $parent = 'course', $depth = 1) {
+        global $DB;
+
+        if ($depth > 8) {
+            return;
+        }
+
+        $dbmanager = $DB->get_manager();
+
+        // Iterate over tables in the schema ...
+        foreach($schema->getTables() as $table) {
+            $tableName = $table->getName();
+            if ($tableName == $parent) {
+                continue;
+            }
+            $fields = $table->getFields();
+            // ... and over fields in the table ...
+            foreach ($fields as $field) {
+                $fieldName = $field->getName();
+                // ... looking for a field of interest ...
+                if ($fieldName == $parent || $fieldName == '{$parent}id' || $fieldName == "{$parent}instance") {
+                    // Got one? Get the matching foreign key.
+                    $indices = $table->getIndexes();
+                    foreach ($indices as $index) {
+                        $indexFields = $index->getFields();
+                        if (count($indexFields) == 1 && $indexFields[0] == $fieldName) {
+                            $indexName = $index->getName();
+                            try {
+                                $DB->execute("ALTER TABLE {{$tableName}}
+                                          DROP CONSTRAINT {$indexName}");
+                            } catch (\dml_write_exception $e) {
+                                // TODO: Double check that didn't exist.
+                            }
+                            self::remove_cascade_deletion($schema, $tableName, $depth + 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Remove index.
+        try {
+            $DB->execute("DROP INDEX {$parent}id ON {course}");
+        } catch (\dml_write_exception $e) {
+            // We don't mind if it didn't exist.
+        }
+    }
+
 }
 
