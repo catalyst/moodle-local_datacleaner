@@ -30,6 +30,8 @@ abstract class clean {
 
     private static $tasks = array(); // For storing task start times.
 
+    protected static $debugging = false;
+
     protected static $numusers = 0;
 
     protected static $step = 0;
@@ -40,6 +42,15 @@ abstract class clean {
 
     static public function execute() {
 
+    }
+
+    /**
+     * Possibly output a debugging message.
+     */
+    private static function debug($message) {
+        if (self::$debugging) {
+            echo $message;
+        }
     }
 
     /*
@@ -297,21 +308,22 @@ abstract class clean {
         }
 
         $visited[$parent] = true;
-        // echo ">> Setting up cascade deletion for {$parent}\n";
+
+        self::debug(">> Setting up cascade deletion for {$parent}\n");
         $dbmanager = $DB->get_manager();
 
         // Add index.
         try {
-            // echo "Adding index to {$parent} for id ... ";
+            self::debug("Adding index to {$parent} for id ... ");
             $DB->execute("CREATE INDEX {$parent}_id ON {{$parent}} USING btree (id)");
             self::add_constraint_removal_query("DROP INDEX {$parent}_id");
-            // echo "success.\n";
+            self::debug("success.\n");
         } catch (\dml_write_exception $e) {
             // We don't mind if it already exists.
             if (substr($e->error, -14) == "already exists") {
-                // echo "already exists\n";
+                self::debug("already exists\n");
             } else {
-                // echo "failed {$e->error}.\n";
+                self::debug("failed {$e->error}.\n");
             }
         }
         // Iterate over tables in the schema ...
@@ -343,47 +355,48 @@ abstract class clean {
 
                     try {
                         /* Before we try to add the index, look for records that will prevent it */
+                        self::debug("Checking for mismatches between {$parent} and {$tableName}.{$fieldName}.\r");
                         $conflicts = $DB->count_records_sql(
                                 "SELECT COUNT('x') FROM {{$tableName}}
                                 LEFT JOIN {{$parent}} ON {{$tableName}}.{$fieldName} = {{$parent}}.id
                                 WHERE {{$parent}}.id IS NULL");
                         if ($conflicts) {
+                            self::debug("Getting total number of records in {$tableName}.\r");
                             $total = $DB->count_records($tableName);
                             if ($total > 100 && ($conflicts / $total) < 0.05) {
-                                echo "Deleting {$conflicts} of {$total} records from {$tableName} that don't match {$parent} ... ";
+                                self::debug("Deleting {$conflicts} of {$total} records from {$tableName} that don't match {$parent} ... ");
                                 $DB->execute(
                                         "DELETE FROM {{$tableName}} WHERE NOT EXISTS (
                                     SELECT 1 FROM {{$parent}} WHERE {{$tableName}}.{$fieldName} = {{$parent}}.id)");
                             } else {
                                 if ($conflicts < $total) {
-                                    echo "{$conflicts}/{$total} records from the {$fieldName} field in {$tableName} don't match {$parent} ids. Assuming this is not really a candidate for referential integrity.\n";
+                                    self::debug("{$conflicts}/{$total} records from the {$fieldName} field in {$tableName} don't match {$parent} ids. Assuming this is not really a candidate for referential integrity.\n");
                                 }
                                 continue;
                             }
                         }
-                        echo "Adding cascade delete to {$tableName}, field {$fieldName} for deletions from table {$parent} ... ";
+                        self::debug("Adding cascade delete to {$tableName}, field {$fieldName} for deletions from table {$parent} ... ");
                         $DB->execute("ALTER TABLE {{$tableName}}
                                 ADD CONSTRAINT c_{$indexName}
                                 FOREIGN KEY ({$fieldName})
                                 REFERENCES {{$parent}}(id)
                                 ON DELETE CASCADE");
-                        self::add_constraint_removal_query("ALTER TABLE {{$tableName}} DROP CONSTRAINT c_{$indexName}}");
-                        echo "success.\n";
+                        self::add_constraint_removal_query("ALTER TABLE {{$tableName}} DROP CONSTRAINT c_{$indexName}");
+                        self::debug("success.\n");
                     } catch (\dml_write_exception $e) {
-                        // TODO: Double check that already exists.
                         if (substr($e->error, -14) == "already exists") {
-                            echo "already exists.\n";
+                            self::debug("already exists.\n");
                         } else {
-                            echo "failed ({$e->error}).\n";
+                            self::debug("failed ({$e->error}).\n");
                         }
                     } catch (\dml_read_exception $e) {
                         // Trying to match fields of different types?
                         if (substr($e->error, 0, 32) == "ERROR:  operator does not exist:") {
-                            echo "ID field from {$parent} table and {$fieldName} from {$tableName} have different data types.\n";
+                            self::debug("ID field from {$parent} table and {$fieldName} from {$tableName} have different data types.\n");
                         } else if (substr($e->error, 0, 16) == "ERROR:  relation") {
-                            echo "{$tableName} table missing?! Perhaps there's an upgrade to be done.\n";
+                            self::debug("{$tableName} table missing?! Perhaps there's an upgrade to be done.\n");
                         } else {
-                            echo "failed ({$e->error})\n";
+                            self::debug("failed ({$e->error})\n");
                         }
                     }
 
@@ -401,12 +414,13 @@ abstract class clean {
 
         $dbmanager = $DB->get_manager();
 
-        echo "Removing cascade deletions and indices that were added.\n";
+        self::debug("Removing cascade deletions and indices that were added.\n");
 
         foreach (array_reverse(self::$constraint_removal_queries) as $query) {
             $DB->execute($query);
         }
+
+        self::$constraint_removal_queries = array();
     }
 
 }
-
