@@ -314,7 +314,7 @@ abstract class clean {
                 $fieldName = $field->getName();
                 // ... looking for a field of interest ...
                 if ($fieldName == $parent || $fieldName == "{$parent}id" || $fieldName == "{$parent}instance" ||
-                        ($fieldName == 'assignment' && substr($tableName, 0, 7) == 'assign_')) {
+                        ($fieldName == 'assignment' && $parent == 'assign')) {
                     // Got one? Get the matching foreign key.
                     $indices = $table->getIndexes();
                     $indexName = false;
