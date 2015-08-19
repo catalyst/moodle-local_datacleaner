@@ -349,26 +349,26 @@ abstract class clean {
                                 continue;
                             }
                         }
-                        echo "Adding index to {$tableName} for field {$fieldName} ... ";
+                        echo "Adding cascade delete to {$tableName}, field {$fieldName} for deletions from table {$parent} ... ";
                         $DB->execute("ALTER TABLE {{$tableName}}
                                 ADD CONSTRAINT c_{$indexName}
                                 FOREIGN KEY ({$fieldName})
                                 REFERENCES {{$parent}}(id)
                                 ON DELETE CASCADE");
-                        echo "success\n";
+                        echo "success.\n";
                     } catch (\dml_write_exception $e) {
                         // TODO: Double check that already exists.
                         if (substr($e->error, -14) == "already exists") {
-                            echo "already exists\n";
+                            echo "already exists.\n";
                         } else {
-                            echo "failed ({$e->error})\n";
+                            echo "failed ({$e->error}).\n";
                         }
                     } catch (\dml_read_exception $e) {
                         // Trying to match fields of different types?
                         if (substr($e->error, 0, 32) == "ERROR:  operator does not exist:") {
-                            echo "different data types.\n";
+                            echo "ID field from {$parent} table and {$fieldName} from {$tableName} have different data types.\n";
                         } else if (substr($e->error, 0, 16) == "ERROR:  relation") {
-                            echo "{$tableName} table missing?! Perhaps there's an upgrade to be done.";
+                            echo "{$tableName} table missing?! Perhaps there's an upgrade to be done.\n";
                         } else {
                             echo "failed ({$e->error})\n";
                         }
