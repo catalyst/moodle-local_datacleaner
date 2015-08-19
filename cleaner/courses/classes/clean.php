@@ -73,10 +73,13 @@ class clean extends \local_datacleaner\clean {
 
         self::add_cascade_deletion($schema);
 
+        self::next_step();
         list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
         $DB->delete_records_select('course', 'id ' . $sql, $params);
 
+        self::next_step();
         self::remove_cascade_deletion($schema);
+        self::next_step();
     }
 
     /**
@@ -113,9 +116,12 @@ class clean extends \local_datacleaner\clean {
             return;
         }
 
-        self::new_task($numcourses);
+        echo "Deleting {$numcourses} courses.\n";
+
+        self::new_task(3);
 
         self::delete_courses($courses);
     }
+
 }
 
