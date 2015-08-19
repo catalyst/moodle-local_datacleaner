@@ -343,7 +343,9 @@ abstract class clean {
                                         "DELETE FROM {{$tableName}} WHERE NOT EXISTS (
                                     SELECT 1 FROM {{$parent}} WHERE {{$tableName}}.{$fieldName} = {{$parent}}.id)");
                             } else {
-                                echo "{$conflicts}/{$total} records from {$tableName} don't match. Assuming this is not really a candidate for referential integrity).\n";
+                                if ($conflicts < $total) {
+                                    echo "{$conflicts}/{$total} records from the {$fieldName} field in {$tableName} don't match {$parent} ids. Assuming this is not really a candidate for referential integrity.\n";
+                                }
                                 continue;
                             }
                         }
