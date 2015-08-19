@@ -292,7 +292,7 @@ abstract class clean {
         // Add index.
         try {
             // echo "Adding index to {$parent} for id ... ";
-            $DB->execute("CREATE INDEX {$parent}id ON {{$parent}} USING btree (id)");
+            $DB->execute("CREATE INDEX {$parent}_id ON {{$parent}} USING btree (id)");
             // echo "success.\n";
         } catch (\dml_write_exception $e) {
             // We don't mind if it already exists.
