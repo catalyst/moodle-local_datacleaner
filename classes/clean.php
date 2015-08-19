@@ -286,20 +286,20 @@ abstract class clean {
             return;
         }
 
-        echo ">> Setting up cascade deletion for {$parent}\n";
+        // echo ">> Setting up cascade deletion for {$parent}\n";
         $dbmanager = $DB->get_manager();
 
         // Add index.
         try {
-            echo "Adding index to {$parent} for id ... ";
+            // echo "Adding index to {$parent} for id ... ";
             $DB->execute("CREATE INDEX {$parent}id ON {{$parent}} USING btree (id)");
-            echo "success.\n";
+            // echo "success.\n";
         } catch (\dml_write_exception $e) {
             // We don't mind if it already exists.
             if (substr($e->error, -14) == "already exists") {
-                echo "already exists\n";
+                // echo "already exists\n";
             } else {
-                echo "failed {$e->error}.\n";
+                // echo "failed {$e->error}.\n";
             }
         }
         // Iterate over tables in the schema ...
