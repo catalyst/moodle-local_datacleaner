@@ -36,6 +36,8 @@ abstract class clean {
     protected static $maxsteps = 0;
     protected static $exectime = 0;
 
+    protected static $constraint_removal_queries = array();
+
     static public function execute() {
 
     }
@@ -276,6 +278,13 @@ abstract class clean {
         return $schema;
     }
 
+    static protected function add_constraint_removal_query($query) {
+        if (empty(self::$constraint_removal_queries)) {
+            register_shutdown_function(array('local_datacleaner\clean', 'remove_cascade_deletion'));
+        }
+        self::$constraint_removal_queries[] = $query;
+    }
+
     /**
      * Add cascade deletion to courseIDs.
      */
@@ -293,6 +302,7 @@ abstract class clean {
         try {
             // echo "Adding index to {$parent} for id ... ";
             $DB->execute("CREATE INDEX {$parent}_id ON {{$parent}} USING btree (id)");
+            self::add_constraint_removal_query("DROP INDEX {$parent}_id");
             // echo "success.\n";
         } catch (\dml_write_exception $e) {
             // We don't mind if it already exists.
@@ -355,6 +365,7 @@ abstract class clean {
                                 FOREIGN KEY ({$fieldName})
                                 REFERENCES {{$parent}}(id)
                                 ON DELETE CASCADE");
+                        self::add_constraint_removal_query("ALTER TABLE {{$tableName}} DROP CONSTRAINT c_{$indexName}}");
                         echo "success.\n";
                     } catch (\dml_write_exception $e) {
                         // TODO: Double check that already exists.
@@ -383,51 +394,15 @@ abstract class clean {
     /**
      * Remove cascade deletion from courseIDs.
      */
-    static public function remove_cascade_deletion($schema, $parent = 'course', $depth = 1) {
+    static public function remove_cascade_deletion() {
         global $DB;
-
-        if ($depth > 8) {
-            return;
-        }
 
         $dbmanager = $DB->get_manager();
 
-        // Iterate over tables in the schema ...
-        foreach($schema->getTables() as $table) {
-            $tableName = $table->getName();
-            if ($tableName == $parent) {
-                continue;
-            }
-            $fields = $table->getFields();
-            // ... and over fields in the table ...
-            foreach ($fields as $field) {
-                $fieldName = $field->getName();
-                // ... looking for a field of interest ...
-                if ($fieldName == $parent || $fieldName == '{$parent}id' || $fieldName == "{$parent}instance") {
-                    // Got one? Get the matching foreign key.
-                    $indices = $table->getIndexes();
-                    foreach ($indices as $index) {
-                        $indexFields = $index->getFields();
-                        if (count($indexFields) == 1 && $indexFields[0] == $fieldName) {
-                            $indexName = $index->getName();
-                            try {
-                                $DB->execute("ALTER TABLE {{$tableName}}
-                                          DROP CONSTRAINT {$indexName}");
-                            } catch (\dml_write_exception $e) {
-                                // TODO: Double check that didn't exist.
-                            }
-                            self::remove_cascade_deletion($schema, $tableName, $depth + 1);
-                        }
-                    }
-                }
-            }
-        }
+        echo "Removing cascade deletions and indices that were added.\n";
 
-        // Remove index.
-        try {
-            $DB->execute("DROP INDEX {$parent}id ON {course}");
-        } catch (\dml_write_exception $e) {
-            // We don't mind if it didn't exist.
+        foreach (array_reverse(self::$constraint_removal_queries) as $query) {
+            $DB->execute($query);
         }
     }
 
