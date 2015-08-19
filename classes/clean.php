@@ -288,13 +288,15 @@ abstract class clean {
     /**
      * Add cascade deletion to courseIDs.
      */
-    static public function add_cascade_deletion($schema, $parent = 'course', $depth = 1) {
+    static public function add_cascade_deletion($schema, $parent = 'course') {
+        static $visited = array();
         global $DB;
 
-        if ($depth > 8) {
+        if (isset($visited[$parent])) {
             return;
         }
 
+        $visited[$parent] = true;
         // echo ">> Setting up cascade deletion for {$parent}\n";
         $dbmanager = $DB->get_manager();
 
@@ -385,7 +387,7 @@ abstract class clean {
                         }
                     }
 
-                    self::add_cascade_deletion($schema, $tableName, $depth + 1);
+                    self::add_cascade_deletion($schema, $tableName);
                 }
             }
         }
