@@ -60,18 +60,19 @@ function abort_message($text, $highlight = false) {
  *
  * Make sure it's safe for us to continue. Don't wash prod!
  */
-function safety_checks() {
+function safety_checks($dryrun) {
     global $CFG, $DB;
 
     $willdie = false;
+    $abort = $dryrun ? 'Would abort' : 'Aborting';
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
-    $saved = $CFG->original_wwwroot;
+    $saved = isset($CFG->original_wwwroot) ? $CFG->original_wwwroot : false;
 
     if (empty($saved)) {
         print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
     } else if ($CFG->wwwroot == $saved) {
-        abort_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. Aborting.", true);
+        abort_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. {$abort}.", true);
         $willdie = true;
     }
 
@@ -114,7 +115,7 @@ function safety_checks() {
 
         if ($nonadmins) {
             abort_message($message);
-            abort_message("Aborting because there are non site-administrators in the list of recent users.", true);
+            abort_message("{$abort} because there are non site-administrators in the list of recent users.", true);
             $willdie = true;
         }
     }
@@ -126,12 +127,14 @@ function safety_checks() {
     }
 
     if ($lastrun > $timefrom) {
-        abort_message("Aborting because cron has run within the last {$minutes} minutes.", true);
+        abort_message("{$abort} because cron has run within the last {$minutes} minutes.", true);
         $willdie = true;
     }
 
-    if ($willdie) {
+    if ($willdie && !$dryrun) {
         exit(1);
     }
+
+    return $willdie;    /* For dryrun */
 }
 

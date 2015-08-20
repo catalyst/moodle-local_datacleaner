@@ -41,7 +41,7 @@ if ($ADMIN->fulltree) {
     $config = get_config('cleaner_config');
 
     $where = '';
-    $names = explode("\n", $config->names);
+    $names = isset($config->names) ? explode("\n", $config->names) : array();
     foreach ($names as $name) {
         $name = trim($name);
         if (empty($name)) {
@@ -52,7 +52,7 @@ if ($ADMIN->fulltree) {
         }
         $where .= " name LIKE '$name'"; // SQL injection vector but we're admin so OK.
     }
-    $values = explode("\n", $config->vals);
+    $values = isset($config->vals) ? explode("\n", $config->vals) : array();
     foreach ($values as $val) {
         $val = trim($val);
         if (empty($val)) {

@@ -15,28 +15,36 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_logstore_standard
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @package    cleaner_config
+ * @copyright  2015 Catalyst IT
+ * @author     Nigel Cunningham
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace cleaner_logstore_standard;
+namespace cleaner_config;
 
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
-    const TASK = 'Removing standard logs';
+    const TASK = 'Removing config settings';
 
+    /**
+     * Do the hard work of removing config settings.
+     */
     static public function execute() {
-
         global $DB;
 
-        $task = 'Truncating standard logs';
-
-        $DB->execute("DELETE FROM {logstore_standard_log}");
-
-        self::update_status($task, 1, 1);
-
+        if (self::$dryrun) {
+            self::debug('Would truncate 8 tables.');
+        } else {
+            $DB->delete_records('events_queue');
+            $DB->delete_records('task_adhoc');
+            $DB->delete_records('message');
+            $DB->delete_records('back_');
+            $DB->delete_records('sessions');
+            $DB->delete_records('stats_');
+            $DB->delete_records('tool_monitor');
+            $DB->delete_records('webdav_locks');
+        }
     }
 }
-

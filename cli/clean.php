@@ -70,7 +70,10 @@ if ($options['help']) {
 if ($options['force']) {
     print_message("Safety checks skipped due to --force command line option.\n", true);
 } else {
-    safety_checks();
+    $wouldhavedied = safety_checks($options['dryrun']);
+    if ($wouldhavedied) {
+        print_message("Remaining output shows what will happen if you force execution or deal with safety issues.\n");
+    }
 }
 
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
@@ -84,6 +87,8 @@ if ($options['dryrun']) {
     echo "=== DRY RUN ===\n";
 }
 
+$cascade = null;
+
 foreach ($plugins as $plugin) {
     // Get the class that does the work.
     $classname = 'cleaner_' . $plugin->name . '\clean';
@@ -94,10 +99,17 @@ foreach ($plugins as $plugin) {
         continue;
     }
 
-    if (!$options['dryrun']) {
-        $class = new $classname;
-        $class->execute();
+    $class = new $classname($options['dryrun']);
+    if (is_null($cascade) && $class->needs_cascade_delete()) {
+        $cascade = new \local_datacleaner\schema_add_cascade_delete($options['dryrun']);
+
+        // Shutdown handler does the undo().
+        echo "Adding cascade delete to schema...\n";
+        $cascade->execute();
+        echo "Continuing with cleanup...\n";
     }
+
+    $class->execute();
 }
 
 echo "Done.\n";

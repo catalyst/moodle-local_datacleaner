@@ -25,14 +25,46 @@ namespace cleaner_courses;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
+    const TASK = 'Removing old courses';
+    protected $needs_cascade_delete = true;
+
+    static protected $courses = array();
 
     /**
-     * Delete a single course.
-     *
-     * @param int $id The course id.
+     * Constructor.
      */
-    static private function delete_course($id) {
-        delete_course($id, false);
+    function __construct() {
+        // Get the settings, handling the case where new ones (dev) haven't been set yet.
+        $config = get_config('cleaner_courses');
+
+        $criteria = self::get_criteria($config);
+        self::$courses = self::get_courses($criteria);
+
+        $this->needs_cascade_delete = !empty(self::$courses);
+    }
+
+    /**
+     * Get the criteria for the list of courses.
+     */
+    protected static function get_criteria($config) {
+        $interval = isset($config->minimumage) ? $config->minimumage : 365;
+
+        $criteria = array();
+        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
+
+        if (empty($config->categories)) {
+            // No categories = nothing to do.
+            echo "No course categories selected for deletion.\n";
+            return;
+        }
+
+        $criteria['categories'] = $config->categories;
+
+        if (!empty($config->courses)) {
+            $criteria['courses'] = $config->courses;
+        }
+
+        return $criteria;
     }
 
     /**
@@ -67,48 +99,71 @@ class clean extends \local_datacleaner\clean {
         return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
     }
 
+    /**
+     * Delete a bunch of courses at once.
+     *
+     * delete_course is faaaaaaaaaaaaaaaar too slow. This plugin gets around this by using the XML schema
+     * info to set up cascade deletion, use it to delete the affected courses and then revert the schema changes.
+     */
+    static public function delete_courses($courses = array())
+    {
+        global $DB;
+
+        if (self::$dryrun) {
+            self::debug("\nWould delete " . count($courses) . " courses (plus cascade deletions).\n");
+        } else {
+            list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
+            $DB->delete_records_select('course', 'id ' . $sql, $params);
+        }
+    }
+
+    /**
+     * Delete course contexts that are left dangling after deleting courses.
+     *
+     */
+    static public function delete_dangling_course_contexts() {
+        global $DB;
+
+        if (self::$dryrun) {
+            $count = $DB->count_records_sql(
+                    "SELECT COUNT('x') FROM {context}
+                                  LEFT JOIN {course}
+                                         ON {context}.instanceid = {course}.id
+                                      WHERE contextlevel = 50
+                                        AND {course}.id IS NULL");
+            self::debug("\nWould delete " . $count . " context records that are currently lacking matching courses " .
+                    "and those from courses to be deleted.\n");
+        } else {
+            $DB->execute("DELETE FROM {context} USING {course}
+                                WHERE contextlevel = 50
+                                  AND {context}.instanceid = {course}.id
+                                  AND {course}.id IS NULL");
+        }
+    }
+
+    /**
+     * Do the work of deleting courses.
+     */
     static public function execute() {
         global $DB;
 
-        $task = 'Removing old courses';
-
-        // Get the settings, handling the case where new ones (dev) haven't been set yet.
-        $config = get_config('cleaner_courses');
-
-        $interval = isset($config->minimumage) ? $config->minimumage : 365;
-
-        $criteria = array();
-        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
-
-        if (empty($config->categories)) {
-            // No categories = nothing to do.
-            echo "No course categories selected for deletion.\n";
-            return;
-        }
-
-        $criteria['categories'] = $config->categories;
-        $criteria['courses'] = $config->courses;
-
-        $courses = self::get_courses($criteria);
-        $numcourses = count($courses);
+        $numcourses = count(self::$courses);
 
         if (!$numcourses) {
             echo "No courses need deletion.\n";
             return;
         }
 
-        self::update_status($task, 0, $numcourses);
-        $done = 0;
+        echo "Deleting {$numcourses} courses.\n";
 
-        foreach ($courses as $id => $course) {
-            try {
-                self::delete_course($id);
-            } catch (Exception $e) {
-                echo 'Caught exception: ', $e->getMessage(), '\n';
-            }
-            $done++;
-            self::update_status($task, $done, $numcourses);
-        }
+        self::new_task(2);
+
+        self::delete_courses(self::$courses);
+        self::next_step();
+
+        self::delete_dangling_course_contexts(self::$courses);
+        self::next_step();
     }
+
 }
 

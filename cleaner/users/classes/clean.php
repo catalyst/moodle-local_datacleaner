@@ -98,8 +98,9 @@ class clean extends \local_datacleaner\clean {
     private static function username_substitution($users = array()) {
         global $DB;
 
-        list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
-        $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $sql, $params);
+        foreach ($users as $chunk) {
+            $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $chunk['sql'], $chunk['params']);
+        }
     }
 
     /**
@@ -144,37 +145,6 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Load an install.xml file, checking that it exists, and that the structure is OK.
-     *
-     * This is copied from lib/ddl/database_manager.php because it's a private method there.
-     *
-     * @param string $file the full path to the XMLDB file.
-     * @return xmldbfile the loaded file.
-     */
-    static private function load_xmldbfile($file) {
-        global $CFG;
-
-        $xmldbfile = new \xmldb_file($file);
-
-        if (!$xmldbfile->fileExists()) {
-            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
-        }
-
-        $loaded = $xmldbfile->loadXMLStructure();
-        if (!$loaded || !$xmldbfile->isLoaded()) {
-            // Show info about the error if we can find it.
-            if ($structure = $xmldbfile->getStructure()) {
-                if ($errors = $structure->getAllErrors()) {
-                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
-                }
-            }
-            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
-        }
-
-        return $xmldbfile;
-    }
-
-    /**
      * Scramble the contents of a set of fields.
      *
      * The algorithm is:
@@ -206,7 +176,7 @@ class clean extends \local_datacleaner\clean {
         $userstructure = $xmldbstructure->getTable('user');
         $userkeys = $userstructure->getKeys();
 
-        $numusers = count($users);
+        $numusers = self::get_num_users();
         $lastprime = max(sqrt($numusers), self::$lastprime);
 
         $thisprime = self::next_prime($lastprime);
@@ -247,13 +217,16 @@ class clean extends \local_datacleaner\clean {
             $sets[] = "{$field} = {temp_table}.{$field}";
         }
 
-        list($inequalsql, $params) = $DB->get_in_or_equal(array_keys($users));
+        foreach ($users as $chunk) {
+            list($inequalsql, $params) = $DB->get_in_or_equal($chunk);
 
-        $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
-            " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
-              AND u.id {$inequalsql}";
+            $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
+                " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
+                AND u.id " . $chunk['sql'];
 
-        $DB->execute($sql, $params);
+            $DB->execute($sql, $chunk['params']);
+            self::next_step();
+        }
 
         $dbmanager->drop_table($temptablestruct);
     }
@@ -272,7 +245,8 @@ class clean extends \local_datacleaner\clean {
 
         // Get the list of users on which to work.
         $users = self::get_users($criteria);
-        $numusers = count($users);
+
+        $numusers = self::get_num_users();
 
         if (!$numusers) {
             echo "No users require data scrambling.\n";
@@ -282,27 +256,33 @@ class clean extends \local_datacleaner\clean {
         echo "Scrambling the data of {$numusers} users.\n";
 
         // Scramble the eggs.
-        $numsteps = count(self::$scramble) + count(self::$fixedmods) + 1;
-        self::update_status(self::TASK, 0, $numsteps);
-        $thisstep = 1;
+        $numsteps = count($users) * (count(self::$scramble) + count(self::$fixedmods)) + count(self::$functions);
+        self::new_task($numsteps);
+
+        $transaction = $DB->start_delegated_transaction();
+
         foreach (self::$scramble as $description => $setoffields) {
             self::randomise_fields($users, $setoffields);
-            self::update_status(self::TASK, $thisstep, $numsteps);
-            $thisstep++;
         }
+
+        $transaction->allow_commit();
 
         // Apply the fixed values. One step for what remains because this is fast.
-        list($sql, $params) = $DB->get_in_or_equal(array_keys($users));
+        $transaction = $DB->start_delegated_transaction();
         foreach (self::$fixedmods as $field => $value) {
-            $DB->set_field_select('user', $field, $value, 'id ' . $sql, $params);
-            self::update_status(self::TASK, $thisstep, $numsteps);
-            $thisstep++;
+            foreach ($users as $chunk) {
+                $DB->set_field_select('user', $field, $value, 'id ' . $chunk['sql'], $chunk['params']);
+                self::next_step();
+            }
         }
+        $transaction->allow_commit();
 
         // Apply the functions.
+        $transaction = $DB->start_delegated_transaction();
         foreach (self::$functions as $field => $fnname) {
             self::$fnname($users);
+            self::next_step();
         }
-        self::update_status(self::TASK, $thisstep, $numsteps);
+        $transaction->allow_commit();
     }
 }

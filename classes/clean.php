@@ -27,11 +27,51 @@ use core\base;
 defined('MOODLE_INTERNAL') || die();
 
 abstract class clean {
-
     private static $tasks = array(); // For storing task start times.
 
+    protected static $dryrun = true;
+    protected static $verbose = true;
+    protected $needs_cascade_delete = false;
+
+    protected static $numusers = 0;
+
+    protected static $step = 0;
+    protected static $maxsteps = 0;
+    protected static $exectime = 0;
+
+    /**
+     * Constructor
+     *
+     * @param bool $dryrun Whether we're doing a dry run.
+     */
+    public function __construct($dryrun = true, $verbose = false) {
+        self::$dryrun = $dryrun;
+        self::$verbose = $verbose;
+    }
+
+    /**
+     * Get whether this class needs cascade deletion.
+     *
+     * @return bool Whether cascade deletion is needed.
+     */
+    public function needs_cascade_delete() {
+        return $this->needs_cascade_delete;
+    }
+
+    /**
+     * Execute the plugin. Template to be overridden.
+     */
     static public function execute() {
 
+    }
+
+    /**
+     * Possibly output a debugging message.
+     */
+    static protected function debug($message) {
+        if (self::$verbose) {
+            echo $message;
+        }
     }
 
     /*
@@ -52,7 +92,8 @@ abstract class clean {
 
             $start = self::$tasks[$taskname];
             $eta = ($now - $start) * $total / $itemno + $start;
-            $timeleft = intval($eta - $now) . ' seconds remaining';
+            $elapsed = $now - $start;
+            $timeleft = intval($elapsed) . ' seconds elapsed, ' . intval($eta - $now) . ' seconds remaining';
 
         } else {
             self::$tasks[$taskname] = time();
@@ -61,8 +102,29 @@ abstract class clean {
         // If first status record time stamp
         // Do calculation of ETA based on first status.
 
-        printf (" %-20s %4d%% (%d/%d)    $timeleft\n", $taskname, $perc, $itemno, $total);
+        printf ("\r %-20s %4d%% (%d/%d)    $timeleft  ", $taskname, $perc, $itemno, $total);
 
+        if ($itemno == $total) {
+            printf("\n");
+        }
+    }
+
+    static protected function new_task($maxsteps) {
+        static::$step = 0;
+        static::$maxsteps = $maxsteps;
+        static::update_status(static::TASK, static::$step, static::$maxsteps);
+        static::$exectime = -microtime(true);
+    }
+
+    static protected function next_step() {
+        static::$step++;
+        static::update_status(static::TASK, static::$step, static::$maxsteps);
+
+        // Print the execution time if we're done.
+        if (static::$step == static::$maxsteps) {
+            static::$exectime += microtime(true);
+            echo "Execution took ", sprintf('%f', static::$exectime), " seconds.", PHP_EOL;
+        }
     }
 
     /**
@@ -70,7 +132,7 @@ abstract class clean {
      *
      * @return array $criteria Criteria to pass to get_users.
      */
-    public static function get_criteria($config) {
+    protected static function get_criteria($config) {
         global $CFG;
 
         $criteria = array();
@@ -97,10 +159,17 @@ abstract class clean {
     }
 
     /**
+     * Get the number of users that were returned by get_users below
+     */
+    public static function get_num_users() {
+        return self::$numusers;
+    }
+
+    /**
      * Get an array of user objects meeting the criteria provided
      *
      * @param  array $criteria An array of criteria to apply.
-     * @return array $result   The array of matching user objects.
+     * @return array $result   The array of sql fragments & named parameters to add into queries.
      */
     public static function get_users($criteria = array()) {
         global $DB;
@@ -136,8 +205,36 @@ abstract class clean {
             $params['deleted'] = $criteria['deleted'];
         }
 
-        return $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
+        $uids = $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
+        if (empty($uids)) {
+            return array();
+        }
+
+        $uids = array_keys($uids);
+        self::$numusers = count($uids);
+        $chunks = array_chunk($uids, 65000);
+        foreach ($chunks as &$chunk) {
+            list($sql, $params) = $DB->get_in_or_equal($chunk);
+            $chunk = array('sql' => $sql, 'params' => $params, 'size' => count($chunk));
+        }
+
+        return $chunks;
     }
 
-}
+    /**
+     * Delete a list of records in chunks.
+     *
+     * @param string $table The table from which to delete records
+     * @param string $field The field against which to compare values
+     * @param array $ids An array of IDs to match
+     */
+    public static function delete_records_list_chunked($table, $field, $ids) {
+        global $DB;
 
+        $chunks = array_chunk($ids, 65000);
+        foreach ($chunks as &$chunk) {
+            list($sql, $params) = $DB->get_in_or_equal($chunk);
+            $DB->delete_records_list($table, $field, $params);
+        }
+    }
+}

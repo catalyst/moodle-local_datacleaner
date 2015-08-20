@@ -27,6 +27,21 @@ defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
     const TASK = 'Removing old users';
+    private static $needs_cascade_delete = true;
+
+    /**
+     * Calculate the number of steps that will be displayed
+     */
+    protected static function num_steps($numusers) {
+        $steps = max(intval($numusers / 20), 5); /* Consider 14 => 5 */
+        $interval = intval($numusers / $steps); /* 2 */
+        if (!$interval) {
+            $interval = 1;
+        }
+        $steps = intval($numusers / $interval); /* 7 - the actual number of steps that will be shown */
+
+        return array($interval, $steps);
+    }
 
     /**
      * Undelete a group of users
@@ -43,9 +58,9 @@ class clean extends \local_datacleaner\clean {
             return;
         }
 
-        $userids = array_keys($users);
-        list($sql, $params) = $DB->get_in_or_equal($userids);
-        $DB->set_field_select('user', 'deleted', 0, 'id ' . $sql, $params);
+        foreach ($users as $chunk) {
+            $DB->set_field_select('user', 'deleted', 0, 'id ' . $chunk['sql'], $chunk['params']);
+        }
     }
 
     /**
@@ -58,54 +73,71 @@ class clean extends \local_datacleaner\clean {
     private static function delete_users(array $users) {
         global $DB;
 
-        if (empty($users)) {
-            return;
-        }
-
         // Clean up Assignment stuff.
-        $userids = array_keys($users);
-        list($userinequal, $userparams) = $DB->get_in_or_equal($userids);
-        $userinequal = 'userid ' . $userinequal;
+        foreach ($users as $chunk) {
+            $userinequal = 'userid ' . $chunk['sql'];
+            $userparams = $chunk['params'];
 
-        $submissions = $DB->get_fieldset_select("assign_submission", "id", $userinequal, $userparams);
-        if (!empty($submissions)) {
-            // TODO: Actually delete the files.
-            $DB->delete_records_list('assignsubmission_file', 'submission', $submissions);
-            $DB->delete_records_list('assignsubmission_onlinetext', 'submission', $submissions);
-        }
+            $submissions = $DB->get_fieldset_select("assign_submission", "id", $userinequal, $userparams);
+            self::next_step();
 
-        $DB->delete_records_list('assign_submission', 'userid', $userids);
+            if (!empty($submissions)) {
+                // TODO: Actually delete the files.
+                static::delete_records_list_chunked('assignsubmission_file', 'submission', $submissions);
+                static::delete_records_list_chunked('assignsubmission_onlinetext', 'submission', $submissions);
+            }
 
-        $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
-        if (!empty($grades)) {
-            $DB->delete_records_list('assignfeedback_comments', 'grade', $grades);
-            // TODO: Actually delete the files.
-            $DB->delete_records_list('assignfeedback_file', 'grade', $grades);
-            $DB->delete_records_list('assignfeedback_editpdf_annot', 'gradeid', $grades);
-            $DB->delete_records_list('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
-        }
+            self::next_step();
 
-        $DB->delete_records_list('assign_grades', 'userid', $userids);
-        $DB->delete_records_list('assign_user_flags', 'userid', $userids);
-        $DB->delete_records_list('assign_user_mapping', 'userid', $userids);
-        $DB->delete_records_list('assignfeedback_editpdf_quick', 'userid', $userids);
+            $DB->delete_records_select('assign_submission', 'userid ' . $chunk['sql'], $chunk['params']);
 
-        // Clean up other tables that might be around and need it.
-        $dbman = $DB->get_manager();
+            self::next_step();
 
-        foreach (array('userid' => array('local_messages_sent', 'block_leaderboard_data', 'block_leaderboard_points',
-                        'assignment_submissions', 'block_totara_stats', 'config_log', 'course_completion_crit_compl',
-                        'course_completions', 'course_modules_completion', 'facetoface_signups',
-                        'grade_grades', 'grade_grades_history', 'log', 'logstore_standard_log', 'message_contacts',
-                        'my_pages', 'post', 'prog_completion', 'prog_pos_assignment', 'prog_user_assignment',
-                        'report_builder_saved', 'role_assignments', 'scorm_scoes_track', 'sessions', 'stats_user_daily',
-                        'stats_user_monthly', 'stats_user_weekly'
-                        ),
-                    'useridfrom' => array('message', 'message_read'),
-                    'useridto' => array('message', 'message_read')) as $field => $tables) {
-            foreach ($tables as $table) {
-                if ($dbman->table_exists($table)) {
-                    $DB->delete_records_list($table, $field, $userids);
+            $grades = $DB->get_fieldset_select("assign_grades", "id", $userinequal, $userparams);
+            if (!empty($grades)) {
+                static::delete_records_list_chunked('assignfeedback_comments', 'grade', $grades);
+                // TODO: Actually delete the files.
+                static::delete_records_list_chunked('assignfeedback_file', 'grade', $grades);
+                static::delete_records_list_chunked('assignfeedback_editpdf_annot', 'gradeid', $grades);
+                static::delete_records_list_chunked('assignfeedback_editpdf_cmnt', 'gradeid', $grades);
+            }
+
+            self::next_step();
+
+            $DB->delete_records_select('assign_grades', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
+
+            $DB->delete_records_select('assign_user_flags', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
+
+            $DB->delete_records_select('assign_user_mapping', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
+
+            $DB->delete_records_select('assignfeedback_editpdf_quick', 'userid ' . $chunk['sql'], $chunk['params']);
+
+            self::next_step();
+
+            // Clean up other tables that might be around and need it.
+            $dbman = $DB->get_manager();
+
+            foreach (array('userid' => array('local_messages_sent', 'block_leaderboard_data', 'block_leaderboard_points',
+                            'assignment_submissions', 'block_totara_stats', 'config_log', 'course_completion_crit_compl',
+                            'course_completions', 'course_modules_completion', 'facetoface_signups',
+                            'grade_grades', 'grade_grades_history', 'log', 'logstore_standard_log', 'message_contacts',
+                            'my_pages', 'post', 'prog_completion', 'prog_pos_assignment', 'prog_user_assignment',
+                            'report_builder_saved', 'role_assignments', 'scorm_scoes_track', 'sessions', 'stats_user_daily',
+                            'stats_user_monthly', 'stats_user_weekly'
+                            ),
+                        'useridfrom' => array('message', 'message_read'),
+                        'useridto' => array('message', 'message_read')) as $field => $tables) {
+                foreach ($tables as $table) {
+                    if ($dbman->table_exists($table)) {
+                        static::delete_records_list_chunked($table, $field, $chunk['params']);
+                    }
+                    self::next_step();
                 }
             }
         }
@@ -114,26 +146,31 @@ class clean extends \local_datacleaner\clean {
         $transaction = $DB->start_delegated_transaction();
 
         $index = 0;
-        $numusers = count($users);
-        $steps = max($numusers / 20, 5);
-        $interval = $numusers / $steps;
+        $numusers = self::get_num_users();
+        list($interval, $steps) = self::num_steps($numusers);
 
-        foreach ($users as $user) {
-            delete_user($user);
+        foreach ($users as $chunk) {
+            $recs = $DB->get_records_select('user', 'id ' . $chunk['sql'], $chunk['params']);
+            foreach ($recs as $user) {
+                delete_user($user);
 
-            $index ++;
-            if (!($index % $interval)) {
-                self::update_status(self::TASK, $index, $numusers);
+                $index++;
+                if (!($index % $interval)) {
+                    $transaction->allow_commit();
+                    $transaction = $DB->start_delegated_transaction();
+
+                    self::next_step();
+                }
             }
         }
 
         $transaction->allow_commit();
+        self::next_step();
 
         // Finally clean up user table.
-        $DB->delete_records_list('user', 'id', $userids);
-
-        foreach ($users as $user) {
-            mtrace(" Deleted user ".fullname($user, true)." ($user->id)");
+        foreach ($users as $chunk) {
+            $DB->delete_records_select('user', 'id ' . $chunk['sql'], $chunk['params']);
+            self::next_step();
         }
     }
 
@@ -156,16 +193,15 @@ class clean extends \local_datacleaner\clean {
 
         // Get on with the real work!
         $users = self::get_users($criteria);
-        $numusers = count($users);
+        $numusers = self::get_num_users();
 
         if ($numusers) {
-            self::update_status(self::TASK, 0, $numusers);
+            list($interval, $steps) = self::num_steps($numusers);
+            self::new_task((count($users) * 39) + $steps + 1 + count($users));
 
             self::delete_users($users);
-
-            self::update_status(self::TASK, $numusers, $numusers);
         }
 
-        echo 'Deleted ' . count($users) . " users.\n";
+        echo 'Deleted ' . $numusers . " users.\n";
     }
 }
