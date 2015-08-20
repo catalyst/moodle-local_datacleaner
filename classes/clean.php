@@ -31,6 +31,7 @@ abstract class clean {
     private static $tasks = array(); // For storing task start times.
 
     protected static $debugging = true;
+    protected static $verbose = true;
 
     protected static $numusers = 0;
 
@@ -48,8 +49,9 @@ abstract class clean {
      *
      * @param bool $dryrun Whether we're doing a dry run.
      */
-    public function __construct($dryrun) {
-        self::$debugging = $dryrun;
+    public function __construct($dryrun = true, $verbose = false) {
+        self::$dryrun = $dryrun;
+        self::$verbose = $verbose;
     }
 
     /**
