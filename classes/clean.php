@@ -407,97 +407,108 @@ abstract class clean {
 
         $visited[$parent] = true;
 
-        self::debug(">> Setting up cascade deletion for {$parent}\n");
+        if (!self::get_debugging()) {
+            self::debug(">> Setting up cascade deletion for {$parent}\n");
 
-        // Add index.
-        try {
-            self::debug("Adding index to {$parent} for id ... ");
-            $DB->execute("CREATE INDEX {$parent}_id ON {{$parent}} USING btree (id)");
-            self::add_constraint_removal_query("DROP INDEX {$parent}_id");
-            self::debug("success.\n");
-        } catch (\dml_write_exception $e) {
-            // We don't mind if it already exists.
-            if (substr($e->error, -14) == "already exists") {
-                self::debug("already exists\n");
-            } else {
-                self::debug("failed {$e->error}.\n");
+            // Add index.
+            try {
+                self::debug("Adding index to {$parent} for id ... ");
+                $DB->execute("CREATE INDEX {$parent}_id ON {{$parent}} USING btree (id)");
+                self::add_constraint_removal_query("DROP INDEX {$parent}_id");
+                self::debug("success.\n");
+            } catch (\dml_write_exception $e) {
+                // We don't mind if it already exists.
+                if (substr($e->error, -14) == "already exists") {
+                    self::debug("already exists\n");
+                } else {
+                    self::debug("failed {$e->error}.\n");
+                }
             }
         }
+
+        $checks = self::get_checks_for_parent_table($parent);
+
         // Iterate over tables in the schema ...
         foreach($schema->getTables() as $table) {
-            $tableName = $table->getName();
-            if ($tableName == $parent) {
+            $tablename = $table->getName();
+            if ($tablename == $parent) {
                 continue;
             }
             $fields = $table->getFields();
             // ... and over fields in the table ...
             foreach ($fields as $field) {
-                $fieldName = $field->getName();
+                $fieldname = $field->getName();
                 // ... looking for a field of interest ...
-                if ($fieldName == $parent || $fieldName == "{$parent}id" || $fieldName == "{$parent}instance" ||
-                        ($fieldName == 'assignment' && $parent == 'assign')) {
-                    // Got one? Get the matching foreign key.
+                $willuse = self::will_use_table($checks, $fieldname);
+
+                if (self::get_debugging()) {
+                    echo $willuse ? 'X' : ' ' . self::$depth . " {$parent}: {$fieldname} in {$tablename}\n";
+                }
+
+                if ($willuse) {
                     $indices = $table->getIndexes();
-                    $indexName = false;
+                    $indexname = false;
                     foreach ($indices as $index) {
-                        $indexFields = $index->getFields();
-                        if (count($indexFields) == 1 && $indexFields[0] == $fieldName) {
-                            $indexName = $index->getName();
+                        $indexfields = $index->getFields();
+                        if (count($indexfields) == 1 && $indexfields[0] == $fieldname) {
+                            $indexname = $index->getName();
                         }
                     }
 
-                    if (!$indexName) {
-                        $indexName = "u_{$parent}";
+                    if (!$indexname) {
+                        $indexname = "u_{$parent}";
                     }
 
-                    try {
-                        /* Before we try to add the index, look for records that will prevent it */
-                        self::debug("Checking for mismatches between {$parent} and {$tableName}.{$fieldName}.\r");
-                        $conflicts = $DB->count_records_sql(
-                                "SELECT COUNT('x') FROM {{$tableName}}
-                                LEFT JOIN {{$parent}} ON {{$tableName}}.{$fieldName} = {{$parent}}.id
-                                WHERE {{$parent}}.id IS NULL");
-                        if ($conflicts) {
-                            self::debug("Getting total number of records in {$tableName}.\r");
-                            $total = $DB->count_records($tableName);
-                            if ($total > 100 && ($conflicts / $total) < 0.05) {
-                                self::debug("Deleting {$conflicts} of {$total} records from {$tableName} that don't match {$parent} ... ");
-                                $DB->execute(
-                                        "DELETE FROM {{$tableName}} WHERE NOT EXISTS (
-                                    SELECT 1 FROM {{$parent}} WHERE {{$tableName}}.{$fieldName} = {{$parent}}.id)");
-                            } else {
-                                if ($conflicts < $total) {
-                                    self::debug("{$conflicts}/{$total} records from the {$fieldName} field in {$tableName} don't match {$parent} ids. Assuming this is not really a candidate for referential integrity.\n");
+                    if (!self::get_debugging()) {
+                        try {
+                            /* Before we try to add the index, look for records that will prevent it */
+                            self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
+                            $conflicts = $DB->count_records_sql(
+                                    "SELECT COUNT('x') FROM {{$tablename}}
+                                    LEFT JOIN {{$parent}} ON {{$tablename}}.{$fieldname} = {{$parent}}.id
+                                    WHERE {{$parent}}.id IS NULL");
+                            if ($conflicts) {
+                                self::debug("Getting total number of records in {$tablename}.\r");
+                                $total = $DB->count_records($tablename);
+                                if ($total > 100 && ($conflicts / $total) < 0.05) {
+                                    self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
+                                    $DB->execute(
+                                            "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
+                                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
+                                } else {
+                                    if ($conflicts < $total) {
+                                        self::debug("{$conflicts}/{$total} records from the {$fieldname} field in {$tablename} don't match {$parent} ids. Assuming this is not really a candidate for referential integrity.\n");
+                                    }
+                                    continue;
                                 }
-                                continue;
+                            }
+                            self::debug("Adding cascade delete to {$tablename}, field {$fieldname} for deletions from table {$parent} ... ");
+                            $DB->execute("ALTER TABLE {{$tablename}}
+                                    ADD CONSTRAINT c_{$indexname}
+                                    FOREIGN KEY ({$fieldname})
+                                    REFERENCES {{$parent}}(id)
+                                    ON DELETE CASCADE");
+                            self::add_constraint_removal_query("ALTER TABLE {{$tablename}} DROP CONSTRAINT c_{$indexname}");
+                            self::debug("success.\n");
+                        } catch (\dml_write_exception $e) {
+                            if (substr($e->error, -14) == "already exists") {
+                                self::debug("already exists.\n");
+                            } else {
+                                self::debug("failed ({$e->error}).\n");
+                            }
+                        } catch (\dml_read_exception $e) {
+                            // Trying to match fields of different types?
+                            if (substr($e->error, 0, 32) == "ERROR:  operator does not exist:") {
+                                self::debug("ID field from {$parent} table and {$fieldname} from {$tablename} have different data types.\n");
+                            } else if (substr($e->error, 0, 16) == "ERROR:  relation") {
+                                self::debug("{$tablename} table missing?! Perhaps there's an upgrade to be done.\n");
+                            } else {
+                                self::debug("failed ({$e->error})\n");
                             }
                         }
-                        self::debug("Adding cascade delete to {$tableName}, field {$fieldName} for deletions from table {$parent} ... ");
-                        $DB->execute("ALTER TABLE {{$tableName}}
-                                ADD CONSTRAINT c_{$indexName}
-                                FOREIGN KEY ({$fieldName})
-                                REFERENCES {{$parent}}(id)
-                                ON DELETE CASCADE");
-                        self::add_constraint_removal_query("ALTER TABLE {{$tableName}} DROP CONSTRAINT c_{$indexName}");
-                        self::debug("success.\n");
-                    } catch (\dml_write_exception $e) {
-                        if (substr($e->error, -14) == "already exists") {
-                            self::debug("already exists.\n");
-                        } else {
-                            self::debug("failed ({$e->error}).\n");
-                        }
-                    } catch (\dml_read_exception $e) {
-                        // Trying to match fields of different types?
-                        if (substr($e->error, 0, 32) == "ERROR:  operator does not exist:") {
-                            self::debug("ID field from {$parent} table and {$fieldName} from {$tableName} have different data types.\n");
-                        } else if (substr($e->error, 0, 16) == "ERROR:  relation") {
-                            self::debug("{$tableName} table missing?! Perhaps there's an upgrade to be done.\n");
-                        } else {
-                            self::debug("failed ({$e->error})\n");
-                        }
                     }
 
-                    self::add_cascade_deletion($schema, $tableName);
+                    self::add_cascade_deletion($schema, $tablename);
                 }
             }
         }
