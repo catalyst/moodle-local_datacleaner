@@ -58,6 +58,9 @@ abstract class clean {
         return self::$debugging;
     }
 
+    /**
+     * Execute the plugin. Template to be overridden.
+     */
     static public function execute() {
 
     }
@@ -307,6 +310,11 @@ abstract class clean {
         return $schema;
     }
 
+    /**
+     * Add a database SQL query to be passed to $DB->execute() later
+     *
+     * @param string $query The string to save
+     */
     static protected function add_constraint_removal_query($query) {
         if (empty(self::$constraint_removal_queries)) {
             register_shutdown_function(array('local_datacleaner\clean', 'remove_cascade_deletion'));
@@ -316,6 +324,9 @@ abstract class clean {
 
     /**
      * Add cascade deletion to courseIDs.
+     *
+     * @param array $schema The database schema
+     * @param string $param The parent table for which we're seeking children.
      */
     static public function add_cascade_deletion($schema, $parent = 'course') {
         static $visited = array();
