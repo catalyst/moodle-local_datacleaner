@@ -34,13 +34,17 @@ class clean extends \local_datacleaner\clean {
     static public function execute() {
         global $DB;
 
-        $DB->delete_records('events_queue');
-        $DB->delete_records('task_adhoc');
-        $DB->delete_records('message');
-        $DB->delete_records('back_');
-        $DB->delete_records('sessions');
-        $DB->delete_records('stats_');
-        $DB->delete_records('tool_monitor');
-        $DB->delete_records('webdav_locks');
+        if (self::$dryrun) {
+            self::debug('Would truncate 8 tables.');
+        } else {
+            $DB->delete_records('events_queue');
+            $DB->delete_records('task_adhoc');
+            $DB->delete_records('message');
+            $DB->delete_records('back_');
+            $DB->delete_records('sessions');
+            $DB->delete_records('stats_');
+            $DB->delete_records('tool_monitor');
+            $DB->delete_records('webdav_locks');
+        }
     }
 }
