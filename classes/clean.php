@@ -371,15 +371,14 @@ abstract class clean {
      * @return bool Whether the fieldname matches the checks.
      */
     static public function will_use_table($checks, $fieldname) {
-        $willuse = ' ';
         foreach ($checks as $test) {
             if ($fieldname == $test || $fieldname == "{$test}id" || $fieldname == "{$test}instance" ||
                     $fieldname == "{$test}_id") {
-                $willuse = 'X';
-                unset(self::$unrelated[$tablename]);
-                break;
+                return true;
             }
         }
+
+        return false;
     }
 
     /**
@@ -402,6 +401,10 @@ abstract class clean {
         if (self::$depth == 1) {
             foreach($schema->getTables() as $table) {
                 self::$unrelated[$table->getName()] = 1;
+            }
+
+            if (self::get_debugging()) {
+                echo "\n";
             }
         }
 
@@ -441,11 +444,13 @@ abstract class clean {
                 // ... looking for a field of interest ...
                 $willuse = self::will_use_table($checks, $fieldname);
 
-                if (self::get_debugging()) {
-                    echo $willuse ? 'X' : ' ' . self::$depth . " {$parent}: {$fieldname} in {$tablename}\n";
+                if (self::get_debugging() && $willuse) {
+                    echo ($willuse ? 'X ' : '  ') . " {$parent}: {$fieldname} in {$tablename}\n";
                 }
 
                 if ($willuse) {
+                    unset(self::$unrelated[$tablename]);
+
                     $indices = $table->getIndexes();
                     $indexname = false;
                     foreach ($indices as $index) {
