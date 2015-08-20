@@ -87,6 +87,8 @@ if ($options['dryrun']) {
     echo "=== DRY RUN ===\n";
 }
 
+$cascade = null;
+
 foreach ($plugins as $plugin) {
     // Get the class that does the work.
     $classname = 'cleaner_' . $plugin->name . '\clean';
@@ -98,6 +100,15 @@ foreach ($plugins as $plugin) {
     }
 
     $class = new $classname($options['dryrun']);
+    if (is_null($cascade) && $class->needs_cascade_delete()) {
+        $cascade = new \local_datacleaner\schema_add_cascade_delete($options['dryrun']);
+
+        // Shutdown handler does the undo().
+        echo "Adding cascade delete to schema...\n";
+        $cascade->execute();
+        echo "Continuing with cleanup...\n";
+    }
+
     $class->execute();
 }
 

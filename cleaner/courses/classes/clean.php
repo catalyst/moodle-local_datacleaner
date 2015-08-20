@@ -26,6 +26,46 @@ defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
     const TASK = 'Removing old courses';
+    protected $needs_cascade_delete = true;
+
+    static protected $courses = array();
+
+    /**
+     * Constructor.
+     */
+    function __construct() {
+        // Get the settings, handling the case where new ones (dev) haven't been set yet.
+        $config = get_config('cleaner_courses');
+
+        $criteria = self::get_criteria($config);
+        self::$courses = self::get_courses($criteria);
+
+        $this->needs_cascade_delete = !empty(self::$courses);
+    }
+
+    /**
+     * Get the criteria for the list of courses.
+     */
+    protected static function get_criteria($config) {
+        $interval = isset($config->minimumage) ? $config->minimumage : 365;
+
+        $criteria = array();
+        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
+
+        if (empty($config->categories)) {
+            // No categories = nothing to do.
+            echo "No course categories selected for deletion.\n";
+            return;
+        }
+
+        $criteria['categories'] = $config->categories;
+
+        if (!empty($config->courses)) {
+            $criteria['courses'] = $config->courses;
+        }
+
+        return $criteria;
+    }
 
     /**
      * Get an array of course objects meeting the criteria provided
@@ -69,17 +109,36 @@ class clean extends \local_datacleaner\clean {
     {
         global $DB;
 
-        $schema = self::get_xml_schema();
+        if (self::$dryrun) {
+            self::debug("\nWould delete " . count($courses) . " courses (plus cascade deletions).\n");
+        } else {
+            list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
+            $DB->delete_records_select('course', 'id ' . $sql, $params);
+        }
+    }
 
-        self::add_cascade_deletion($schema);
+    /**
+     * Delete course contexts that are left dangling after deleting courses.
+     *
+     */
+    static public function delete_dangling_course_contexts() {
+        global $DB;
 
-        self::next_step();
-        list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
-        $DB->delete_records_select('course', 'id ' . $sql, $params);
-
-        self::next_step();
-        self::remove_cascade_deletion($schema);
-        self::next_step();
+        if (self::$dryrun) {
+            $count = $DB->count_records_sql(
+                    "SELECT COUNT('x') FROM {context}
+                                  LEFT JOIN {course}
+                                         ON {context}.instanceid = {course}.id
+                                      WHERE contextlevel = 50
+                                        AND {course}.id IS NULL");
+            self::debug("\nWould delete " . $count . " context records that are currently lacking matching courses " .
+                    "and those from courses to be deleted.\n");
+        } else {
+            $DB->execute("DELETE FROM {context} USING {course}
+                                WHERE contextlevel = 50
+                                  AND {context}.instanceid = {course}.id
+                                  AND {course}.id IS NULL");
+        }
     }
 
     /**
@@ -88,28 +147,7 @@ class clean extends \local_datacleaner\clean {
     static public function execute() {
         global $DB;
 
-        // Get the settings, handling the case where new ones (dev) haven't been set yet.
-        $config = get_config('cleaner_courses');
-
-        $interval = isset($config->minimumage) ? $config->minimumage : 365;
-
-        $criteria = array();
-        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
-
-        if (empty($config->categories)) {
-            // No categories = nothing to do.
-            echo "No course categories selected for deletion.\n";
-            return;
-        }
-
-        $criteria['categories'] = $config->categories;
-
-        if (!empty($config->courses)) {
-            $criteria['courses'] = $config->courses;
-        }
-
-        $courses = self::get_courses($criteria);
-        $numcourses = count($courses);
+        $numcourses = count(self::$courses);
 
         if (!$numcourses) {
             echo "No courses need deletion.\n";
@@ -118,9 +156,13 @@ class clean extends \local_datacleaner\clean {
 
         echo "Deleting {$numcourses} courses.\n";
 
-        self::new_task(3);
+        self::new_task(2);
 
-        self::delete_courses($courses);
+        self::delete_courses(self::$courses);
+        self::next_step();
+
+        self::delete_dangling_course_contexts(self::$courses);
+        self::next_step();
     }
 
 }

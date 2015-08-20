@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
     const TASK = 'Removing old users';
+    private static $needs_cascade_delete = true;
 
     /**
      * Calculate the number of steps that will be displayed

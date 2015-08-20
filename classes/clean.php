@@ -27,22 +27,17 @@ use core\base;
 defined('MOODLE_INTERNAL') || die();
 
 abstract class clean {
-
     private static $tasks = array(); // For storing task start times.
 
-    protected static $debugging = true;
+    protected static $dryrun = true;
     protected static $verbose = true;
+    protected $needs_cascade_delete = false;
 
     protected static $numusers = 0;
 
     protected static $step = 0;
     protected static $maxsteps = 0;
     protected static $exectime = 0;
-
-    protected static $constraint_removal_queries = array();
-
-    protected static $unrelated = array();
-    protected static $depth = 0;
 
     /**
      * Constructor
@@ -55,12 +50,12 @@ abstract class clean {
     }
 
     /**
-     * Get whether debugging is enabled (doing a dry run)
+     * Get whether this class needs cascade deletion.
      *
-     * @return bool True if debugging else false
+     * @return bool Whether cascade deletion is needed.
      */
-    static public function get_debugging() {
-        return self::$debugging;
+    public function needs_cascade_delete() {
+        return $this->needs_cascade_delete;
     }
 
     /**
@@ -73,8 +68,8 @@ abstract class clean {
     /**
      * Possibly output a debugging message.
      */
-    private static function debug($message) {
-        if (self::$debugging) {
+    static protected function debug($message) {
+        if (self::$verbose) {
             echo $message;
         }
     }
@@ -137,7 +132,7 @@ abstract class clean {
      *
      * @return array $criteria Criteria to pass to get_users.
      */
-    public static function get_criteria($config) {
+    protected static function get_criteria($config) {
         global $CFG;
 
         $criteria = array();
