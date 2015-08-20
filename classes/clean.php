@@ -360,6 +360,26 @@ abstract class clean {
     }
 
     /**
+     * Does this fieldname look like a candidate for a foreign key?
+     *
+     * @param array $checks The list of base field names to match
+     * @param string $fieldname The field to consider
+     *
+     * @return bool Whether the fieldname matches the checks.
+     */
+    static public function will_use_table($checks, $fieldname) {
+        $willuse = ' ';
+        foreach ($checks as $test) {
+            if ($fieldname == $test || $fieldname == "{$test}id" || $fieldname == "{$test}instance" ||
+                    $fieldname == "{$test}_id") {
+                $willuse = 'X';
+                unset(self::$unrelated[$tablename]);
+                break;
+            }
+        }
+    }
+
+    /**
      * Add cascade deletion to courseIDs.
      *
      * @param array $schema The database schema
