@@ -30,7 +30,7 @@ abstract class clean {
 
     private static $tasks = array(); // For storing task start times.
 
-    protected static $debugging = false;
+    protected static $debugging = true;
 
     protected static $numusers = 0;
 
