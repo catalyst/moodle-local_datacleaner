@@ -323,6 +323,43 @@ abstract class clean {
     }
 
     /**
+     * Get additional field names to try for a parent table.
+     *
+     * @param string $parent The parent table name
+     * @return array The list of base field names to consider
+     */
+    static public function get_checks_for_parent_table($parent) {
+        $checks = array($parent);
+
+        // Additional table names to try. Eg. an assignment[id|instance|_id] field will be tested against assign.
+        switch ($parent) {
+            case 'assign':
+                $checks[] = 'assignment';
+                break;
+            case 'course_sections':
+                $checks[] = 'section';
+                break;
+            case 'course_modules':
+                $checks[] = 'coursemodule';
+                break;
+            case 'user':
+                $checks[] = 'student';
+                break;
+            case 'course':
+                $checks[] = 'courses';
+                break;
+            case 'grade_grades':
+                $checks[] = 'grade';
+                break;
+            case 'context':
+                $checks[] = 'parentcontext';
+                break;
+        }
+
+        return $checks;
+    }
+
+    /**
      * Add cascade deletion to courseIDs.
      *
      * @param array $schema The database schema
