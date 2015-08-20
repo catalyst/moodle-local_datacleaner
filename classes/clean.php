@@ -310,7 +310,6 @@ abstract class clean {
         $visited[$parent] = true;
 
         self::debug(">> Setting up cascade deletion for {$parent}\n");
-        $dbmanager = $DB->get_manager();
 
         // Add index.
         try {
@@ -411,8 +410,6 @@ abstract class clean {
      */
     static public function remove_cascade_deletion() {
         global $DB;
-
-        $dbmanager = $DB->get_manager();
 
         self::debug("Removing cascade deletions and indices that were added.\n");
 
