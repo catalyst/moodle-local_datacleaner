@@ -70,7 +70,10 @@ if ($options['help']) {
 if ($options['force']) {
     print_message("Safety checks skipped due to --force command line option.\n", true);
 } else {
-    safety_checks();
+    $wouldhavedied = safety_checks($options['dryrun']);
+    if ($wouldhavedied) {
+        print_message("Remaining output shows what will happen if you force execution or deal with safety issues.\n");
+    }
 }
 
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
@@ -94,10 +97,8 @@ foreach ($plugins as $plugin) {
         continue;
     }
 
-    if (!$options['dryrun']) {
-        $class = new $classname;
-        $class->execute();
-    }
+    $class = new $classname($options['dryrun']);
+    $class->execute();
 }
 
 echo "Done.\n";
