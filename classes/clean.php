@@ -40,6 +40,9 @@ abstract class clean {
 
     protected static $constraint_removal_queries = array();
 
+    protected static $unrelated = array();
+    protected static $depth = 0;
+
     /**
      * Constructor
      *
@@ -389,8 +392,17 @@ abstract class clean {
         static $visited = array();
         global $DB;
 
+        self::$depth++;
+
         if (isset($visited[$parent])) {
+            self::$depth--;
             return;
+        }
+
+        if (self::$depth == 1) {
+            foreach($schema->getTables() as $table) {
+                self::$unrelated[$table->getName()] = 1;
+            }
         }
 
         $visited[$parent] = true;
@@ -487,6 +499,15 @@ abstract class clean {
 
                     self::add_cascade_deletion($schema, $tableName);
                 }
+            }
+        }
+        self::$depth--;
+
+        if (!self::$depth && !empty(self::$unrelated)) {
+            $toprint = array_keys(self::$unrelated);
+            sort($toprint);
+            foreach($toprint as $table) {
+                echo "- {$table}\n";
             }
         }
     }
