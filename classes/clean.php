@@ -40,6 +40,24 @@ abstract class clean {
 
     protected static $constraint_removal_queries = array();
 
+    /**
+     * Constructor
+     *
+     * @param bool $dryrun Whether we're doing a dry run.
+     */
+    public function __construct($dryrun) {
+        self::$debugging = $dryrun;
+    }
+
+    /**
+     * Get whether debugging is enabled (doing a dry run)
+     *
+     * @return bool True if debugging else false
+     */
+    static public function get_debugging() {
+        return self::$debugging;
+    }
+
     static public function execute() {
 
     }
