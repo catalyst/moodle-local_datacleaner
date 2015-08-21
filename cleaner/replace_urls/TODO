@@ -1,3 +1,0 @@
-
-* This will replace the saved production url with the current stage url in the DB everywhere possible
-* Simply calls into the /admin/tool/replace library which does the real work
