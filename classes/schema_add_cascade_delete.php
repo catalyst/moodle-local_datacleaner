@@ -83,7 +83,7 @@ class schema_add_cascade_delete extends clean {
      */
     static private function add_constraint_removal_query($query) {
         if (empty(self::$constraintremovalqueries)) {
-            register_shutdown_function(array('local_datacleaner\clean', 'revert'));
+            register_shutdown_function(array('local_datacleaner\schema_add_cascade_delete', 'revert'));
         }
         self::$constraintremovalqueries[] = $query;
     }
@@ -147,13 +147,16 @@ class schema_add_cascade_delete extends clean {
     /**
      * Try to add a cascade delete.
      *
-     * @param string $parent The parent (one) table in the relationship
-     * @param string $table  The child (many) table in the relationship
-     * @param string $field  The child field that may contain the parent id.
+     * @param string $parent    The parent (one) table in the relationship.
+     * @param string $tablename The child (many) table in the relationship.
+     * @param string $fieldname The child field that may contain the parent id.
+     * @param string $indexname The indexname upon which to base the constraint name.
      *
      * @return bool Whether a relationship was added.
      */
-    static private function try_add_cascade_delete($parent, $table, $field) {
+    static private function try_add_cascade_delete($parent, $tablename, $fieldname, $indexname) {
+        global $DB;
+
         try {
             /* Before we try to add the index, look for records that will prevent it */
             self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
@@ -291,7 +294,7 @@ class schema_add_cascade_delete extends clean {
                     if (self::$dryrun) {
                         self::$numcascadedeletes++;
                     } else {
-                        if (!self::try_add_cascade_delete($parent, $table, $field)) {
+                        if (!self::try_add_cascade_delete($parent, $tablename, $fieldname, $indexname)) {
                             continue;
                         }
                     }
