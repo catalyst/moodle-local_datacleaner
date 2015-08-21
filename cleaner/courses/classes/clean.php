@@ -110,7 +110,7 @@ class clean extends \local_datacleaner\clean {
         global $DB;
 
         if (self::$dryrun) {
-            self::debug("\nWould delete " . count($courses) . " courses (plus cascade deletions).\n");
+            echo "\nWould delete " . count($courses) . " courses (plus cascade deletions).\n";
         } else {
             list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
             $DB->delete_records_select('course', 'id ' . $sql, $params);
@@ -131,8 +131,8 @@ class clean extends \local_datacleaner\clean {
                                          ON {context}.instanceid = {course}.id
                                       WHERE contextlevel = 50
                                         AND {course}.id IS NULL");
-            self::debug("\nWould delete " . $count . " context records that are currently lacking matching courses " .
-                    "and those from courses to be deleted.\n");
+            echo "\nWould delete " . $count . " context records that are currently lacking matching courses " .
+                    "and those from courses to be deleted.\n";
         } else {
             $DB->execute("DELETE FROM {context} USING {course}
                                 WHERE contextlevel = 50

@@ -65,14 +65,14 @@ class clean extends \local_datacleaner\clean {
             self::new_task(2);
             if (self::$dryrun) {
                 $count = $DB->count_records_select('config', $where);
-                self::debug("Would delete {$count} records from the config table.\n");
+                echo "Would delete {$count} records from the config table.\n";
             } else {
                 $DB->delete_records_select("config", $where);
             }
             self::next_step();
             if (self::$dryrun) {
                 $count = $DB->count_records_select('config_plugins', $where);
-                self::debug("Would delete {$count} records from the config_plugins table.\n");
+                echo "Would delete {$count} records from the config_plugins table.\n";
             } else {
                 $DB->delete_records_select("config_plugins", $where);
             }

@@ -54,7 +54,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         if (self::$dryrun) {
-            self::debug('Would truncate 8 tables.');
+            echo "Would truncate " . count($tablelist) . " tables.\n";
         } else {
             foreach($tablelist as $table) {
                 $DB->delete_records($table);

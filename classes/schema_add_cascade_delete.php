@@ -32,6 +32,8 @@ class schema_add_cascade_delete extends clean {
     protected static $unrelated = array();
     protected static $depth = 0;
 
+    protected static $numindices = 0;
+    protected static $numcascadedeletes = 0;
     /**
      * Load an install.xml file, checking that it exists, and that the structure is OK.
      *
@@ -197,15 +199,13 @@ class schema_add_cascade_delete extends clean {
             foreach($schema->getTables() as $table) {
                 self::$unrelated[$table->getName()] = 1;
             }
-
-            if (self::$dryrun) {
-                echo "\n";
-            }
         }
 
         $visited[$parent] = true;
 
-        if (!self::$dryrun) {
+        if (self::$dryrun) {
+            self::$numindices++;
+        } else {
             self::debug(">> Setting up cascade deletion for {$parent}\n");
 
             // Add index.
@@ -257,7 +257,9 @@ class schema_add_cascade_delete extends clean {
                         $indexname = "u_{$parent}";
                     }
 
-                    if (!self::$dryrun) {
+                    if (self::$dryrun) {
+                        self::$numcascadedeletes++;
+                    } else {
                         try {
                             /* Before we try to add the index, look for records that will prevent it */
                             self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
@@ -312,11 +314,17 @@ class schema_add_cascade_delete extends clean {
         }
         self::$depth--;
 
-        if (!self::$depth && !empty(self::$unrelated) && self::$verbose) {
-            $toprint = array_keys(self::$unrelated);
-            sort($toprint);
-            foreach($toprint as $table) {
-                echo "- {$table}\n";
+        if (!self::$depth) {
+            if (!empty(self::$unrelated) && self::$verbose) {
+                $toprint = array_keys(self::$unrelated);
+                sort($toprint);
+                foreach($toprint as $table) {
+                    echo "- {$table}\n";
+                }
+            }
+
+            if (self::$dryrun && (self::$numindices || self::$numcascadedeletes)) {
+                echo "Would attempt to add " . self::$numindices . " indices and " . self::$numcascadedeletes . " cascade deletes.\n";
             }
         }
     }
