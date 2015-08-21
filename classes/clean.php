@@ -74,21 +74,21 @@ abstract class clean {
         }
     }
 
-    /*
-     * $taskname String A unique name for a cleaning task
-     *
-     * SHOULD be called at the start with an itemno of 0?
+    /**
+     * Print the current status of the task.
      */
-    static protected function update_status($taskname, $itemno, $total) {
+    static protected function update_status() {
+
+        $taskname = static::TASK;
+        $itemno = static::$step;
+        $total = static::$maxsteps;
 
         $perc = $itemno * 100 / $total;
-
-        $eta = null;
-        $delta = null;
-        $now = time();
-        $start = null;
         $timeleft = null;
+
         if (isset(self::$tasks[$taskname])) {
+            // Print the elapsed and remaining time.
+            $now = time();
 
             $start = self::$tasks[$taskname];
             $eta = ($now - $start) * $total / $itemno + $start;
@@ -96,15 +96,14 @@ abstract class clean {
             $timeleft = intval($elapsed) . ' seconds elapsed, ' . intval($eta - $now) . ' seconds remaining';
 
         } else {
+            // Save the start time for this task.
             self::$tasks[$taskname] = time();
         }
-
-        // If first status record time stamp
-        // Do calculation of ETA based on first status.
 
         printf ("\r %-20s %4d%% (%d/%d)    $timeleft  ", $taskname, $perc, $itemno, $total);
 
         if ($itemno == $total) {
+            // No more output for this step; move to a new line.
             printf("\n");
         }
     }
