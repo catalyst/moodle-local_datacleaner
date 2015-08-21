@@ -83,7 +83,7 @@ class schema_add_cascade_delete extends clean {
      */
     static private function add_constraint_removal_query($query) {
         if (empty(self::$constraint_removal_queries)) {
-            register_shutdown_function(array('local_datacleaner\clean', 'undo'));
+            register_shutdown_function(array('local_datacleaner\clean', 'revert'));
         }
         self::$constraint_removal_queries[] = $query;
     }
