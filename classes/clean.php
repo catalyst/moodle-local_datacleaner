@@ -33,8 +33,6 @@ abstract class clean {
     protected static $verbose = true;
     protected $needs_cascade_delete = false;
 
-    protected static $numusers = 0;
-
     protected static $step = 0;
     protected static $maxsteps = 0;
     protected static $exectime = 0;
@@ -42,7 +40,8 @@ abstract class clean {
     /**
      * Constructor
      *
-     * @param bool $dryrun Whether we're doing a dry run.
+     * @param bool    $dryrun  Whether we're doing a dry run.
+     * @param verbose $verbose Whether to display verbose progress info.
      */
     public function __construct($dryrun = true, $verbose = false) {
         self::$dryrun = $dryrun;
@@ -108,16 +107,26 @@ abstract class clean {
         }
     }
 
+    /**
+     * Start a new task.
+     *
+     * @param int $maxsteps The number of steps for the task.
+     */
     static protected function new_task($maxsteps) {
         static::$step = 0;
         static::$maxsteps = $maxsteps;
-        static::update_status(static::TASK, static::$step, static::$maxsteps);
+        static::update_status();
         static::$exectime = -microtime(true);
     }
 
-    static protected function next_step() {
-        static::$step++;
-        static::update_status(static::TASK, static::$step, static::$maxsteps);
+    /**
+     * Completed a step. Possibly the last one.
+     *
+     * @param int $increment The amount by which to increase the step number.
+     */
+    static protected function next_step($increment = 1) {
+        static::$step+= $increment;
+        static::update_status();
 
         // Print the execution time if we're done.
         if (static::$step == static::$maxsteps) {
@@ -126,12 +135,14 @@ abstract class clean {
         }
     }
 
+    // The following routines are shared by the user scramble/delete subplugins.
+
     /**
-     * Build an array of criteria for get_users from the module config.
+     * Build an array of criteria from the module config.
      *
-     * @return array $criteria Criteria to pass to get_users.
+     * @return array $criteria Criteria to pass to the where fragment generator.
      */
-    protected static function get_criteria($config) {
+    protected static function get_user_criteria($config) {
         global $CFG;
 
         $criteria = array();
