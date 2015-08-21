@@ -34,17 +34,31 @@ class clean extends \local_datacleaner\clean {
     static public function execute() {
         global $DB;
 
+        $tables = $DB->get_tables();
+        $tablelist = array();
+
+        foreach($tables as $table) {
+            switch ($table) {
+                case 'events_queue':
+                case 'task_adhoc':
+                case 'message':
+                case 'tool_monitor':
+                case 'webdav_locks':
+                    $tablelist[] = $table;
+                default:
+                    if (substr($table, 0, 5) == 'back_' ||
+                        substr($table, 0, 6) == 'stats_') {
+                        $tablelist[] = $table;
+                    }
+            }
+        }
+
         if (self::$dryrun) {
             self::debug('Would truncate 8 tables.');
         } else {
-            $DB->delete_records('events_queue');
-            $DB->delete_records('task_adhoc');
-            $DB->delete_records('message');
-            $DB->delete_records('back_');
-            $DB->delete_records('sessions');
-            $DB->delete_records('stats_');
-            $DB->delete_records('tool_monitor');
-            $DB->delete_records('webdav_locks');
+            foreach($tablelist as $table) {
+                $DB->delete_records($table);
+            }
         }
     }
 }
