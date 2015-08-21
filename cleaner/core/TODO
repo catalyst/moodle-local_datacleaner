@@ -1,11 +1,11 @@
 
 Remove all transient temp core data
 
-* remove event queue backlog
-* remove ad hoc tasks queue
-* remove mdl_message_* queues
-* remove mdl_back_* crap
-* remove mdl_sessions_
-* remove mdl_stats_*
-* mdl_tool_monitor
-* mdl_webdav_locks_
+* remove event queue backlog DONE
+* remove ad hoc tasks queue DONE
+* remove mdl_message_* queues ? mdl_message. Not seeing suffixes in Latrobe (needs newer version perhaps?)
+* remove mdl_back_* crap DONE But truncate or delete?
+* remove mdl_sessions_ DONE
+* remove mdl_stats_* DONE
+* mdl_tool_monitor DONE But not seen in Latrobe - needs newer version?
+* mdl_webdav_locks_ DONE

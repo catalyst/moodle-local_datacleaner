@@ -43,11 +43,12 @@ class clean extends \local_datacleaner\clean {
                 case 'task_adhoc':
                 case 'message':
                 case 'tool_monitor':
-                case 'webdav_locks':
                     $tablelist[] = $table;
                 default:
                     if (substr($table, 0, 5) == 'back_' ||
-                        substr($table, 0, 6) == 'stats_') {
+                        substr($table, 0, 6) == 'stats_' ||
+                        substr($table, 0, 9) == 'sessions_' ||
+                        substr($table, 0, 13) == 'webdav_locks_') {
                         $tablelist[] = $table;
                     }
             }
