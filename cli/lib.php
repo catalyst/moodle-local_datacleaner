@@ -41,14 +41,15 @@ function print_message($text, $highlight = false) {
 /**
  * Print a message about aborting.
  *
+ * @param string $prefix    The prefix to the reason header.
  * @param string $text      The text to print.
  * @param bool   $highlight Whether to highlight the text.
  */
-function abort_message($text, $highlight = false) {
+function abort_message($prefix, $text, $highlight = false) {
     static $haverun = false;
 
     if (!$haverun) {
-        print_message("Aborting for the following reason(s):\n");
+        print_message("{$prefix} for the following reason(s):\n");
         $haverun = true;
     }
 
@@ -72,7 +73,7 @@ function safety_checks($dryrun) {
     if (empty($saved)) {
         print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
     } else if ($CFG->wwwroot == $saved) {
-        abort_message("\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL. {$abort}.", true);
+        abort_message($abort, "\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL.", true);
         $willdie = true;
     }
 
@@ -114,8 +115,8 @@ function safety_checks($dryrun) {
         }
 
         if ($nonadmins) {
-            abort_message($message);
-            abort_message("{$abort} because there are non site-administrators in the list of recent users.", true);
+            abort_message($abort, $message);
+            abort_message("There are non site-administrators in the list of recent users.", true);
             $willdie = true;
         }
     }
@@ -127,7 +128,7 @@ function safety_checks($dryrun) {
     }
 
     if ($lastrun > $timefrom) {
-        abort_message("{$abort} because cron has run within the last {$minutes} minutes.", true);
+        abort_message($abort, "Cron has run within the last {$minutes} minutes.", true);
         $willdie = true;
     }
 
