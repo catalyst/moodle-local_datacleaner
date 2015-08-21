@@ -169,19 +169,13 @@ abstract class clean {
     }
 
     /**
-     * Get the number of users that were returned by get_users below
-     */
-    public static function get_num_users() {
-        return self::$numusers;
-    }
-
-    /**
-     * Get an array of user objects meeting the criteria provided
+     * Build a SQL where clause from the criteria provided.
      *
-     * @param  array $criteria An array of criteria to apply.
-     * @return array $result   The array of sql fragments & named parameters to add into queries.
+     * @param  array $criteria The criteria to apply
+     *
+     * @return array $sql, $params The SQL & parameters
      */
-    public static function get_users($criteria = array()) {
+    public static function get_user_where_sql($criteria = array()) {
         global $DB;
 
         $extrasql = '';
@@ -215,20 +209,42 @@ abstract class clean {
             $params['deleted'] = $criteria['deleted'];
         }
 
-        $uids = $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
-        if (empty($uids)) {
-            return array();
-        }
+        return array($extrasql, $params);
+    }
 
-        $uids = array_keys($uids);
-        self::$numusers = count($uids);
-        $chunks = array_chunk($uids, 65000);
-        foreach ($chunks as &$chunk) {
-            list($sql, $params) = $DB->get_in_or_equal($chunk);
-            $chunk = array('sql' => $sql, 'params' => $params, 'size' => count($chunk));
-        }
+    /**
+     * Get the number of users that will be returned by get_users below.
+     *
+     * @param  array $config An array of plugin configuration settings to apply.
+     *
+     * @return int The number of users that meet the criteria.
+     */
+    public static function get_user_count($config = array()) {
+        global $DB;
 
-        return $chunks;
+        $criteria = self::get_user_criteria($config);
+        list($where, $whereparams) = self::get_user_where_sql($criteria);
+
+        return $DB->count_records_select('user', 'id > 2 ' . $where, $whereparams);
+    }
+
+    /**
+     * Get an array of user objects meeting the criteria provided - possibly not all of them.
+     *
+     * @param array  $config An array of plugin configuration settings to apply.
+     * @param string $sort   A SQL ORDER BY parameter.
+     * @param string $fields A command separated list of fields to return.
+     *
+     * @return array $result An array of user records.
+     */
+    public static function get_user_chunk($config = array(), $offset = 0) {
+        global $DB;
+
+        $criteria = self::get_user_criteria($config);
+        list($where, $whereparams) = self::get_user_where_sql($criteria);
+
+        $uids = $DB->get_records_select('user', 'id > 2 ' . $where, $whereparams, 'id', 'id', $offset, 10000);
+        return array_keys($uids);
     }
 
     /**
