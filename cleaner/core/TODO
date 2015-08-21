@@ -9,5 +9,3 @@ Remove all transient temp core data
 * remove mdl_stats_*
 * mdl_tool_monitor
 * mdl_webdav_locks_
-
-

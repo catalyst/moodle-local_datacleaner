@@ -111,4 +111,3 @@ foreach ($plugins as $plugin) {
 }
 
 echo "Done.\n";
-

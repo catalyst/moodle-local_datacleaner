@@ -40,4 +40,3 @@ class clean extends \local_datacleaner\clean {
         }
     }
 }
-

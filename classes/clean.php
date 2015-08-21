@@ -31,7 +31,7 @@ abstract class clean {
 
     protected static $dryrun = true;
     protected static $verbose = true;
-    protected $needs_cascade_delete = false;
+    protected $needscascadedelete = false;
 
     protected static $step = 0;
     protected static $maxsteps = 0;
@@ -54,7 +54,7 @@ abstract class clean {
      * @return bool Whether cascade deletion is needed.
      */
     public function needs_cascade_delete() {
-        return $this->needs_cascade_delete;
+        return $this->needscascadedelete;
     }
 
     /**
@@ -125,7 +125,7 @@ abstract class clean {
      * @param int $increment The amount by which to increase the step number.
      */
     static protected function next_step($increment = 1) {
-        static::$step+= $increment;
+        static::$step += $increment;
         static::update_status();
 
         // Print the execution time if we're done.

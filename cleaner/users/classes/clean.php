@@ -33,7 +33,7 @@ class clean extends \local_datacleaner\clean {
     // - Reset password
     // - Email address undeliverable
     // - Emailstop on
-    // - Clear firstaccess, lastaccess, lastlogin, currentlogin, picture, description  and lastip
+    // - Clear firstaccess, lastlogin, currentlogin, picture, description  and lastip
     // - Empty other contact details.
 
     const PASS = 'F4k3p3s5w0rD%';
@@ -45,7 +45,6 @@ class clean extends \local_datacleaner\clean {
         'email' => 'dev_null@localhost',
         'emailstop' => 1,
         'firstaccess' => 0,
-        'lastaccess' => 0,
         'lastlogin' => 0,
         'currentlogin' => 0,
         'picture' => 0,
@@ -284,7 +283,7 @@ class clean extends \local_datacleaner\clean {
         $stepsperuser = count(self::$scramble) + count(self::$fixedmods) + count(self::$functions);
         $numsteps = $numusers * $stepsperuser;
 
-        // Set up the prime numbers
+        // Set up the prime numbers.
         $thisnum = intval(sqrt($numusers));
         $newscramble = array();
 

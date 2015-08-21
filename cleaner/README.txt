@@ -11,6 +11,3 @@ so we aren't wasting time transforming them only to be removed later. Each
 task has a sortorder which reflects this order, a good rule of thunb is to
 use the CONTEXT_ numbers, so CONTEXT_SYSTEM (10) cleaners will be run first,
 then CONTEXT_USER (30) etc.
-
-
-

@@ -106,4 +106,3 @@ $settings->add(new admin_setting_configmulticheckbox(
     $defaultcourses,
     $coursesbyname
     ));
-

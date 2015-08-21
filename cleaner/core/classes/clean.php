@@ -37,7 +37,7 @@ class clean extends \local_datacleaner\clean {
         $tables = $DB->get_tables();
         $tablelist = array();
 
-        foreach($tables as $table) {
+        foreach ($tables as $table) {
             switch ($table) {
                 case 'events_queue':
                 case 'task_adhoc':
@@ -56,7 +56,7 @@ class clean extends \local_datacleaner\clean {
         if (self::$dryrun) {
             echo "Would truncate " . count($tablelist) . " tables.\n";
         } else {
-            foreach($tablelist as $table) {
+            foreach ($tablelist as $table) {
                 $DB->delete_records($table);
             }
         }

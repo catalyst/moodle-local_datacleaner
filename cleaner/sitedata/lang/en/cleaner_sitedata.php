@@ -23,4 +23,3 @@
  */
 
 $string['pluginname'] = 'Cleanup sitedata';
-
