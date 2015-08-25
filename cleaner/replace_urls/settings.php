@@ -34,4 +34,3 @@ $settings->add(new admin_setting_configtext('cleaner_replace_urls/origsiteurl',
 $settings->add(new admin_setting_configtext('cleaner_replace_urls/newsiteurl',
             new lang_string('newsiteurl', 'cleaner_replace_urls'),
             new lang_string('newsiteurldesc', 'cleaner_replace_urls'), 'http://localhost', PARAM_URL));
-

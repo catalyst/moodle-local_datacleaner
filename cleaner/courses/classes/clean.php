@@ -26,21 +26,21 @@ defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
     const TASK = 'Removing old courses';
-    protected $needs_cascade_delete = true;
+    protected $needscascadedelete = true;
 
     static protected $courses = array();
 
     /**
      * Constructor.
      */
-    function __construct() {
+    public function __construct() {
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_courses');
 
         $criteria = self::get_criteria($config);
         self::$courses = self::get_courses($criteria);
 
-        $this->needs_cascade_delete = !empty(self::$courses);
+        $this->needscascadedelete = !empty(self::$courses);
     }
 
     /**
@@ -105,12 +105,11 @@ class clean extends \local_datacleaner\clean {
      * delete_course is faaaaaaaaaaaaaaaar too slow. This plugin gets around this by using the XML schema
      * info to set up cascade deletion, use it to delete the affected courses and then revert the schema changes.
      */
-    static public function delete_courses($courses = array())
-    {
+    static public function delete_courses($courses = array()) {
         global $DB;
 
         if (self::$dryrun) {
-            self::debug("\nWould delete " . count($courses) . " courses (plus cascade deletions).\n");
+            echo "\nWould delete " . count($courses) . " courses (plus cascade deletions).\n";
         } else {
             list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
             $DB->delete_records_select('course', 'id ' . $sql, $params);
@@ -131,8 +130,8 @@ class clean extends \local_datacleaner\clean {
                                          ON {context}.instanceid = {course}.id
                                       WHERE contextlevel = 50
                                         AND {course}.id IS NULL");
-            self::debug("\nWould delete " . $count . " context records that are currently lacking matching courses " .
-                    "and those from courses to be deleted.\n");
+            echo "\nWould delete " . $count . " context records that are currently lacking matching courses " .
+                    "and those from courses to be deleted.\n";
         } else {
             $DB->execute("DELETE FROM {context} USING {course}
                                 WHERE contextlevel = 50
@@ -164,6 +163,4 @@ class clean extends \local_datacleaner\clean {
         self::delete_dangling_course_contexts(self::$courses);
         self::next_step();
     }
-
 }
-

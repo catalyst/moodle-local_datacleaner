@@ -24,4 +24,3 @@
 
 $string['pluginname'] = 'Remove standard logs';
 $string['truncate'] = 'Truncate all standard database logs';
-

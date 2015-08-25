@@ -33,7 +33,7 @@ class clean extends \local_datacleaner\clean {
     // - Reset password
     // - Email address undeliverable
     // - Emailstop on
-    // - Clear firstaccess, lastaccess, lastlogin, currentlogin, picture, description  and lastip
+    // - Clear firstaccess, lastlogin, currentlogin, picture, description  and lastip
     // - Empty other contact details.
 
     const PASS = 'F4k3p3s5w0rD%';
@@ -45,7 +45,6 @@ class clean extends \local_datacleaner\clean {
         'email' => 'dev_null@localhost',
         'emailstop' => 1,
         'firstaccess' => 0,
-        'lastaccess' => 0,
         'lastlogin' => 0,
         'currentlogin' => 0,
         'picture' => 0,
@@ -95,12 +94,10 @@ class clean extends \local_datacleaner\clean {
      *
      * @param array $users - The userIDs on which to operate.
      */
-    private static function username_substitution($users = array()) {
+    private static function username_substitution($users = array(), $inequalsql, $ineqparams) {
         global $DB;
 
-        foreach ($users as $chunk) {
-            $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $chunk['sql'], $chunk['params']);
-        }
+        $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $inequalsql, $ineqparams);
     }
 
     /**
@@ -145,6 +142,37 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
+     * Load an install.xml file, checking that it exists, and that the structure is OK.
+     *
+     * This is copied from lib/ddl/database_manager.php because it's a private method there.
+     *
+     * @param string $file the full path to the XMLDB file.
+     * @return xmldbfile the loaded file.
+     */
+    static private function load_xmldbfile($file) {
+        global $CFG;
+
+        $xmldbfile = new \xmldb_file($file);
+
+        if (!$xmldbfile->fileExists()) {
+            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
+        }
+
+        $loaded = $xmldbfile->loadXMLStructure();
+        if (!$loaded || !$xmldbfile->isLoaded()) {
+            // Show info about the error if we can find it.
+            if ($structure = $xmldbfile->getStructure()) {
+                if ($errors = $structure->getAllErrors()) {
+                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
+                }
+            }
+            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
+        }
+
+        return $xmldbfile;
+    }
+
+    /**
      * Scramble the contents of a set of fields.
      *
      * The algorithm is:
@@ -159,28 +187,28 @@ class clean extends \local_datacleaner\clean {
      * - Copy first 101 unique firstnames to 1 temporary table and first 103 unique lastnames to another
      * - Use a single SQL statement to update the original fields in a cycle.
      *
-     * @param array $users  - The UIDS of users who will be modified and from whom data will be selected
-     * @param array $fields - The names of user tables fields that will be changed. More than one means
-     *                        values will be changed together  (ie keep the city, country and timezone
-     *                        making sense together).
+     * @param array  $users      The UIDS of users who will be modified and from whom data will be selected
+     * @param array  $fields     The names of user tables fields that will be changed. More than one means
+     *                           values will be changed together  (ie keep the city, country and timezone
+     *                           making sense together).
+     * @param int    $prime      The prime number to use for this set of fields.
+     * @param string $inequalsql SQL where fragment for the batch.
+     * @param array  $ineqparam  The array of parameters for $inequalsql
      */
-    static public function randomise_fields($users = array(), $fields = array()) {
+    static public function randomise_fields($users = array(), $fields = array(), $prime, $inequalsql, $ineqparam) {
         global $DB, $CFG;
+        static $userstructure = null, $userkeys;
         $tmptables = array();
         $dbmanager = $DB->get_manager();
 
-        // Get the user table definition from the XMLDB file so we can pull
-        // out fields and create temporary tables with the same definition.
-        $xmldbfile = self::load_xmldbfile($CFG->dirroot . '/lib/db/install.xml');
-        $xmldbstructure = $xmldbfile->getStructure();
-        $userstructure = $xmldbstructure->getTable('user');
-        $userkeys = $userstructure->getKeys();
-
-        $numusers = self::get_num_users();
-        $lastprime = max(sqrt($numusers), self::$lastprime);
-
-        $thisprime = self::next_prime($lastprime);
-        self::$lastprime = $thisprime;
+        if (is_null($userstructure)) {
+            // Get the user table definition from the XMLDB file so we can pull
+            // out fields and create temporary tables with the same definition.
+            $xmldbfile = self::load_xmldbfile($CFG->dirroot . '/lib/db/install.xml');
+            $xmldbstructure = $xmldbfile->getStructure();
+            $userstructure = $xmldbstructure->getTable('user');
+            $userkeys = $userstructure->getKeys();
+        }
 
         // Create a temporary table into which to pull the values
         // Get the details of the field config from the XMLDB structure.
@@ -203,7 +231,7 @@ class clean extends \local_datacleaner\clean {
         $sql = "INSERT INTO {temp_table} ({$fieldlist}) (
             SELECT DISTINCT ${fieldlist} FROM {user}
                    ORDER BY ${fieldlist}
-                      LIMIT {$thisprime}
+                      LIMIT {$prime}
                       )";
         $DB->execute($sql);
 
@@ -217,16 +245,13 @@ class clean extends \local_datacleaner\clean {
             $sets[] = "{$field} = {temp_table}.{$field}";
         }
 
-        foreach ($users as $chunk) {
-            list($inequalsql, $params) = $DB->get_in_or_equal($chunk);
+        list($inequalsql, $params) = $DB->get_in_or_equal($users);
 
-            $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
-                " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
-                AND u.id " . $chunk['sql'];
+        $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
+            " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
+            AND u.id " . $inequalsql;
 
-            $DB->execute($sql, $chunk['params']);
-            self::next_step();
-        }
+        $DB->execute($sql, $ineqparam);
 
         $dbmanager->drop_table($temptablestruct);
     }
@@ -240,49 +265,60 @@ class clean extends \local_datacleaner\clean {
 
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_users');
-
-        $criteria = self::get_criteria($config);
-
-        // Get the list of users on which to work.
-        $users = self::get_users($criteria);
-
-        $numusers = self::get_num_users();
+        $numusers = self::get_user_count($config);
 
         if (!$numusers) {
             echo "No users require data scrambling.\n";
             return;
         }
 
+        if (self::$dryrun) {
+            echo "Would scramble the data of {$numusers} users.\n";
+            return;
+        }
+
         echo "Scrambling the data of {$numusers} users.\n";
 
         // Scramble the eggs.
-        $numsteps = count($users) * (count(self::$scramble) + count(self::$fixedmods)) + count(self::$functions);
-        self::new_task($numsteps);
+        $stepsperuser = count(self::$scramble) + count(self::$fixedmods) + count(self::$functions);
+        $numsteps = $numusers * $stepsperuser;
 
-        $transaction = $DB->start_delegated_transaction();
+        // Set up the prime numbers.
+        $thisnum = intval(sqrt($numusers));
+        $newscramble = array();
 
         foreach (self::$scramble as $description => $setoffields) {
-            self::randomise_fields($users, $setoffields);
+            $thisnum = self::next_prime($thisnum);
+            $newscramble[$thisnum] = $setoffields;
         }
+        self::$scramble = $newscramble;
 
-        $transaction->allow_commit();
+        self::new_task($numsteps);
+        $users = self::get_user_chunk($config);
+        $offset = 0;
+        while (!empty($users)) {
+            list($inequalsql, $params) = $DB->get_in_or_equal($users);
 
-        // Apply the fixed values. One step for what remains because this is fast.
-        $transaction = $DB->start_delegated_transaction();
-        foreach (self::$fixedmods as $field => $value) {
-            foreach ($users as $chunk) {
-                $DB->set_field_select('user', $field, $value, 'id ' . $chunk['sql'], $chunk['params']);
-                self::next_step();
+            foreach (self::$scramble as $prime => $setoffields) {
+                self::randomise_fields($users, $setoffields, $prime, $inequalsql, $params);
+                self::next_step(count($params));
             }
-        }
-        $transaction->allow_commit();
 
-        // Apply the functions.
-        $transaction = $DB->start_delegated_transaction();
-        foreach (self::$functions as $field => $fnname) {
-            self::$fnname($users);
-            self::next_step();
+            // Apply the fixed values. One step for what remains because this is fast.
+            foreach (self::$fixedmods as $field => $value) {
+                $DB->set_field_select('user', $field, $value, 'id ' . $inequalsql, $params);
+                self::next_step(count($params));
+            }
+
+            // Apply the functions.
+            foreach (self::$functions as $field => $fnname) {
+                self::$fnname($users, $inequalsql, $params);
+                self::next_step(count($params));
+            }
+
+            // Get the next batch of users.
+            $offset += count($users);
+            $users = self::get_user_chunk($config, $offset);
         }
-        $transaction->allow_commit();
     }
 }

@@ -28,40 +28,12 @@ use core\base;
 defined('MOODLE_INTERNAL') || die();
 
 class schema_add_cascade_delete extends clean {
-    protected static $constraint_removal_queries = array();
+    protected static $constraintremovalqueries = array();
     protected static $unrelated = array();
     protected static $depth = 0;
 
-    /**
-     * Load an install.xml file, checking that it exists, and that the structure is OK.
-     *
-     * This is copied from lib/ddl/database_manager.php because it's a private method there.
-     *
-     * @param string $file the full path to the XMLDB file.
-     * @return xmldbfile the loaded file.
-     */
-    static private function load_xmldbfile($file) {
-        global $CFG;
-
-        $xmldbfile = new \xmldb_file($file);
-
-        if (!$xmldbfile->fileExists()) {
-            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
-        }
-
-        $loaded = $xmldbfile->loadXMLStructure();
-        if (!$loaded || !$xmldbfile->isLoaded()) {
-            // Show info about the error if we can find it.
-            if ($structure = $xmldbfile->getStructure()) {
-                if ($errors = $structure->getAllErrors()) {
-                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
-                }
-            }
-            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
-        }
-
-        return $xmldbfile;
-    }
+    protected static $numindices = 0;
+    protected static $numcascadedeletes = 0;
 
     /**
      * Based on get_install_xml_schema in lib/ddl/database_manager.php.
@@ -86,11 +58,11 @@ class schema_add_cascade_delete extends clean {
         $schema->setVersion($CFG->version);
         $dbdirs = get_db_directories();
         foreach ($dbdirs as $dbdir) {
-            $xmldb_file = new \xmldb_file($dbdir.'/install.xml');
-            if (!$xmldb_file->fileExists() or !$xmldb_file->loadXMLStructure()) {
+            $xmldbfile = new \xmldb_file($dbdir.'/install.xml');
+            if (!$xmldbfile->fileExists() or !$xmldbfile->loadXMLStructure()) {
                 continue;
             }
-            $structure = $xmldb_file->getStructure();
+            $structure = $xmldbfile->getStructure();
             $tables = $structure->getTables();
             foreach ($tables as $table) {
                 $table->setPrevious(null);
@@ -110,10 +82,10 @@ class schema_add_cascade_delete extends clean {
      * @param string $query The string to save
      */
     static private function add_constraint_removal_query($query) {
-        if (empty(self::$constraint_removal_queries)) {
-            register_shutdown_function(array('local_datacleaner\clean', 'undo'));
+        if (empty(self::$constraintremovalqueries)) {
+            register_shutdown_function(array('local_datacleaner\schema_add_cascade_delete', 'revert'));
         }
-        self::$constraint_removal_queries[] = $query;
+        self::$constraintremovalqueries[] = $query;
     }
 
     /**
@@ -173,6 +145,70 @@ class schema_add_cascade_delete extends clean {
     }
 
     /**
+     * Try to add a cascade delete.
+     *
+     * @param string $parent    The parent (one) table in the relationship.
+     * @param string $tablename The child (many) table in the relationship.
+     * @param string $fieldname The child field that may contain the parent id.
+     * @param string $indexname The indexname upon which to base the constraint name.
+     *
+     * @return bool Whether a relationship was added.
+     */
+    static private function try_add_cascade_delete($parent, $tablename, $fieldname, $indexname) {
+        global $DB;
+
+        try {
+            /* Before we try to add the index, look for records that will prevent it */
+            self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
+            $conflicts = $DB->count_records_sql(
+                    "SELECT COUNT('x') FROM {{$tablename}}
+                    LEFT JOIN {{$parent}} ON {{$tablename}}.{$fieldname} = {{$parent}}.id
+                    WHERE {{$parent}}.id IS NULL");
+            if ($conflicts) {
+                self::debug("Getting total number of records in {$tablename}.\r");
+                $total = $DB->count_records($tablename);
+                if ($total > 100 && ($conflicts / $total) < 0.05) {
+                    self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
+                    $DB->execute(
+                            "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
+                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
+                } else {
+                    if ($conflicts < $total) {
+                        self::debug("{$conflicts}/{$total} records from the {$fieldname} field in {$tablename} don't match " .
+                                "{$parent} ids. Assuming this is not really a candidate for referential integrity.\n");
+                    }
+                    return false;
+                }
+            }
+            self::debug("Adding cascade delete to {$tablename}, field {$fieldname} for deletions from table {$parent} ... ");
+            $DB->execute("ALTER TABLE {{$tablename}}
+                       ADD CONSTRAINT c_{$indexname}
+                          FOREIGN KEY ({$fieldname})
+                           REFERENCES {{$parent}}(id)
+                    ON DELETE CASCADE");
+            self::add_constraint_removal_query("ALTER TABLE {{$tablename}} DROP CONSTRAINT c_{$indexname}");
+            self::debug("success.\n");
+            return true;
+        } catch (\dml_write_exception $e) {
+            if (substr($e->error, -14) == "already exists") {
+                self::debug("already exists.\n");
+            } else {
+                self::debug("failed ({$e->error}).\n");
+            }
+        } catch (\dml_read_exception $e) {
+            // Trying to match fields of different types?
+            if (substr($e->error, 0, 32) == "ERROR:  operator does not exist:") {
+                self::debug("ID field from {$parent} table and {$fieldname} from {$tablename} have different data types.\n");
+            } else if (substr($e->error, 0, 16) == "ERROR:  relation") {
+                self::debug("{$tablename} table missing?! Perhaps there's an upgrade to be done.\n");
+            } else {
+                self::debug("failed ({$e->error})\n");
+            }
+        }
+        return false;
+    }
+
+    /**
      * Add cascade deletion to courseIDs.
      *
      * @param array $schema The database schema
@@ -194,18 +230,16 @@ class schema_add_cascade_delete extends clean {
         }
 
         if (self::$depth == 1) {
-            foreach($schema->getTables() as $table) {
+            foreach ($schema->getTables() as $table) {
                 self::$unrelated[$table->getName()] = 1;
-            }
-
-            if (self::$dryrun) {
-                echo "\n";
             }
         }
 
         $visited[$parent] = true;
 
-        if (!self::$dryrun) {
+        if (self::$dryrun) {
+            self::$numindices++;
+        } else {
             self::debug(">> Setting up cascade deletion for {$parent}\n");
 
             // Add index.
@@ -227,7 +261,7 @@ class schema_add_cascade_delete extends clean {
         $checks = self::get_checks_for_parent_table($parent);
 
         // Iterate over tables in the schema ...
-        foreach($schema->getTables() as $table) {
+        foreach ($schema->getTables() as $table) {
             $tablename = $table->getName();
             if ($tablename == $parent) {
                 continue;
@@ -257,52 +291,11 @@ class schema_add_cascade_delete extends clean {
                         $indexname = "u_{$parent}";
                     }
 
-                    if (!self::$dryrun) {
-                        try {
-                            /* Before we try to add the index, look for records that will prevent it */
-                            self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
-                            $conflicts = $DB->count_records_sql(
-                                    "SELECT COUNT('x') FROM {{$tablename}}
-                                    LEFT JOIN {{$parent}} ON {{$tablename}}.{$fieldname} = {{$parent}}.id
-                                    WHERE {{$parent}}.id IS NULL");
-                            if ($conflicts) {
-                                self::debug("Getting total number of records in {$tablename}.\r");
-                                $total = $DB->count_records($tablename);
-                                if ($total > 100 && ($conflicts / $total) < 0.05) {
-                                    self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
-                                    $DB->execute(
-                                            "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
-                                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
-                                } else {
-                                    if ($conflicts < $total) {
-                                        self::debug("{$conflicts}/{$total} records from the {$fieldname} field in {$tablename} don't match {$parent} ids. Assuming this is not really a candidate for referential integrity.\n");
-                                    }
-                                    continue;
-                                }
-                            }
-                            self::debug("Adding cascade delete to {$tablename}, field {$fieldname} for deletions from table {$parent} ... ");
-                            $DB->execute("ALTER TABLE {{$tablename}}
-                                    ADD CONSTRAINT c_{$indexname}
-                                    FOREIGN KEY ({$fieldname})
-                                    REFERENCES {{$parent}}(id)
-                                    ON DELETE CASCADE");
-                            self::add_constraint_removal_query("ALTER TABLE {{$tablename}} DROP CONSTRAINT c_{$indexname}");
-                            self::debug("success.\n");
-                        } catch (\dml_write_exception $e) {
-                            if (substr($e->error, -14) == "already exists") {
-                                self::debug("already exists.\n");
-                            } else {
-                                self::debug("failed ({$e->error}).\n");
-                            }
-                        } catch (\dml_read_exception $e) {
-                            // Trying to match fields of different types?
-                            if (substr($e->error, 0, 32) == "ERROR:  operator does not exist:") {
-                                self::debug("ID field from {$parent} table and {$fieldname} from {$tablename} have different data types.\n");
-                            } else if (substr($e->error, 0, 16) == "ERROR:  relation") {
-                                self::debug("{$tablename} table missing?! Perhaps there's an upgrade to be done.\n");
-                            } else {
-                                self::debug("failed ({$e->error})\n");
-                            }
+                    if (self::$dryrun) {
+                        self::$numcascadedeletes++;
+                    } else {
+                        if (!self::try_add_cascade_delete($parent, $tablename, $fieldname, $indexname)) {
+                            continue;
                         }
                     }
 
@@ -312,11 +305,18 @@ class schema_add_cascade_delete extends clean {
         }
         self::$depth--;
 
-        if (!self::$depth && !empty(self::$unrelated) && self::$verbose) {
-            $toprint = array_keys(self::$unrelated);
-            sort($toprint);
-            foreach($toprint as $table) {
-                echo "- {$table}\n";
+        if (!self::$depth) {
+            if (!empty(self::$unrelated) && self::$verbose) {
+                $toprint = array_keys(self::$unrelated);
+                sort($toprint);
+                foreach ($toprint as $table) {
+                    echo "- {$table}\n";
+                }
+            }
+
+            if (self::$dryrun && (self::$numindices || self::$numcascadedeletes)) {
+                echo "Would attempt to add " . self::$numindices . " indices and " . self::$numcascadedeletes .
+                    " cascade deletes.\n";
             }
         }
     }
@@ -329,10 +329,10 @@ class schema_add_cascade_delete extends clean {
 
         self::debug("Removing cascade deletions and indices that were added.\n");
 
-        foreach (array_reverse(self::$constraint_removal_queries) as $query) {
+        foreach (array_reverse(self::$constraintremovalqueries) as $query) {
             $DB->execute($query);
         }
 
-        self::$constraint_removal_queries = array();
+        self::$constraintremovalqueries = array();
     }
 }

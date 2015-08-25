@@ -29,39 +29,51 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Removing grades';
 
     /**
-     * Delete all grade history.
-     */
-    protected static function delete_all_grades() {
-        global $DB;
-
-    }
-
-    /**
      * Do the hard work of cleaning up users.
      */
     static public function execute() {
 
-        global $DB, $CFG;
+        global $DB;
 
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_grades');
 
-        self::update_status(self::TASK, 0, 1);
-
         if ($config->deleteall) {
-            $DB->delete_records('grade_grades');
-            $DB->delete_records('grade_grades_history');
+            if (self::$dryrun) {
+                echo "Would truncate the grade_grades and grade_grades_history tables.\n";
+            } else {
+                self::new_task(2);
+                $DB->delete_records('grade_grades');
+                self::next_step();
+                $DB->delete_records('grade_grades_history');
+                self::next_step();
+            }
         } else {
-            $DB->execute('UPDATE {grade_grades} SET rawgrade = (id % rawgrademax) WHERE rawgrademax > 0');
-            $DB->execute('UPDATE {grade_grades} SET rawgrade = 0 WHERE rawgrademax = 0');
-            $DB->execute('UPDATE {grade_grades} SET finalgrade = (id % rawgrademax) WHERE rawgrademax > 0');
-            $DB->execute('UPDATE {grade_grades} SET finalgrade = 0 WHERE rawgrademax = 0');
-            $DB->execute('UPDATE {grade_grades_history} SET rawgrade = (id % rawgrademax) WHERE rawgrademax > 0');
-            $DB->execute('UPDATE {grade_grades_history} SET rawgrade = 0 WHERE rawgrademax = 0');
-            $DB->execute('UPDATE {grade_grades_history} SET finalgrade = (id % rawgrademax) WHERE rawgrademax > 0');
-            $DB->execute('UPDATE {grade_grades_history} SET finalgrade = 0 WHERE rawgrademax = 0');
+            if (self::$dryrun) {
+                $count = $DB->count_records_select('grade_grades', 'rawgrademax > 0');
+                $count += $DB->count_records_select('grade_grades', 'rawgrademax = 0');
+                $count += $DB->count_records_select('grade_grades_history', 'rawgrademax > 0');
+                $count += $DB->count_records_select('grade_grades_history', 'rawgrademax = 0');
+                echo "Would update 2 fields on {$count} records in the grade_grades and grade_grades_history tables.\n";
+            } else {
+                self::new_task(8);
+                $DB->execute('UPDATE {grade_grades} SET rawgrade = (id % rawgrademax) WHERE rawgrademax > 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades} SET rawgrade = 0 WHERE rawgrademax = 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades} SET finalgrade = (id % rawgrademax) WHERE rawgrademax > 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades} SET finalgrade = 0 WHERE rawgrademax = 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades_history} SET rawgrade = (id % rawgrademax) WHERE rawgrademax > 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades_history} SET rawgrade = 0 WHERE rawgrademax = 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades_history} SET finalgrade = (id % rawgrademax) WHERE rawgrademax > 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades_history} SET finalgrade = 0 WHERE rawgrademax = 0');
+                self::next_step();
+            }
         }
-
-        self::update_status(self::TASK, 1, 1);
     }
 }

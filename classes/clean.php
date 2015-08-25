@@ -31,9 +31,7 @@ abstract class clean {
 
     protected static $dryrun = true;
     protected static $verbose = true;
-    protected $needs_cascade_delete = false;
-
-    protected static $numusers = 0;
+    protected $needscascadedelete = false;
 
     protected static $step = 0;
     protected static $maxsteps = 0;
@@ -42,7 +40,8 @@ abstract class clean {
     /**
      * Constructor
      *
-     * @param bool $dryrun Whether we're doing a dry run.
+     * @param bool    $dryrun  Whether we're doing a dry run.
+     * @param verbose $verbose Whether to display verbose progress info.
      */
     public function __construct($dryrun = true, $verbose = false) {
         self::$dryrun = $dryrun;
@@ -55,7 +54,7 @@ abstract class clean {
      * @return bool Whether cascade deletion is needed.
      */
     public function needs_cascade_delete() {
-        return $this->needs_cascade_delete;
+        return $this->needscascadedelete;
     }
 
     /**
@@ -74,21 +73,21 @@ abstract class clean {
         }
     }
 
-    /*
-     * $taskname String A unique name for a cleaning task
-     *
-     * SHOULD be called at the start with an itemno of 0?
+    /**
+     * Print the current status of the task.
      */
-    static protected function update_status($taskname, $itemno, $total) {
+    static protected function update_status() {
+
+        $taskname = static::TASK;
+        $itemno = static::$step;
+        $total = static::$maxsteps;
 
         $perc = $itemno * 100 / $total;
-
-        $eta = null;
-        $delta = null;
-        $now = time();
-        $start = null;
         $timeleft = null;
+
         if (isset(self::$tasks[$taskname])) {
+            // Print the elapsed and remaining time.
+            $now = time();
 
             $start = self::$tasks[$taskname];
             $eta = ($now - $start) * $total / $itemno + $start;
@@ -96,29 +95,38 @@ abstract class clean {
             $timeleft = intval($elapsed) . ' seconds elapsed, ' . intval($eta - $now) . ' seconds remaining';
 
         } else {
+            // Save the start time for this task.
             self::$tasks[$taskname] = time();
         }
-
-        // If first status record time stamp
-        // Do calculation of ETA based on first status.
 
         printf ("\r %-20s %4d%% (%d/%d)    $timeleft  ", $taskname, $perc, $itemno, $total);
 
         if ($itemno == $total) {
+            // No more output for this step; move to a new line.
             printf("\n");
         }
     }
 
+    /**
+     * Start a new task.
+     *
+     * @param int $maxsteps The number of steps for the task.
+     */
     static protected function new_task($maxsteps) {
         static::$step = 0;
         static::$maxsteps = $maxsteps;
-        static::update_status(static::TASK, static::$step, static::$maxsteps);
+        static::update_status();
         static::$exectime = -microtime(true);
     }
 
-    static protected function next_step() {
-        static::$step++;
-        static::update_status(static::TASK, static::$step, static::$maxsteps);
+    /**
+     * Completed a step. Possibly the last one.
+     *
+     * @param int $increment The amount by which to increase the step number.
+     */
+    static protected function next_step($increment = 1) {
+        static::$step += $increment;
+        static::update_status();
 
         // Print the execution time if we're done.
         if (static::$step == static::$maxsteps) {
@@ -127,12 +135,14 @@ abstract class clean {
         }
     }
 
+    // The following routines are shared by the user scramble/delete subplugins.
+
     /**
-     * Build an array of criteria for get_users from the module config.
+     * Build an array of criteria from the module config.
      *
-     * @return array $criteria Criteria to pass to get_users.
+     * @return array $criteria Criteria to pass to the where fragment generator.
      */
-    protected static function get_criteria($config) {
+    protected static function get_user_criteria($config) {
         global $CFG;
 
         $criteria = array();
@@ -159,19 +169,13 @@ abstract class clean {
     }
 
     /**
-     * Get the number of users that were returned by get_users below
-     */
-    public static function get_num_users() {
-        return self::$numusers;
-    }
-
-    /**
-     * Get an array of user objects meeting the criteria provided
+     * Build a SQL where clause from the criteria provided.
      *
-     * @param  array $criteria An array of criteria to apply.
-     * @return array $result   The array of sql fragments & named parameters to add into queries.
+     * @param  array $criteria The criteria to apply
+     *
+     * @return array $sql, $params The SQL & parameters
      */
-    public static function get_users($criteria = array()) {
+    public static function get_user_where_sql($criteria = array()) {
         global $DB;
 
         $extrasql = '';
@@ -205,20 +209,42 @@ abstract class clean {
             $params['deleted'] = $criteria['deleted'];
         }
 
-        $uids = $DB->get_records_select('user', 'id > 2 ' . $extrasql, $params);
-        if (empty($uids)) {
-            return array();
-        }
+        return array($extrasql, $params);
+    }
 
-        $uids = array_keys($uids);
-        self::$numusers = count($uids);
-        $chunks = array_chunk($uids, 65000);
-        foreach ($chunks as &$chunk) {
-            list($sql, $params) = $DB->get_in_or_equal($chunk);
-            $chunk = array('sql' => $sql, 'params' => $params, 'size' => count($chunk));
-        }
+    /**
+     * Get the number of users that will be returned by get_users below.
+     *
+     * @param  array $config An array of plugin configuration settings to apply.
+     *
+     * @return int The number of users that meet the criteria.
+     */
+    public static function get_user_count($config = array()) {
+        global $DB;
 
-        return $chunks;
+        $criteria = self::get_user_criteria($config);
+        list($where, $whereparams) = self::get_user_where_sql($criteria);
+
+        return $DB->count_records_select('user', 'id > 2 ' . $where, $whereparams);
+    }
+
+    /**
+     * Get an array of user objects meeting the criteria provided - possibly not all of them.
+     *
+     * @param array  $config An array of plugin configuration settings to apply.
+     * @param string $sort   A SQL ORDER BY parameter.
+     * @param string $fields A command separated list of fields to return.
+     *
+     * @return array $result An array of user records.
+     */
+    public static function get_user_chunk($config = array(), $offset = 0) {
+        global $DB;
+
+        $criteria = self::get_user_criteria($config);
+        list($where, $whereparams) = self::get_user_where_sql($criteria);
+
+        $uids = $DB->get_records_select('user', 'id > 2 ' . $where, $whereparams, 'id', 'id', $offset, 10000);
+        return array_keys($uids);
     }
 
     /**

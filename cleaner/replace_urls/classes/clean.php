@@ -26,21 +26,25 @@ namespace cleaner_replace_urls;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
-    const TASK = 'Replacing production URLs';
+    const TASK = 'Replacing URLs';
 
     static public function execute() {
         global $DB;
 
-        $task = 'Replacing URLs';
-
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_replace_urls');
 
-        self::update_status($task, 0, 1);
-        ob_start();
-        db_replace($config->origsiteurl, $config->newsiteurl);
-        ob_end_clean();
-        self::update_status($task, 1, 1);
+        if (self::$dryrun) {
+            /* Based on code in lib/adminlib.php */
+            $tables = $DB->get_tables();
+            $count = count($tables) - 11; /* 11 = count($skiptables) in db_replace */
+            echo "Would replace URLs in {$count} tables.\n";
+        } else {
+            self::new_task(1);
+            ob_start();
+            db_replace($config->origsiteurl, $config->newsiteurl);
+            ob_end_clean();
+            self::next_step();
+        }
     }
 }
-

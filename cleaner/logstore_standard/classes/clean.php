@@ -25,18 +25,18 @@ namespace cleaner_logstore_standard;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
-    const TASK = 'Removing standard logs';
+    const TASK = 'Truncating standard logs';
 
     static public function execute() {
 
         global $DB;
 
-        $task = 'Truncating standard logs';
-
-        $DB->execute("DELETE FROM {logstore_standard_log}");
-
-        self::update_status($task, 1, 1);
-
+        if (self::$dryrun) {
+            echo "Would truncate the logstore_standard_log table.\n";
+        } else {
+            self::new_task(1);
+            $DB->delete_records('logstore_standard_log');
+            self::next_step();
+        }
     }
 }
-

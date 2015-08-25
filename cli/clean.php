@@ -104,13 +104,10 @@ foreach ($plugins as $plugin) {
         $cascade = new \local_datacleaner\schema_add_cascade_delete($options['dryrun']);
 
         // Shutdown handler does the undo().
-        echo "Adding cascade delete to schema...\n";
         $cascade->execute();
-        echo "Continuing with cleanup...\n";
     }
 
     $class->execute();
 }
 
 echo "Done.\n";
-
