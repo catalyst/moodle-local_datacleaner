@@ -28,3 +28,4 @@ $string['categoriesdesc'] = 'Remove courses in the selected categories only.';
 $string['courses'] = 'Courses';
 $string['coursesdesc'] = 'Courses that should never be deleted.';
 $string['minimumage'] = 'Minimum age';
+$string['minimumagedesc'] = '';
