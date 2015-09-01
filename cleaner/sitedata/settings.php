@@ -34,9 +34,9 @@ $settings->add(new admin_setting_configcheckbox('cleaner_sitedata/replaceall',
 $settings->add(new admin_setting_configmultiselect('cleaner_sitedata/filetypes',
         new lang_string('filetypes', 'cleaner_sitedata'),
         new lang_string('filetypesdesc', 'cleaner_sitedata'), array(0),
-        array("txt", "csv", "htm", "html", "xml", "css", "doc", "docx", "xls", "xlsx", "js",
-              "rtf", "ppt", "pptx", "pdf", "swf", "flv", "avi", "wmv", "mov", "jpg", "jpeg",
-              "gif", "png", "ods", "odt", "odc", "odb", "odf", "odg", "odi", "odp", "odm", "zip",
-              "7z", "bz", "bz2", "gz", "tar", "rar", "gtar", "mp3", "mp4")));
+        array('7z', 'avi', 'bz', 'bz2', 'css', 'csv', 'doc', 'docx', 'flv', 'gif', 'gtar',
+                'gz', 'htm', 'html', 'jpeg', 'jpg', 'js', 'mov', 'mp3', 'mp4', 'odb', 'odc',
+                'odf', 'odg', 'odi', 'odm', 'odp', 'ods', 'odt', 'pdf', 'png', 'ppt', 'pptx',
+                'rar', 'rtf', 'swf', 'tar', 'txt', 'wmv', 'xls', 'xlsx', 'xml', 'zip')));
         // These will need to be converted to the associated mimetype.
 
