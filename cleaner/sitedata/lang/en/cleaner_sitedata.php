@@ -22,4 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['filetypes'] = 'File types';
+$string['filetypesdesc'] = 'Files of only the selected types will be replaced (if replace all is not set).';
 $string['pluginname'] = 'Cleanup sitedata';
+$string['replaceall'] = 'Replace All';
+$string['replacealldesc'] = 'Replace all files, of all types, with a generic default';
