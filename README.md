@@ -33,7 +33,7 @@ Your site should prompt you to upgrade.
 Once the installation process is complete, you'll be prompted to fill in some configuration details.
 
  You can also find the DataCleaner configurations again at any time via the Moodle administration block:
- 
+
 `Site Adminstration > Plugins > Local plugins > Data cleaner`
 
 ### Sub-plugin options
@@ -78,12 +78,17 @@ Clean orphaned files or replace with a generic file for the specific file type.
 
 ## Running
 
-After installing and configuring DataCleaner, run the cli script. On most modern Linux systems, this can be accomplished with:
+After installing and configuring DataCleaner, copy your database and optionally your site data to another moodle instance.
+
+From here run the cli script. On most modern Linux systems, this can be accomplished with:
 
 `sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cli/clean.php --run`
+
+There are protections in place which prevent accidental running on this on your production system - which would of course be catastrophic!
 
 ### More options
 
 Run the cli script with --help for more options:
 
 `sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cli/clean.php --help`
+
