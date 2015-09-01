@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allcontexts'] = 'All context levels';
+$string['allcontextsdesc'] = 'Replace all files in every context level, with a generic default';
+$string['contextlevels'] = 'Context levels';
+$string['contextlevelsdesc'] = 'Files in only the selected contexts will be replaced (if all contexts is not set).';
 $string['filetypes'] = 'File types';
 $string['filetypesdesc'] = 'Files of only the selected types will be replaced (if replace all is not set).';
 $string['pluginname'] = 'Cleanup sitedata';

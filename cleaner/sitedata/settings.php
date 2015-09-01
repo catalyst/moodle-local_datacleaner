@@ -33,10 +33,19 @@ $settings->add(new admin_setting_configcheckbox('cleaner_sitedata/replaceall',
 
 $settings->add(new admin_setting_configmultiselect('cleaner_sitedata/filetypes',
         new lang_string('filetypes', 'cleaner_sitedata'),
-        new lang_string('filetypesdesc', 'cleaner_sitedata'), array(0),
+        new lang_string('filetypesdesc', 'cleaner_sitedata'), array(),
         array('7z', 'avi', 'bz', 'bz2', 'css', 'csv', 'doc', 'docx', 'flv', 'gif', 'gtar',
                 'gz', 'htm', 'html', 'jpeg', 'jpg', 'js', 'mov', 'mp3', 'mp4', 'odb', 'odc',
                 'odf', 'odg', 'odi', 'odm', 'odp', 'ods', 'odt', 'pdf', 'png', 'ppt', 'pptx',
                 'rar', 'rtf', 'swf', 'tar', 'txt', 'wmv', 'xls', 'xlsx', 'xml', 'zip')));
         // These will need to be converted to the associated mimetype.
 
+$settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allcontext',
+        new lang_string('allcontexts', 'cleaner_sitedata'),
+        new lang_string('allcontextsdesc', 'cleaner_sitedata'), 0));
+
+$settings->add(new admin_setting_configmultiselect('cleaner_sitedata/contextlevels',
+        new lang_string('contextlevels', 'cleaner_sitedata'),
+        new lang_string('contextlevelsdesc', 'cleaner_sitedata'), array(30),
+        array(10 => 'System', 30 => 'User', 40 => 'Course category',
+              50 => 'Course', 70 => 'Module', 80 => 'Block')));
