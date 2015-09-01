@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_config
+ * @package    cleaner_core
  * @copyright  2015 Catalyst IT
  * @author     Nigel Cunningham
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,7 +29,7 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Removing config settings';
 
     /**
-     * Do the hard work of removing config settings.
+     * Do the work of truncating any unneeded tables.
      */
     static public function execute() {
         global $DB;
