@@ -2,18 +2,35 @@
 
 * Matt had a pretty cool idea to make sitedata cleanup really fast:
 
-- spit sitedata in two plugins:
+- split sitedata in two plugins:
 
-1) runs very ealry before any API calls in other plugins
-2) grind through the entire file table and file all unique file types
-3) create an empty file or test file for each type, maybe have a few examples in code in the cleaner code dir
-4) point all files of each type at that file
+1. Replace sitedata files:  ** DONE
+a) runs very ealry before any API calls in other plugins  ** TODO
+b) grind through the entire file table and file all unique file types ** DONE
+c) create an empty file or test file for each type, maybe have a few examples in code in the cleaner code dir  ** DONE
+d) point all files of each type at that file  ** DONE
 
-By running this first we can work with pure DB refreshes without any site data at all (in theory, need to test)
+By running this first we can work with pure DB refreshes without any site data at all (in theory, need to test) ** DONE - tested on an a dev VM.
+
+TODO: 
+a) generate more placeholder files for the following:
+  - avi
+  - bz  (probably not required)
+  - flv
+  - gtar
+  - mov
+  - mp3
+  - mp4
+  - odb
+  - odc
+  - odf
+  - odi
+  - odm
+  - swf
+  - wmv
 
 
-
-The second file plugin would do the orphaned files cleanup as follows:
+2. The second file plugin would do the orphaned files cleanup as follows:
 
 * This is a new sub-plugin - to be called orphaned_sitedata
 

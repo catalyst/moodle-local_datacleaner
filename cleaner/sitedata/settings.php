@@ -27,25 +27,29 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_sitedata/replaceall',
-        new lang_string('replaceall', 'cleaner_sitedata'),
-        new lang_string('replacealldesc', 'cleaner_sitedata'), 0));
+require_once($CFG->dirroot . '/local/datacleaner/cleaner/sitedata/classes/supported_file_types.php');
 
+$settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allfiletypes',
+        new lang_string('allfiletypes', 'cleaner_sitedata'),
+        new lang_string('allfiletypesdesc', 'cleaner_sitedata'), 0));
+
+$file_types = new cleaner_sitedata\cleaner_sitedata_supported_file_types();
 $settings->add(new admin_setting_configmultiselect('cleaner_sitedata/filetypes',
         new lang_string('filetypes', 'cleaner_sitedata'),
-        new lang_string('filetypesdesc', 'cleaner_sitedata'), array(),
-        array('7z', 'avi', 'bz', 'bz2', 'css', 'csv', 'doc', 'docx', 'flv', 'gif', 'gtar',
-                'gz', 'htm', 'html', 'jpeg', 'jpg', 'js', 'mov', 'mp3', 'mp4', 'odb', 'odc',
-                'odf', 'odg', 'odi', 'odm', 'odp', 'ods', 'odt', 'pdf', 'png', 'ppt', 'pptx',
-                'rar', 'rtf', 'swf', 'tar', 'txt', 'wmv', 'xls', 'xlsx', 'xml', 'zip')));
-        // These will need to be converted to the associated mimetype.
+        new lang_string('filetypesdesc', 'cleaner_sitedata'),
+        array(),
+        $file_types->get_supported_file_types()));
 
-$settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allcontext',
-        new lang_string('allcontexts', 'cleaner_sitedata'),
-        new lang_string('allcontextsdesc', 'cleaner_sitedata'), 0));
+$settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allcontextlevels',
+        new lang_string('allcontextlevels', 'cleaner_sitedata'),
+        new lang_string('allcontextlevelsdesc', 'cleaner_sitedata'), 0));
 
 $settings->add(new admin_setting_configmultiselect('cleaner_sitedata/contextlevels',
         new lang_string('contextlevels', 'cleaner_sitedata'),
-        new lang_string('contextlevelsdesc', 'cleaner_sitedata'), array(30),
-        array(10 => 'System', 30 => 'User', 40 => 'Course category',
-              50 => 'Course', 70 => 'Module', 80 => 'Block')));
+        new lang_string('contextlevelsdesc', 'cleaner_sitedata'), array(CONTEXT_USER),
+        array(CONTEXT_SYSTEM    => 'System',
+              CONTEXT_USER      => 'User',
+              CONTEXT_COURSECAT => 'Course category',
+              CONTEXT_COURSE    => 'Course',
+              CONTEXT_MODULE    => 'Module',
+              CONTEXT_BLOCK     => 'Block')));
