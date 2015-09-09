@@ -23,6 +23,8 @@
  */
 
 $string['pluginname'] = 'Data cleaner';
+$string['cachedef_courses'] = 'Course cache';
+$string['cachedef_schema'] = 'Schema cache';
 $string['cleaning'] = 'Cleaning';
 $string['enabledisable'] = 'Enabled';
 $string['enable'] = 'Enable';
