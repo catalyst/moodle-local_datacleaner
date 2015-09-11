@@ -120,6 +120,8 @@ class clean extends \local_datacleaner\clean {
             if ($count > 0) {
 
                 self::new_task($count);
+                // instantiate once - i.e. not inside the foreach loop.
+                $fs = get_file_storage();
 
                 foreach ($results as $result) {
                     $mimetype = $result->mimetype;
@@ -145,7 +147,6 @@ class clean extends \local_datacleaner\clean {
                     $source = $CFG->dirroot . '/local/datacleaner/cleaner/sitedata/fixtures/' . $placeholder_filename;
 
                     try {
-                        $fs = get_file_storage();
                         // copy the file to sitedata.
                         list($contenthash, $filesize, $newfile) = $fs->add_file_to_pool($source);
                     } catch (\Exception $e) {
@@ -182,6 +183,9 @@ class clean extends \local_datacleaner\clean {
                 printf("\n\r " . get_string('nothingtoupdate', 'cleaner_sitedata') . "\n");
             }
         }
+
+        printf("\n");
+
     }
 
 }
