@@ -359,7 +359,7 @@ class clean extends \local_datacleaner\clean {
     private static function delete_sitedata_files($files) {
 
         foreach ($files as $file_item) {
-            $file = $file_item['path'] . '/' . $file_item['file_name'] . 'xxxx';
+            $file = $file_item['path'] . '/' . $file_item['file_name'];
             if (!@unlink($file)) {
                 if (!isset($file_item['from_db']) || !$file_item['from_db']) {
                     // If it's originally from the database, no need to display a warning that the file
