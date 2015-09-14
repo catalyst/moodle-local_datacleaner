@@ -23,3 +23,12 @@
  */
 
 $string['pluginname'] = 'Cleanup core';
+
+$string['deletemucfile'] = 'Delete muc file';
+$string['deletemucfiledesc'] = 'Delete the muc configuration file.';
+
+$string['woulddeletemuc'] = 'Would delete muc file.';
+$string['willdeletemuc'] = 'Will delete muc file.';
+
+$string['wouldtruncatetables'] = 'Would truncate {$a} tables.';
+$string['willtruncatetables'] = 'Will truncate {$a} tables.';

@@ -39,10 +39,6 @@ $settings->add(new admin_setting_configcheckbox('cleaner_orphaned_sitedata/delet
         new lang_string('deletetmpfiles', 'cleaner_orphaned_sitedata'),
         new lang_string('deletetmpfilesdesc', 'cleaner_orphaned_sitedata'), 1));
 
-$settings->add(new admin_setting_configcheckbox('cleaner_orphaned_sitedata/deletemucfile',
-        new lang_string('deletemucfile', 'cleaner_orphaned_sitedata'),
-        new lang_string('deletemucfiledesc', 'cleaner_orphaned_sitedata'), 1));
-
 $settings->add(new admin_setting_configcheckbox('cleaner_orphaned_sitedata/deleteorphanedfiles',
         new lang_string('deleteorphanedfiles', 'cleaner_orphaned_sitedata'),
         new lang_string('deleteorphanedfilesdesc', 'cleaner_orphaned_sitedata'), 0));

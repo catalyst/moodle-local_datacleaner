@@ -37,3 +37,5 @@ $string['notes'] = 'Notes';
 $string['sortorder'] = 'Sort order';
 $string['noplugins'] = 'No data cleansing plugins found.';
 $string['progress'] = 'Progress';
+
+$string['errordeletingdir'] = '-- ERROR -- An error was encountered while deleting the directory: {$a}';

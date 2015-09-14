@@ -46,11 +46,9 @@ class clean extends \local_datacleaner\clean {
         $delete_cached_files = isset($config->deletecachedfiles) && $config->deletecachedfiles == 1 ? true : false;
         $delete_tmp_files = isset($config->deletetmpfiles) && $config->deletetmpfiles == 1 ? true : false;
         $delete_orphaned_files = isset($config->deleteorphanedfiles) && $config->deleteorphanedfiles == 1 ? true : false;
-        $delete_muc_file = isset($config->deletemucfile) && $config->deletemucfile == 1 ? true : false;
 
 
         // Set the default directories.
-        $muc_directory = $CFG->dataroot . '/muc';
         $temp_directory = $CFG->tempdir;
 
         // Calculate how many backups will/would be deleted.
@@ -84,11 +82,6 @@ class clean extends \local_datacleaner\clean {
                 printf("\n\r " . get_string('woulddeletetemp', 'cleaner_orphaned_sitedata') . "\n");
             }
 
-            if ($delete_muc_file) {
-                // There's only one file here.
-                printf("\n\r " . get_string('woulddeletemuc', 'cleaner_orphaned_sitedata') . "\n");
-            }
-
             if ($delete_orphaned_files) {
                 printf("\n\r " . get_string('woulddeleteorphanedfiles', 'cleaner_orphaned_sitedata', $total_orphaned) . "\n");
             }
@@ -115,15 +108,7 @@ class clean extends \local_datacleaner\clean {
                 printf("\n\r " . get_string('willdeletetemp', 'cleaner_orphaned_sitedata') . "\n");
                 // Delete the content of the temp directory.
                 if (!remove_dir($temp_directory, true)) {
-                    printf("\r " . get_string('errordeletingdir', 'cleaner_orphaned_sitedata', $temp_directory) . "\n");
-                }
-            }
-
-            if ($delete_muc_file) {
-                // TODO: need to clear out muc settings in the database as well.
-                printf("\n\r " . get_string('willdeletemuc', 'cleaner_orphaned_sitedata') . "\n");
-                if (!remove_dir($muc_directory, true)) {
-                    printf("\r " . get_string('errordeletingdir', 'cleaner_orphaned_sitedata', $muc_directory) . "\n");
+                    printf("\r " . get_string('errordeletingdir', 'local_datacleaner', $temp_directory) . "\n");
                 }
             }
 

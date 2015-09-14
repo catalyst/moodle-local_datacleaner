@@ -38,9 +38,6 @@ $string['deletetmpfilesdesc'] = 'Delete all temporary files.';
 $string['deletecachedfiles'] = 'Delete cached files';
 $string['deletecachedfilesdesc'] = 'Delete all cached files.';
 
-$string['deletemucfile'] = 'Delete muc file';
-$string['deletemucfiledesc'] = 'Delete the muc configuration file.';
-
 $string['woulddeletebackups'] = 'Would delete {$a} backup file(s).';
 $string['willdeletebackups'] = 'Will delete {$a} backup file(s).';
 
@@ -50,11 +47,7 @@ $string['willpurgecache'] = 'Will purge the cache.';
 $string['woulddeletetemp'] = 'Would delete temporary files.';
 $string['willdeletetemp'] = 'Will delete temporary files.';
 
-$string['woulddeletemuc'] = 'Would delete muc file.';
-$string['willdeletemuc'] = 'Will delete muc file.';
-
 $string['woulddeleteorphanedfiles'] = 'Would delete {$a} orphaned file(s).';
 $string['willdeleteorphanedfiles'] = 'Will delete {$a} orphaned file(s).';
 
 $string['errordeletingfile'] = '-- ERROR -- An error was encountered while deleting the file: {$a}';
-$string['errordeletingdir'] = '-- ERROR -- An error was encountered while deleting the directory: {$a}';

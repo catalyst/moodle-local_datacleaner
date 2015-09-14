@@ -32,7 +32,15 @@ class clean extends \local_datacleaner\clean {
      * Do the work of truncating any unneeded tables.
      */
     static public function execute() {
-        global $DB;
+        global $DB, $CFG;
+
+        // Get the settings.
+        $config = get_config('cleaner_core');
+
+        $delete_muc_file = isset($config->deletemucfile) && $config->deletemucfile == 1 ? true : false;
+
+        // Set the default directories.
+        $muc_directory = $CFG->dataroot . '/muc';
 
         $tables = $DB->get_tables();
         $tablelist = array();
@@ -55,11 +63,31 @@ class clean extends \local_datacleaner\clean {
         }
 
         if (self::$dryrun) {
-            echo "Would truncate " . count($tablelist) . " tables.\n";
+            // This always gets run.
+            printf("\n\r " . get_string('wouldtruncatetables', 'cleaner_core', count($tablelist)) . "\n");
+
+            if ($delete_muc_file) {
+                // There's only one file here.
+                printf("\n\r " . get_string('woulddeletemuc', 'cleaner_core') . "\n");
+            }
+
         } else {
+            // This always gets run.
+            printf("\n\r " . get_string('willtruncatetables', 'cleaner_core', count($tablelist)) . "\n");
             foreach ($tablelist as $table) {
                 $DB->delete_records($table);
             }
+
+            if ($delete_muc_file) {
+                printf("\n\r " . get_string('willdeletemuc', 'cleaner_core') . "\n");
+                if (!remove_dir($muc_directory, true)) {
+                    printf("\r " . get_string('errordeletingdir', 'local_datacleaner', $muc_directory) . "\n");
+                }
+            }
+
         }
+
+        printf("\n");
+
     }
 }
