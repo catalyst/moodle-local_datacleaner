@@ -52,14 +52,9 @@ class clean extends \local_datacleaner\clean {
         $criteria = array();
         $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
 
-        if (empty($config->categories)) {
-            // No categories = nothing to do.
-            echo "No course categories selected for deletion.\n";
-            return;
+        if (!empty($config->categories)) {
+            $criteria['categories'] = $config->categories;
         }
-
-        $criteria['categories'] = $config->categories;
-
         if (!empty($config->courses)) {
             $criteria['courses'] = $config->courses;
         }
@@ -91,8 +86,8 @@ class clean extends \local_datacleaner\clean {
         }
 
         if (isset($criteria['courses'])) {
-            list($sql, $sqlparams) = $DB->get_in_or_equal(explode(",", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
-            $extrasql .= ' AND id ' . $sql;
+            list($sql, $sqlparams) = $DB->get_in_or_equal(explode("\n", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
+            $extrasql .= ' AND shortname ' . $sql;
             $params = array_merge($params, $sqlparams);
         }
 

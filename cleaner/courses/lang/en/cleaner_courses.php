@@ -23,9 +23,11 @@
  */
 
 $string['pluginname'] = 'Remove courses';
+$string['category'] = 'Category';
 $string['categories'] = 'Categories';
 $string['categoriesdesc'] = 'Remove courses in the selected categories only.';
+$string['coursename'] = 'Full name of course to keep';
 $string['courses'] = 'Courses';
-$string['coursesdesc'] = 'Courses that should never be deleted.';
+$string['coursesdesc'] = 'Shortname of courses that should never be deleted, separated by a new line.';
 $string['minimumage'] = 'Minimum age';
 $string['minimumagedesc'] = '';

@@ -56,53 +56,46 @@ $settings->add(new admin_setting_configmulticheckbox(
             $categoriesbyname
             ));
 
-// Courses to always keep.
-// LaTrobe have a huge number of courses; it makes sense to add
-// some caching to avoid having to regenerate the list every time someone
-// visits a settings page.
-$coursecache = cache::make('local_datacleaner', 'courses');
-$coursesbyname = $coursecache->get('courses');
-$courses = $DB->get_records_select('course', 'id > 1');
-$defaultcourses = array();
+$table = new html_table();
+$table->data = array();
+$table->head = array(
+    get_string('coursename', 'cleaner_courses'),
+    get_string('category', 'cleaner_courses'),
+);  
 
-// Only regenerate the cache if it's empty or a course has been added/deleted.
-if (count($courses) != count($coursesbyname)) {
+$config = get_config('cleaner_courses');
 
-    $coursesbyname = array();
-
-    foreach ($courses as $id => $course) {
-        /*
-         * Try to print the shortname and the fullname nicely. If one contains
-         * the other, use the longer string. Otherwise enclose the shortname
-         * in brackets. Finally, make the name a link to the course so that
-         * further checking is easy.
-         */
-        if (strpos($course->fullname, $course->shortname) !== false) {
-            $linktext = $course->fullname;
-        } else if (strpos($course->shortname, $course->fullname) !== false) {
-            $linktext = $course->shortname;
-        } else {
-            $linktext = $course->fullname . ' (\'' . $course->shortname . '\')';
-        }
-        $coursesbyname[$id] = $linktext;
-        $defaultcourses[$id] = 0;
+if (isset($config->courses)) {
+    $shortnames = explode("\n", $config->courses);
+} else {
+    $shortnames = array();
+}
+$where = '';
+foreach ($shortnames as $name) {
+    $name = trim($name);
+    if (empty($name)) {
+        continue;
     }
-
-    asort($coursesbyname, SORT_LOCALE_STRING);
-
-    // Convert linktext to URL.
-    $writer = new html_writer();
-    foreach ($coursesbyname as $id => &$linktext) {
-        $linktext = $writer->link(course_get_url($id), $linktext);
+    if ($where) {
+        $where .= " OR ";
     }
-
-    $coursecache->set('courses', $coursesbyname);
+    $where .= " shortname LIKE '$name'";
 }
 
-$settings->add(new admin_setting_configmulticheckbox(
+if ($where) {
+    $itemstoignore = $DB->get_records_sql("SELECT c.fullname, ca.name
+                                             FROM {course} c
+                                             JOIN {course_categories} ca
+                                               ON ca.id = c.category
+                                            WHERE ($where)
+                                            ORDER BY c.fullname, ca.name");
+    foreach ($itemstoignore as $r) {
+        $table->data[] = array($r->fullname, $r->name);
+    }
+}
+
+$settings->add(new admin_setting_configtextarea(
     'cleaner_courses/courses',
     new lang_string('courses', 'cleaner_courses'),
-    new lang_string('coursesdesc', 'cleaner_courses'),
-    $defaultcourses,
-    $coursesbyname
-    ));
+    new lang_string('coursesdesc', 'cleaner_courses') . "<br>\n" . html_writer::table($table),
+    "", PARAM_RAW, 60, 5));
