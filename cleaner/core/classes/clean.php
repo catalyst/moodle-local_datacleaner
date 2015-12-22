@@ -37,10 +37,10 @@ class clean extends \local_datacleaner\clean {
         // Get the settings.
         $config = get_config('cleaner_core');
 
-        $delete_muc_file = isset($config->deletemucfile) && $config->deletemucfile == 1 ? true : false;
+        $deletemucfile = isset($config->deletemucfile) && $config->deletemucfile == 1 ? true : false;
 
         // Set the default directories.
-        $muc_directory = $CFG->dataroot . '/muc';
+        $mucdirectory = $CFG->dataroot . '/muc';
 
         $tables = $DB->get_tables();
         $tablelist = array();
@@ -66,7 +66,7 @@ class clean extends \local_datacleaner\clean {
             // This always gets run.
             printf("\n\r " . get_string('wouldtruncatetables', 'cleaner_core', count($tablelist)) . "\n");
 
-            if ($delete_muc_file) {
+            if ($deletemucfile) {
                 // There's only one file here.
                 printf("\n\r " . get_string('woulddeletemuc', 'cleaner_core') . "\n");
             }
@@ -78,10 +78,10 @@ class clean extends \local_datacleaner\clean {
                 $DB->delete_records($table);
             }
 
-            if ($delete_muc_file) {
+            if ($deletemucfile) {
                 printf("\n\r " . get_string('willdeletemuc', 'cleaner_core') . "\n");
-                if (!remove_dir($muc_directory, true)) {
-                    printf("\r " . get_string('errordeletingdir', 'local_datacleaner', $muc_directory) . "\n");
+                if (!remove_dir($mucdirectory, true)) {
+                    printf("\r " . get_string('errordeletingdir', 'local_datacleaner', $mucdirectory) . "\n");
                 }
             }
 

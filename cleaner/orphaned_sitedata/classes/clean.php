@@ -30,92 +30,91 @@ require_once($CFG->libdir.'/moodlelib.php');
 class clean extends \local_datacleaner\clean {
     const TASK = 'Delete orphaned sitedata files';
 
-    private static $backup_files = array();
-    private static $orphaned_files = array();
-    private static $database_files = array();
-    private static $sitedata_files = array();
+    private static $backupfiles = array();
+    private static $orphanedfiles = array();
+    private static $databasefiles = array();
+    private static $sitedatafiles = array();
 
     static public function execute() {
-        global $DB, $CFG;
+        global $CFG;
 
         // Get the settings.
         $config = get_config('cleaner_orphaned_sitedata');
 
         // Retrieve what the user wants us to clean.
-        $delete_backups = isset($config->deletebackups) && $config->deletebackups == 1 ? true : false;
-        $delete_cached_files = isset($config->deletecachedfiles) && $config->deletecachedfiles == 1 ? true : false;
-        $delete_tmp_files = isset($config->deletetmpfiles) && $config->deletetmpfiles == 1 ? true : false;
-        $delete_orphaned_files = isset($config->deleteorphanedfiles) && $config->deleteorphanedfiles == 1 ? true : false;
-
+        $deletebackups = isset($config->deletebackups) && $config->deletebackups == 1 ? true : false;
+        $deletecachedfiles = isset($config->deletecachedfiles) && $config->deletecachedfiles == 1 ? true : false;
+        $deletetmpfiles = isset($config->deletetmpfiles) && $config->deletetmpfiles == 1 ? true : false;
+        $deleteorphanedfiles = isset($config->deleteorphanedfiles) && $config->deleteorphanedfiles == 1 ? true : false;
 
         // Set the default directories.
-        $temp_directory = $CFG->tempdir;
+        $tempdirectory = $CFG->tempdir;
 
         // Calculate how many backups will/would be deleted.
-        $total_backups = 0;
-        if ($delete_backups) {
+        $totalbackups = 0;
+        if ($deletebackups) {
             self::get_backups_files();
-            $total_backups = count(self::$backup_files);
+            $totalbackups = count(self::$backupfiles);
         }
 
         // Calculate how many orphaned files will be deleted.
-        $total_orphaned = 0;
-        if ($delete_orphaned_files) {
+        $totalorphaned = 0;
+        if ($deleteorphanedfiles) {
             // Read all the files in filedir and compare to DB.
             self::get_orphaned_files();
-            $total_orphaned = count(self::$orphaned_files);
+            $totalorphaned = count(self::$orphanedfiles);
         }
 
         if (self::$dryrun) {
 
-            if ($delete_backups) {
-                printf("\n\r " . get_string('woulddeletebackups', 'cleaner_orphaned_sitedata', $total_backups) . "\n");
+            if ($deletebackups) {
+                printf("\n\r " . get_string('woulddeletebackups', 'cleaner_orphaned_sitedata', $totalbackups) . "\n");
             }
 
-            if ($delete_cached_files) {
+            if ($deletecachedfiles) {
                 // Not getting a count for the number of cached files will be deleting.
                 printf("\n\r " . get_string('wouldpurgecache', 'cleaner_orphaned_sitedata') . "\n");
             }
 
-            if ($delete_tmp_files) {
+            if ($deletetmpfiles) {
                 // Not getting a count for the number of temp files will be deleting.
                 printf("\n\r " . get_string('woulddeletetemp', 'cleaner_orphaned_sitedata') . "\n");
             }
 
-            if ($delete_orphaned_files) {
-                printf("\n\r " . get_string('woulddeleteorphanedfiles', 'cleaner_orphaned_sitedata', $total_orphaned) . "\n");
+            if ($deleteorphanedfiles) {
+                printf("\n\r " . get_string('woulddeleteorphanedfiles', 'cleaner_orphaned_sitedata', $totalorphaned) . "\n");
             }
 
         } else {
 
-            if ($delete_backups) {
+            if ($deletebackups) {
                 // Notify the user how many files will be deleted.
-                printf("\n\r " . get_string('willdeletebackups', 'cleaner_orphaned_sitedata', $total_backups) . "\n");
-                if ($total_backups > 0) {
+                printf("\n\r " . get_string('willdeletebackups', 'cleaner_orphaned_sitedata', $totalbackups) . "\n");
+                if ($totalbackups > 0) {
                     self::delete_backup_files();
                 }
             }
 
-            if ($delete_cached_files) {
+            if ($deletecachedfiles) {
                 // Not getting a count for the number of cached files will be deleting.
                 printf("\n\r " . get_string('willpurgecache', 'cleaner_orphaned_sitedata') . "\n");
                 \cache_helper::purge_all(true);
                 purge_all_caches();
             }
 
-            if ($delete_tmp_files) {
+            if ($deletetmpfiles) {
                 // Not getting a count for the number of temp files will be deleting.
                 printf("\n\r " . get_string('willdeletetemp', 'cleaner_orphaned_sitedata') . "\n");
                 // Delete the content of the temp directory.
-                if (!remove_dir($temp_directory, true)) {
-                    printf("\r " . get_string('errordeletingdir', 'local_datacleaner', $temp_directory) . "\n");
+                if (!remove_dir($tempdirectory, true)) {
+                    printf("\r " . get_string('errordeletingdir', 'local_datacleaner', $tempdirectory) . "\n");
                 }
             }
 
-            if ($delete_orphaned_files) {
-                printf("\n\r " . get_string('willdeleteorphanedfiles', 'cleaner_orphaned_sitedata', $total_orphaned) . "\n");
-                if ($total_orphaned > 0) {
-                    self::delete_sitedata_files(self::$orphaned_files);
+            if ($deleteorphanedfiles) {
+                printf("\n\r " . get_string('willdeleteorphanedfiles', 'cleaner_orphaned_sitedata', $totalorphaned) . "\n");
+                if ($totalorphaned > 0) {
+                    self::delete_sitedata_files(self::$orphanedfiles);
                 }
             }
 
@@ -135,12 +134,12 @@ class clean extends \local_datacleaner\clean {
     private static function get_file_path_from_contenthash($contenthash) {
         global $CFG;
 
-        $file_dir = $CFG->dataroot . '/filedir';
+        $filedir = $CFG->dataroot . '/filedir';
 
-        $l1 = $contenthash[0].$contenthash[1];
-        $l2 = $contenthash[2].$contenthash[3];
+        $dir1 = $contenthash[0].$contenthash[1];
+        $dir2 = $contenthash[2].$contenthash[3];
 
-        return $file_dir . '/' . $l1 . '/' . $l2;
+        return $filedir . '/' . $dir1 . '/' . $dir2;
     }
 
     /**
@@ -169,9 +168,9 @@ class clean extends \local_datacleaner\clean {
     private static function get_backups_files() {
         global $DB;
 
-        $backup_directory = self::get_backup_location();
-        if (!empty($backup_directory)) {
-            self::$backup_files = self::get_sitedata_files($backup_directory);
+        $backupdirectory = self::get_backup_location();
+        if (!empty($backupdirectory)) {
+            self::$backupfiles = self::get_sitedata_files($backupdirectory);
         }
 
         // Now get a list of backups from the database.
@@ -185,17 +184,16 @@ class clean extends \local_datacleaner\clean {
         $results = $DB->get_recordset_sql($sql, $params);
 
         foreach ($results as $file) {
-            $file_name = $file->contenthash;
-            if (!isset(self::$backup_files[$file_name])) {
+            $filename = $file->contenthash;
+            if (!isset(self::$backupfiles[$filename])) {
                 // Add it to the array if it's not already in there.
                 // Generate what the path is supposed to be.
-                $file_path = self::get_file_path_from_contenthash($file_name);
-                self::$backup_files[$file_name] = array('file_name' => $file_name,
-                                                        'path'      => $file_path,
+                $filepath = self::get_file_path_from_contenthash($filename);
+                self::$backupfiles[$filename] = array('file_name' => $filename,
+                                                        'path'      => $filepath,
                                                         'from_db'   => 1);
             }
         }
-        //printf("backup files: " . print_r(self::$backup_files, true) . "\n");
     }
 
     /**
@@ -207,12 +205,12 @@ class clean extends \local_datacleaner\clean {
         global $DB;
 
         // First, delete the files from sitedata.
-        self::delete_sitedata_files(self::$backup_files);
+        self::delete_sitedata_files(self::$backupfiles);
 
         // Next, remove backups from the database.
         $sql = "DELETE FROM {files} f
                 WHERE f.component = ?
-                AND   f.contextid IN (SELECT id 
+                AND   f.contextid IN (SELECT id
                                       FROM {context}
                                       WHERE contextlevel = ?)";
         $params = array('backup', CONTEXT_COURSE);
@@ -237,7 +235,7 @@ class clean extends \local_datacleaner\clean {
 
         $files = array();
         try {
-            $file_objs =  new \RecursiveIteratorIterator(
+            $fileobjs = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator($directory),
                     \RecursiveIteratorIterator::CHILD_FIRST
                     );
@@ -248,18 +246,18 @@ class clean extends \local_datacleaner\clean {
 
         // Go through the file objects and save the file details
         // in an array.
-        foreach( $file_objs as $file_obj) {
+        foreach ($fileobjs as $fileobj) {
             try {
-                if ($file_obj->isFile()) {
+                if ($fileobj->isFile()) {
                     // We're only interested in files not directories.
-                    $file_name = (string) $file_obj->getFilename();
-                    if ($file_name == 'warning.txt') {
+                    $filename = (string) $fileobj->getFilename();
+                    if ($filename == 'warning.txt') {
                         // Skip the Moodle warning file.
                         continue;
                     }
-                    $files[$file_name] = array(
-                                    'file_name' => $file_name,
-                                    'path'      => (string) $file_obj->getPath(),
+                    $files[$filename] = array(
+                                    'file_name' => $filename,
+                                    'path'      => (string) $fileobj->getPath(),
                                     'from_db'   => 0,
                                     );
                 }
@@ -291,13 +289,13 @@ class clean extends \local_datacleaner\clean {
 
         $sql = 'SELECT DISTINCT contenthash FROM {files}';
         $results = $DB->get_records_sql($sql);
-        self::$database_files = array();
+        self::$databasefiles = array();
         foreach ($results as $file) {
-            $file_name = $file->contenthash;
-            $file_path = self::get_file_path_from_contenthash($file_name);
-            self::$database_files[$file_name] = array(
-                            'file_name' => $file_name,
-                            'path'      => $file_path,
+            $filename = $file->contenthash;
+            $filepath = self::get_file_path_from_contenthash($filename);
+            self::$databasefiles[$filename] = array(
+                            'file_name' => $filename,
+                            'path'      => $filepath,
                             'from_db'   => 1,
                             );
         }
@@ -314,18 +312,17 @@ class clean extends \local_datacleaner\clean {
         global $CFG;
 
         // Read all the files in /filedir.
-        $file_dir = $CFG->dataroot . '/filedir';
-        self::$sitedata_files = self::get_sitedata_files($file_dir);
+        $filedir = $CFG->dataroot . '/filedir';
+        self::$sitedatafiles = self::get_sitedata_files($filedir);
         self::get_database_files();
 
         // Since backups may be in a different directory, merge sitedata and backup files.
-        $all_files = array_merge(self::$sitedata_files, self::$backup_files);
+        $allfiles = array_merge(self::$sitedatafiles, self::$backupfiles);
 
         // Get the difference of the sitedata files and the database files.
         // These are the orphaned files which are no longer referenced
         // in the database.
-        self::$orphaned_files = array_diff_key($all_files, self::$database_files);
-        //printf("orphaned_files=" . print_r(self::$orphaned_files, true) . "\n");
+        self::$orphanedfiles = array_diff_key($allfiles, self::$databasefiles);
     }
 
     /**
@@ -343,10 +340,10 @@ class clean extends \local_datacleaner\clean {
      */
     private static function delete_sitedata_files($files) {
 
-        foreach ($files as $file_item) {
-            $file = $file_item['path'] . '/' . $file_item['file_name'];
+        foreach ($files as $fileitem) {
+            $file = $fileitem['path'] . '/' . $fileitem['file_name'];
             if (!@unlink($file)) {
-                if (!isset($file_item['from_db']) || !$file_item['from_db']) {
+                if (!isset($fileitem['from_db']) || !$fileitem['from_db']) {
                     // If it's originally from the database, no need to display a warning that the file
                     // was not found in site data.
                     printf("\r " . get_string('errordeletingfile', 'cleaner_orphaned_sitedata', $file) . "\n");
