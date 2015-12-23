@@ -263,4 +263,55 @@ abstract class clean {
             $DB->delete_records_list($table, $field, $params);
         }
     }
+
+    /**
+     * Get the criteria for the list of courses.
+     */
+    protected static function get_courses_criteria($config) {
+        if(isset($config->minimumage)) {
+            $criteria = array();
+            $criteria['timestamp'] = time() - ($config->minimumage * 24 * 60 * 60);
+        }
+
+        if (isset($config->categories) && !empty($config->categories)) {
+            $criteria['categories'] = $config->categories;
+        }
+        if (isset($config->courses) && !empty($config->courses)) {
+            $criteria['courses'] = $config->courses;
+        }
+
+        return $criteria;
+    }
+
+    /**
+     * Get an array of course objects meeting the criteria provided
+     *
+     * @param  array $criteria An array of criteria to apply.
+     * @return array $result   The array of matching course objects.
+     */
+    protected static function get_courses($criteria = array()) {
+        global $DB;
+
+        $extrasql = '';
+        $params = array();
+
+        if (isset($criteria['timestamp'])) {
+            $extrasql .= ' AND startdate <= :startdate ';
+            $params['startdate'] = $criteria['timestamp'];
+        }
+
+        if (isset($criteria['categories'])) {
+            list($sql, $sqlparams) = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
+            $extrasql .= ' AND category ' . $sql;
+            $params = array_merge($params, $sqlparams);
+        }
+
+        if (isset($criteria['courses'])) {
+            list($sql, $sqlparams) = $DB->get_in_or_equal(explode("\n", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
+            $extrasql .= ' AND shortname ' . $sql;
+            $params = array_merge($params, $sqlparams);
+        }
+
+        return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
+    }
 }

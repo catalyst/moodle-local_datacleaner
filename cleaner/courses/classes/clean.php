@@ -33,65 +33,15 @@ class clean extends \local_datacleaner\clean {
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct($dryrun = true, $verbose = false) {
+        parent::__construct($dryrun, $verbose);
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_courses');
 
-        $criteria = self::get_criteria($config);
+        $criteria = self::get_courses_criteria($config);
         self::$courses = self::get_courses($criteria);
 
         $this->needscascadedelete = !empty(self::$courses);
-    }
-
-    /**
-     * Get the criteria for the list of courses.
-     */
-    protected static function get_criteria($config) {
-        $interval = isset($config->minimumage) ? $config->minimumage : 365;
-
-        $criteria = array();
-        $criteria['timestamp'] = time() - ($interval * 24 * 60 * 60);
-
-        if (!empty($config->categories)) {
-            $criteria['categories'] = $config->categories;
-        }
-        if (!empty($config->courses)) {
-            $criteria['courses'] = $config->courses;
-        }
-
-        return $criteria;
-    }
-
-    /**
-     * Get an array of course objects meeting the criteria provided
-     *
-     * @param  array $criteria An array of criteria to apply.
-     * @return array $result   The array of matching course objects.
-     */
-    private static function get_courses($criteria = array()) {
-        global $DB;
-
-        $extrasql = '';
-        $params = array();
-
-        if (isset($criteria['timestamp'])) {
-            $extrasql .= ' AND startdate <= :startdate ';
-            $params['startdate'] = $criteria['timestamp'];
-        }
-
-        if (isset($criteria['categories'])) {
-            list($sql, $sqlparams) = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
-            $extrasql .= ' AND category ' . $sql;
-            $params = array_merge($params, $sqlparams);
-        }
-
-        if (isset($criteria['courses'])) {
-            list($sql, $sqlparams) = $DB->get_in_or_equal(explode("\n", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
-            $extrasql .= ' AND shortname ' . $sql;
-            $params = array_merge($params, $sqlparams);
-        }
-
-        return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
     }
 
     /**
@@ -139,8 +89,6 @@ class clean extends \local_datacleaner\clean {
      * Do the work of deleting courses.
      */
     static public function execute() {
-        global $DB;
-
         $numcourses = count(self::$courses);
 
         if (!$numcourses) {
