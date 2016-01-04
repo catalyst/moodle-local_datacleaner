@@ -27,3 +27,5 @@ $string['origsiteurl'] = 'Original site URL';
 $string['origsiteurldesc'] = 'The URL of the production site.';
 $string['newsiteurl'] = 'New site URL';
 $string['newsiteurldesc'] = 'The URL of the datacleansed site.';
+$string['skiptables'] = 'Tables to skip';
+$string['skiptablesdesc'] = 'Names of tables to skip, separated by a comma. E.g. user, log, config.';
