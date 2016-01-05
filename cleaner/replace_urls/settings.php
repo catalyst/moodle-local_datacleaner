@@ -35,7 +35,9 @@ $settings->add(new admin_setting_configtext('cleaner_replace_urls/newsiteurl',
             new lang_string('newsiteurl', 'cleaner_replace_urls'),
             new lang_string('newsiteurldesc', 'cleaner_replace_urls'), 'http://localhost', PARAM_URL));
 
+$defaultskiptables = "config, config_plugins, config_log, upgrade_log, log, filter_config, sessions, events_queue, " .
+        "repository_instance_config, block_instances";
 $settings->add(new admin_setting_configtextarea(
     'cleaner_replace_urls/skiptables',
     new lang_string('skiptables', 'cleaner_replace_urls'),
-    new lang_string('skiptablesdesc', 'cleaner_replace_urls'),    "", PARAM_RAW, 60, 5));
+    new lang_string('skiptablesdesc', 'cleaner_replace_urls'), $defaultskiptables, PARAM_TEXT, 60, 5));

@@ -73,16 +73,12 @@ class clean extends \local_datacleaner\clean {
      * @return array
      */
     private static function get_skiptables($config) {
-        // Default skip tables.
-        $defaultskiptables = array('config', 'config_plugins', 'config_log', 'upgrade_log', 'log',
-                            'filter_config', 'sessions', 'events_queue', 'repository_instance_config',
-                            'block_instances', '');
         $skiptables = array();
         if (isset($config->skiptables)) {
             $skiptables = array_map('trim', explode(",", $config->skiptables));
         }
 
-        return array_unique(array_merge($defaultskiptables, $skiptables));
+        return $skiptables;
     }
 
     /**
