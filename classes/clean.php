@@ -268,7 +268,7 @@ abstract class clean {
      * Get the criteria for the list of courses.
      */
     protected static function get_courses_criteria($config) {
-        if(isset($config->minimumage)) {
+        if (isset($config->minimumage)) {
             $criteria = array();
             $criteria['timestamp'] = time() - ($config->minimumage * 24 * 60 * 60);
         }

@@ -34,8 +34,8 @@ defined('MOODLE_INTERNAL') || die;
  */
 class cleaner_sitedata_supported_file_types {
 
-    // mime types.
-    // here's a list of file types for reference: http://www.freeformatter.com/mime-types-list.html
+    // Here's a list of file types for reference:
+    // http://www.freeformatter.com/mime-types-list.html .
     const MIMETYPE_7Z   = 'application/x-7z-compressed';
     const MIMETYPE_AVI  = 'video/avi';
     const MIMETYPE_BZ   = 'application/x-bzip';
@@ -82,15 +82,15 @@ class cleaner_sitedata_supported_file_types {
 
     const MIMETYPE_DEFAULT = 'text/plain';
 
-    private $supported_file_types = array();
+    private $supportedfiletypes = array();
     private $placeholder = 'placeholder';
-    private $default_ext = '.txt';
+    private $defaultext = '.txt';
 
     /**
      * Instantiate the class to build the supported file types array.
      */
     public function __construct() {
-        $this->supported_file_types = array(
+        $this->supportedfile_types = array(
                         self::MIMETYPE_NONE => '--None--',
                         self::MIMETYPE_7Z   => '7z',
                         self::MIMETYPE_AVI  => 'avi',
@@ -142,7 +142,7 @@ class cleaner_sitedata_supported_file_types {
      * @return array of availble mime types.
      */
     public function get_supported_file_types() {
-        return $this->supported_file_types;
+        return $this->supportedfiletypes;
     }
 
     /**
@@ -151,8 +151,8 @@ class cleaner_sitedata_supported_file_types {
      * @return string extension. 'unknown' string if the type is unknown or unsupported.
      */
     public function get_file_extension_for_type($type) {
-        if (isset($this->supported_file_types[$type])) {
-            return $this->supported_file_types[$type];
+        if (isset($this->supportedfiletypes[$type])) {
+            return $this->supportedfiletypes[$type];
         }
         return 'unknown';
     }
@@ -169,14 +169,14 @@ class cleaner_sitedata_supported_file_types {
         $filename = $this->placeholder . $this->default_ext;
         $mimetype = self::MIMETYPE_DEFAULT;
 
-        // trim and format the type. It may be in mixed case
+        // Trim and format the type. It may be in mixed case
         // coming from the database.
         $type = trim(strtolower($type));
 
         // Do we support this type?
-        if (isset($this->supported_file_types[$type])) {
+        if (isset($this->supportedfiletypes[$type])) {
             // Yes. Now get the extension of the file.
-            $ext = $this->supported_file_types[$type];
+            $ext = $this->supportedfiletypes[$type];
 
             // If there's more than one extension, check which file we have that is the placeholder.
             $extensions = explode(',', $ext);
