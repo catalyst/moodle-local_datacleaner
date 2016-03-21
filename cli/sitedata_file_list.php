@@ -26,12 +26,12 @@ require_once($CFG->libdir.'/clilib.php');
 
 global $DB;
 
-# Emit a throwaway line that can be used to ensure this script has been spawned
-# before ownership on the target directory is modified.
+// Emit a throwaway line that can be used to ensure this script has been spawned
+// before ownership on the target directory is modified.
 echo "Remaining files...\n";
 
 $sql = "SELECT DISTINCT contenthash FROM {files} WHERE filename != '.'";
 $result = $DB->get_records_sql($sql);
-foreach($result as $hash) {
+foreach ($result as $hash) {
     echo "{$hash->contenthash}\n";
 }

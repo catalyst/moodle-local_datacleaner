@@ -270,7 +270,8 @@ abstract class clean {
     protected static function get_courses_criteria($config) {
         $criteria = array();
 
-        if(isset($config->minimumage)) {
+        if (isset($config->minimumage)) {
+            $criteria = array();
             $criteria['timestamp'] = time() - ($config->minimumage * 24 * 60 * 60);
         }
 
