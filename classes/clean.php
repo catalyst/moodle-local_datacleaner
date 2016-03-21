@@ -268,8 +268,9 @@ abstract class clean {
      * Get the criteria for the list of courses.
      */
     protected static function get_courses_criteria($config) {
+        $criteria = array();
+
         if(isset($config->minimumage)) {
-            $criteria = array();
             $criteria['timestamp'] = time() - ($config->minimumage * 24 * 60 * 60);
         }
 
@@ -294,6 +295,11 @@ abstract class clean {
 
         $extrasql = '';
         $params = array();
+
+        // If no criteria are selected, clean nothing rather than everything.
+        if (empty($criteria)) {
+            return array();
+        }
 
         if (isset($criteria['timestamp'])) {
             $extrasql .= ' AND startdate <= :startdate ';
