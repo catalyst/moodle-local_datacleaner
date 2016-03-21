@@ -61,7 +61,7 @@ $table->data = array();
 $table->head = array(
     get_string('coursename', 'cleaner_courses'),
     get_string('category', 'cleaner_courses'),
-)
+);
 
 $config = get_config('cleaner_courses');
 
