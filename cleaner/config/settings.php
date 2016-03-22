@@ -41,7 +41,7 @@ if ($ADMIN->fulltree) {
     );
 
     $configclean = new clean();
-    $where = $configclean->get_where();
+    $where = $configclean::get_where();
 
     if ($where) {
         $itemstoremove = $DB->get_records_sql("SELECT *

@@ -31,7 +31,7 @@ class clean extends \local_datacleaner\clean {
     /**
      * Define the config names and values to be cleaned.
      */
-    public function get_where() {
+    public static function get_where() {
 
         // Get the settings, handling the case where new ones (dev)
         // haven't been set yet.
