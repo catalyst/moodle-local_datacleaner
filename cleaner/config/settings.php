@@ -20,8 +20,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use cleaner_config\clean;
+
 defined('MOODLE_INTERNAL') || die;
-require_once('classes/clean.php');
 
 if ($ADMIN->fulltree) {
 
@@ -39,7 +40,7 @@ if ($ADMIN->fulltree) {
         get_string('value', 'cleaner_config'),
     );
 
-    $configclean = new \cleaner_config\clean();
+    $configclean = new clean();
     $where = $configclean->get_where();
 
     if ($where) {
