@@ -26,7 +26,7 @@ matrix:
 env:
  matrix:
 # 2.8 is required for core_date - we can work around this if there is demand
-  - DB=pgsql MOODLE_BRANCH=MOODLE_25_STABLE
+#  - DB=pgsql MOODLE_BRANCH=MOODLE_25_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_27_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE
