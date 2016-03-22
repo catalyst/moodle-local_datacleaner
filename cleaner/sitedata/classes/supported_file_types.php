@@ -166,7 +166,7 @@ class cleaner_sitedata_supported_file_types {
         global $CFG;
 
         // Set the defaults.
-        $filename = $this->placeholder . $this->default_ext;
+        $filename = $this->placeholder . $this->defaultext;
         $mimetype = self::MIMETYPE_DEFAULT;
 
         // Trim and format the type. It may be in mixed case
