@@ -22,15 +22,17 @@ matrix:
   - php: 7.0
 
 env:
- global:
-  - MOODLE_BRANCH=MOODLE_26_STABLE
-  - MOODLE_BRANCH=MOODLE_27_STABLE
-  - MOODLE_BRANCH=MOODLE_28_STABLE
-  - MOODLE_BRANCH=MOODLE_29_STABLE
-  - MOODLE_BRANCH=MOODLE_30_STABLE
  matrix:
-  - DB=pgsql
-  - DB=mysqli
+  - DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_27_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_28_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -40,7 +42,6 @@ before_install:
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
-  - moodle-plugin-ci add-plugin brendanheywood/moodle-local_datacleaner
   - moodle-plugin-ci install
 
 script:
