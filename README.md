@@ -2,7 +2,7 @@
 
 Moodle DataCleaner is an anonymiser of your Moodle data.
 
-Supported versions of Moodle: 2.5 to 2.9 inclusive
+Supported versions of Moodle: 2.6 to 3.0 inclusive
 
 ## Warning
 
