@@ -21,6 +21,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die;
+require_once('classes/clean.php');
 
 if ($ADMIN->fulltree) {
 
@@ -38,31 +39,8 @@ if ($ADMIN->fulltree) {
         get_string('value', 'cleaner_config'),
     );
 
-    $config = get_config('cleaner_config');
-
-    $where = '';
-    $names = isset($config->names) ? explode("\n", $config->names) : array();
-    foreach ($names as $name) {
-        $name = trim($name);
-        if (empty($name)) {
-            continue;
-        }
-        if ($where) {
-            $where .= " OR ";
-        }
-        $where .= " name LIKE '$name'"; // SQL injection vector but we're admin so OK.
-    }
-    $values = isset($config->vals) ? explode("\n", $config->vals) : array();
-    foreach ($values as $val) {
-        $val = trim($val);
-        if (empty($val)) {
-            continue;
-        }
-        if ($where) {
-            $where .= " OR ";
-        }
-        $where .= " value LIKE '$val'"; // SQL injection vector but we're admin so OK.
-    }
+    $configclean = new \cleaner_config\clean();
+    $where = $configclean->get_where();
 
     if ($where) {
         $itemstoremove = $DB->get_records_sql("SELECT *

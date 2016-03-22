@@ -29,12 +29,12 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Removing config settings';
 
     /**
-     * Do the hard work of removing config settings.
+     * Define the config names and values to be cleaned.
      */
-    static public function execute() {
-        global $DB;
+    public function get_where() {
 
-        // Get the settings, handling the case where new ones (dev) haven't been set yet.
+        // Get the settings, handling the case where new ones (dev)
+        // haven't been set yet.
         $config = get_config('cleaner_config');
 
         $where = '';
@@ -60,6 +60,17 @@ class clean extends \local_datacleaner\clean {
             }
             $where .= " value LIKE '$val'"; // SQL injection vector but we're admin so OK.
         }
+
+        return $where;
+    }
+
+    /**
+     * Do the hard work of removing config settings.
+     */
+    static public function execute() {
+        global $DB;
+
+        $where = self::get_where();
 
         if ($where) {
             self::new_task(2);
