@@ -71,8 +71,13 @@ function safety_checks($dryrun) {
     $saved = isset($CFG->original_wwwroot) ? $CFG->original_wwwroot : false;
 
     if (empty($saved)) {
-        print_message("No wwwroot has been saved yet. Assuming we're in dev and it's safe to continue.", true);
-    } else if ($CFG->wwwroot == $saved) {
+        abort_message(
+            $abort,
+            "No wwwroot has been saved yet. This needs to be set explicitly to run",
+            true
+        );
+        $willdie = true;
+    } else if ($CFG->wwwroot == base64_decode($saved)) {
         abort_message($abort, "\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL.", true);
         $willdie = true;
     }
