@@ -95,7 +95,7 @@ function safety_checks($dryrun) {
                 AND u.lastaccess <= :now
                 AND u.deleted = 0";
 
-    if ($usercount = $DB->count_records_sql($csql, $params)) {
+    if ($DB->count_records_sql($csql, $params)) {
         $namefields = "u." . implode(', u.', get_all_user_name_fields());
 
         $sql = "SELECT u.id, u.username, {$namefields}
