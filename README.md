@@ -1,28 +1,70 @@
+<a href="https://travis-ci.org/brendanheywood/moodle-local_datacleaner">
+<img src="https://travis-ci.org/brendanheywood/moodle-local_datacleaner.svg?branch=master">
+</a>
+
 # DataCleaner Moodle Module
 
 Moodle DataCleaner is an anonymiser of your Moodle data.
 
 Supported versions of Moodle: 2.6 to 3.0 inclusive
 
-## Warning
+## How it works
 
-Please never run in production.
+Standard practice when hosting most applications, moodle included, is to have
+various environments in a 'pipeline' leading to production at the end. eg a
+typicaly flow might be 'dev' > 'stage' > 'prod' but there could be as many as
+you want for various reasons, like load testing, penetration testing etc.
 
-How do we guarantee this never gets run in production? We will have a couple heuristics to ensure that this never runs:
+To test properly it's often useful to have real production data in these other
+environments, but there are downsides:
 
-* Only run from CLI. CataCleaner cannot be run from GUI.
-* Store the hostname in the cleaning configuration data. If the hostname matches production, DataCleaner will not run.
-* If a non admin user has logged in recently, DataCleaner will not run.
-* If cron has run recently, DataCleaner will not run. This should only be run on a data washing instance, cron should not be needed here.
+* Usually production can be quite massive, we don't need or want it all and
+  disk space can be a pain with multiple copies.
+* There may be sensative data we don't want to expose to developers or
+  testers, eg personal data, grades, uploaded assignments etc
+* Moodle is integrated with 3rd party systems and we don't want test systems
+  interacting with real systems, eg sending emails, or touching assignments in
+  Turnitin etc, ie we want to remove any API keys and other related config
+
+So we need a way to 'clean' the database after a refresh, to reduce the size of
+the data, to remove anything sensitive, and to ensure it's not going to touch
+any other real system. This also needs to be configurable because every moodle
+instance has different needs and there is no one-size-fits all approach. This
+could be configured outside moodle in the deployments tools, but over time we
+have found the most flexible and easiest approach is to have this configuration
+inside moodle itself, so our clients can directly make these decisions, and not
+be exposed to any of the complexity of our nternal processes around continous
+integration and deployment.
+
+Practically this means the cleaning configuration needs to be added into the
+prodcution system (which initially sounds scary but isn't), then you refresh
+the database to another environment where it can be washed. There are multiple
+levels of safegaurds in place to ensure this never gets run in production,
+which would of course be catastrophic:
+
+* It can only be run from the CLI. There is no GUI.
+* We store the hostname in the cleaning configuration data. If the hostname
+  matches production, DataCleaner will not run. If this data is missing then
+  it will not run.
+* Typically a refreshed database will be from a nightly snapshot and so the
+  data should be slightly stale. If a non admin user has logged in recently,
+  that's a sign this moodle is being used, and the DataCleaner will not run.
+* If cron has run recently, DataCleaner will not run. This should only be run
+  on a data washing instance, cron should not be needed here.
 
 ## Installation
 
-The simplest method of installing the plugin is to choose "Download ZIP" on the right hand side of the Github page. Once you've done this, unzip the DataCleaner code and copy it to the local/datacleaner directory within your Moodle codebase. On most modern Linux systems, this can be accomplished with:
+The simplest method of installing the plugin is to choose "Download ZIP" on the
+right hand side of the Github page. Once you've done this, unzip the
+DataCleaner code and copy it to the local/datacleaner directory within your
+Moodle codebase. On most modern Linux systems, this can be accomplished with:
 
 `unzip ./mdl-local_datacleaner-master.zip
 cp -r ./mdl-local_datacleaner-master <your_moodle_directory>/local/datacleaner`
 
-Once you've copied the plugin, you can finish the installation process by logging into your Moodle site as an administrator and visiting the "notifications" page:
+Once you've copied the plugin, you can finish the installation process by
+logging into your Moodle site as an administrator and visiting the
+"notifications" page:
 
 `<your.moodle.url>/admin/index.php`
 
@@ -30,9 +72,15 @@ Your site should prompt you to upgrade.
 
 ## Configuration
 
-Once the installation process is complete, you'll be prompted to fill in some configuration details.
+Once the installation process is complete, you'll be prompted to fill in some
+configuration details. Note that you MUST visit the DataCleaner config page to
+save the current wwwroot, or the cleaner will not run later in the other
+environments.
 
- You can also find the DataCleaner configurations again at any time via the Moodle administration block:
+There are multiple 'cleaners' which process different types of data in moodle.
+Each one can be enabled individually and may have additional config settings.
+
+You can find the DataCleaner configuration via the Moodle administration block:
 
 `Site Adminstration > Plugins > Local plugins > Data cleaner`
 
