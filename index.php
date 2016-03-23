@@ -27,7 +27,8 @@ require_once($CFG->libdir.'/tablelib.php');
 admin_externalpage_setup('local_datacleaner');
 
 // Save the wwwroot for checking from the CLI that we're not in prod.
-set_config('original_wwwroot', $CFG->wwwroot);
+$originalwwwroot = base64_encode($CFG->wwwroot);
+set_config('original_wwwroot', $originalwwwroot);
 
 // Allows the admin to configure subplugins (enable/disable, configure).
 
