@@ -90,7 +90,7 @@ class cleaner_sitedata_supported_file_types {
      * Instantiate the class to build the supported file types array.
      */
     public function __construct() {
-        $this->supportedfile_types = array(
+        $this->supportedfiletypes = array(
                         self::MIMETYPE_NONE => '--None--',
                         self::MIMETYPE_7Z   => '7z',
                         self::MIMETYPE_AVI  => 'avi',
