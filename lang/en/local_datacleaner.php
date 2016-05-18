@@ -27,8 +27,9 @@ $string['cachedef_courses'] = 'Course cache';
 $string['cachedef_schema'] = 'Schema cache';
 $string['cleaning'] = 'Cleaning';
 $string['enabledisable'] = 'Enabled';
-$string['enable'] = 'Enable';
 $string['disable'] = 'Disable';
+$string['enable'] = 'Enable';
+$string['error:explicitconfigphp'] = 'Please set the local_datacleaner_allow_execution in config.php';
 $string['info'] = '<p>You can configure what and how data will be cleaned after it is cloned from production. </p>' .
 '<p>After the database and sitedata are cloned into another environment a CLI is run which will perform the cleaning. ' .
 'Several checks are performed to ensure that this cannot be run on the production environment.</p>';

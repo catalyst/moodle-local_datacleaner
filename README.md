@@ -51,6 +51,8 @@ which would of course be catastrophic:
   that's a sign this moodle is being used, and the DataCleaner will not run.
 * If cron has run recently, DataCleaner will not run. This should only be run
   on a data washing instance, cron should not be needed here.
+* It can only be run if and only if a 'local_datacleaner_allowexecution = true;'
+  has been added to config.php
 
 ## Installation
 
@@ -76,6 +78,10 @@ Once the installation process is complete, you'll be prompted to fill in some
 configuration details. Note that you MUST visit the DataCleaner config page to
 save the current wwwroot, or the cleaner will not run later in the other
 environments.
+
+You have to add a 'local_datacleaner_allowexecution = true;' config item to your
+config.php in each of the environments you want the cleaner to run. DO NOT add
+that config setting to a Production environment!
 
 There are multiple 'cleaners' which process different types of data in moodle.
 Each one can be enabled individually and may have additional config settings.
