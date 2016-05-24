@@ -262,6 +262,7 @@ class schema_add_cascade_delete extends clean {
         }
 
         $checks = self::get_checks_for_parent_table($parent);
+        $to_recurse_into = array();
 
         // Iterate over tables in the schema ...
         foreach ($schema->getTables() as $table) {
@@ -302,10 +303,15 @@ class schema_add_cascade_delete extends clean {
                         }
                     }
 
-                    self::execute($tablename, $schema);
+                    $to_recurse_into[] = $tablename;
                 }
             }
         }
+
+        foreach($to_recurse_into as $tablename) {
+            self::execute($tablename, $schema);
+        }
+
         self::$depth--;
 
         if (!self::$depth) {
