@@ -316,7 +316,7 @@ class schema_add_cascade_delete extends clean {
 
             if (self::$dryrun && (self::$numindices || self::$numcascadedeletes)) {
                 echo "Would attempt to add " . self::$numindices . " indices and " . self::$numcascadedeletes .
-                    " cascade deletes.\n";
+                    " cascade deletes flowing from table '{$parent}'.\n";
             }
         }
     }
