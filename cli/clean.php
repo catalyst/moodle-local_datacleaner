@@ -106,7 +106,8 @@ foreach ($plugins as $plugin) {
         $cascade = new \local_datacleaner\schema_add_cascade_delete($options['dryrun'], $options['verbose']);
 
         // Shutdown handler does the undo().
-        $cascade->execute();
+        $cascade->execute('user');
+        $cascade->execute('course');
     }
 
     $class->execute();
