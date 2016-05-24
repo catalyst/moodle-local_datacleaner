@@ -273,9 +273,9 @@ class schema_add_cascade_delete extends clean {
                 // ... looking for a field of interest ...
                 $willuse = self::will_use_table($checks, $fieldname);
 
-
                 if ($willuse) {
                     self::debug(($willuse ? 'X ' : '  ') . " {$parent}: {$fieldname} in {$tablename}\n");
+
                     unset(self::$unrelated[$tablename]);
 
                     $indices = $table->getIndexes();
