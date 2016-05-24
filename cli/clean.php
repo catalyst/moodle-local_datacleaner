@@ -33,6 +33,7 @@ list($options, $unrecognized) = cli_get_params(
         'force' => false,
         'run' => false,
         'dryrun' => false,
+        'verbose' => false,
     ),
     array('h' => 'help')
 );
@@ -51,6 +52,7 @@ Options:
      --run      Actually run the clean process
      --dryrun   Print an overview of what would run
      --force    Skip all prod detection safety checks
+     --verbose  Be noisey about what is being done or would be done
 
 Example:
 \$sudo -u www-data /usr/bin/php local/datacleaner/cli/clean.php --run
@@ -99,9 +101,9 @@ foreach ($plugins as $plugin) {
         continue;
     }
 
-    $class = new $classname($options['dryrun']);
+    $class = new $classname($options['dryrun'], $options['verbose']);
     if (is_null($cascade) && $class->needs_cascade_delete()) {
-        $cascade = new \local_datacleaner\schema_add_cascade_delete($options['dryrun']);
+        $cascade = new \local_datacleaner\schema_add_cascade_delete($options['dryrun'], $options['verbose']);
 
         // Shutdown handler does the undo().
         $cascade->execute();
