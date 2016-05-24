@@ -225,17 +225,17 @@ class schema_add_cascade_delete extends clean {
 
         if (is_null($schema)) {
             $schema = self::get_xml_schema();
+            foreach ($schema->getTables() as $table) {
+                if ($table == $parent) {
+                    continue;
+                }
+                self::$unrelated[$table->getName()] = 1;
+            }
         }
 
         if (isset($visited[$parent])) {
             self::$depth--;
             return;
-        }
-
-        if (self::$depth == 1) {
-            foreach ($schema->getTables() as $table) {
-                self::$unrelated[$table->getName()] = 1;
-            }
         }
 
         $visited[$parent] = true;
