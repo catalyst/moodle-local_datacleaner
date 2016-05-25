@@ -29,8 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 abstract class clean {
     private static $tasks = array(); // For storing task start times.
 
-    protected static $dryrun = true;
-    protected static $verbose = true;
+    protected static $options = array();
     protected $needscascadedelete = false;
 
     protected static $step = 0;
@@ -40,12 +39,11 @@ abstract class clean {
     /**
      * Constructor
      *
-     * @param bool    $dryrun  Whether we're doing a dry run.
-     * @param verbose $verbose Whether to display verbose progress info.
+     * @param bool $options Runtime configuration options for the plugin to apply.
      */
-    public function __construct($dryrun = true, $verbose = false) {
-        self::$dryrun = $dryrun;
-        self::$verbose = $verbose;
+    public function __construct($options = array())
+    {
+        self::$options = $options;
     }
 
     /**
@@ -67,8 +65,9 @@ abstract class clean {
     /**
      * Possibly output a debugging message.
      */
-    static protected function debug($message) {
-        if (self::$verbose) {
+    static protected function debug($message)
+    {
+        if (self::$options['verbose']) {
             echo $message;
         }
     }

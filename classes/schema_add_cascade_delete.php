@@ -240,7 +240,7 @@ class schema_add_cascade_delete extends clean {
 
         $visited[$parent] = true;
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             self::$numindices++;
         } else {
             self::debug(">> Setting up cascade deletion for {$parent}\n");
@@ -295,7 +295,7 @@ class schema_add_cascade_delete extends clean {
                         $indexname = "u_{$parent}";
                     }
 
-                    if (self::$dryrun) {
+                    if (self::$options['dryrun']) {
                         self::$numcascadedeletes++;
                     } else {
                         if (!self::try_add_cascade_delete($parent, $tablename, $fieldname, $indexname)) {
@@ -315,7 +315,7 @@ class schema_add_cascade_delete extends clean {
         self::$depth--;
 
         if (!self::$depth) {
-            if (!empty(self::$unrelated) && self::$verbose) {
+            if (!empty(self::$unrelated) && self::$options['verbose']) {
                 $toprint = array_keys(self::$unrelated);
                 sort($toprint);
                 foreach ($toprint as $table) {
@@ -323,7 +323,7 @@ class schema_add_cascade_delete extends clean {
                 }
             }
 
-            if (self::$dryrun && (self::$numindices || self::$numcascadedeletes)) {
+            if (self::$options['dryrun'] && (self::$numindices || self::$numcascadedeletes)) {
                 echo "Would attempt to add " . self::$numindices . " indices and " . self::$numcascadedeletes .
                     " cascade deletes flowing from table '{$parent}'.\n";
             }

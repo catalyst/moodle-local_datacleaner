@@ -33,8 +33,8 @@ class clean extends \local_datacleaner\clean {
     /**
      * Constructor.
      */
-    public function __construct($dryrun = true, $verbose = false) {
-        parent::__construct($dryrun, $verbose);
+    public function __construct($options['dryrun'] = true, $verbose = false) {
+        parent::__construct($options['dryrun'], $verbose);
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_courses');
 
@@ -53,7 +53,7 @@ class clean extends \local_datacleaner\clean {
     static public function delete_courses($courses = array()) {
         global $DB;
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             echo "\nWould delete " . count($courses) . " courses (plus cascade deletions).\n";
         } else {
             list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
@@ -68,7 +68,7 @@ class clean extends \local_datacleaner\clean {
     static public function delete_dangling_course_contexts() {
         global $DB;
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             $count = $DB->count_records_sql(
                     "SELECT COUNT('x') FROM {context}
                                   LEFT JOIN {course}

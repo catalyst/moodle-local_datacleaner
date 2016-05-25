@@ -62,7 +62,7 @@ class clean extends \local_datacleaner\clean {
             }
         }
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             // This always gets run.
             printf("\n\r " . get_string('wouldtruncatetables', 'cleaner_core', count($tablelist)) . "\n");
 

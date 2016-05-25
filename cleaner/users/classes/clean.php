@@ -272,7 +272,7 @@ class clean extends \local_datacleaner\clean {
             return;
         }
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             echo "Would scramble the data of {$numusers} users.\n";
             return;
         }

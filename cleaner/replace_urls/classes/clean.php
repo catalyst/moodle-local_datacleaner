@@ -35,8 +35,8 @@ class clean extends \local_datacleaner\clean {
     /**
      * Constructor.
      */
-    public function __construct($dryrun = true, $verbose = false) {
-        parent::__construct($dryrun, $verbose);
+    public function __construct($options['dryrun'] = true, $verbose = false) {
+        parent::__construct($options['dryrun'], $verbose);
         self::$config = get_config('cleaner_replace_urls');
         self::$skiptables = self::get_skiptables(self::$config);
         self::$tables = self::get_tables(self::$skiptables);
@@ -147,7 +147,7 @@ class clean extends \local_datacleaner\clean {
      * Executes clean.
      */
     static public function execute() {
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             $count = count(self::$tables);
             mtrace("Would replace URLs in {$count} tables.");
         } else {

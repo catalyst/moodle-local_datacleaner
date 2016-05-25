@@ -101,9 +101,9 @@ foreach ($plugins as $plugin) {
         continue;
     }
 
-    $class = new $classname($options['dryrun'], $options['verbose']);
+    $class = new $classname($options);
     if (is_null($cascade) && $class->needs_cascade_delete()) {
-        $cascade = new \local_datacleaner\schema_add_cascade_delete($options['dryrun'], $options['verbose']);
+        $cascade = new \local_datacleaner\schema_add_cascade_delete($options);
 
         // Shutdown handler does the undo().
         $cascade->execute('user');
