@@ -162,27 +162,43 @@ class schema_add_cascade_delete extends clean {
         global $DB;
 
         try {
-            /* Before we try to add the index, look for records that will prevent it */
-            self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
-            $conflicts = $DB->count_records_sql(
+            if (self::$options['cascade_mismatch_limit']) {
+                /* Before we try to add the index, look for records that will prevent it */
+                self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
+                $conflicts = $DB->count_records_sql(
                     "SELECT COUNT('x') FROM {{$tablename}}
                     LEFT JOIN {{$parent}} ON {{$tablename}}.{$fieldname} = {{$parent}}.id
                     WHERE {{$parent}}.id IS NULL");
-            if ($conflicts) {
-                self::debug("Getting total number of records in {$tablename}.\r");
-                $total = $DB->count_records($tablename);
-                if ($total > 100 && ($conflicts / $total) < 0.05) {
-                    self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
-                    $DB->execute(
+                if ($conflicts) {
+                    self::debug("Getting total number of records in {$tablename}.\r");
+                    $total = $DB->count_records($tablename);
+                    if ($total > 100 && ($conflicts / $total) < (self::$options['cascade_mismatch_limit'] / 100)) {
+                        self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
+                        $DB->execute(
                             "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
                         SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
-                } else {
-                    if ($conflicts < $total) {
-                        self::debug("{$conflicts}/{$total} records from the {$fieldname} field in {$tablename} don't match " .
-                                "{$parent} ids. Assuming this is not really a candidate for referential integrity.\n");
+                    } else {
+                        if ($conflicts < $total) {
+                            $percentage = round($conflicts * 100 / $total, 2);
+                            if ($total < 100) {
+                                $lessthan100  = "Since the total number of records is less than 100, the system is erring on the
+                                side of caution. ";
+                            }
+                            else {
+                                $lessthan100 = '';
+                            }
+                            self::debug("{$conflicts}/{$total} records ({$percentage}%) from the {$fieldname} field in {$tablename}
+                            don't match {$parent} ids. {$lessthan100}Assuming this is not really a candidate for referential
+                                                                                                                integrity.\n");
+                        }
+                        return false;
                     }
-                    return false;
                 }
+            }
+            else {
+                $DB->execute(
+                    "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
+                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
             }
             self::debug("Adding cascade delete to {$tablename}, field {$fieldname} for deletions from table {$parent} ... ");
             $DB->execute("ALTER TABLE {{$tablename}}
