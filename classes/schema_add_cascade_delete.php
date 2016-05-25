@@ -113,6 +113,7 @@ class schema_add_cascade_delete extends clean {
                 $checks[] = 'appraiser';
                 $checks[] = 'manager';
                 $checks[] = 'reportsto';
+                $checks[] = 'useridfrom';
                 break;
             case 'course':
                 $checks[] = 'courses';
