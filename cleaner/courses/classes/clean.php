@@ -33,8 +33,8 @@ class clean extends \local_datacleaner\clean {
     /**
      * Constructor.
      */
-    public function __construct($options['dryrun'] = true, $verbose = false) {
-        parent::__construct($options['dryrun'], $verbose);
+    public function __construct($options = array()) {
+        parent::__construct($options);
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
         $config = get_config('cleaner_courses');
 

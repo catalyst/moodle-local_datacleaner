@@ -35,8 +35,8 @@ class clean extends \local_datacleaner\clean {
     /**
      * Constructor.
      */
-    public function __construct($options['dryrun'] = true, $verbose = false) {
-        parent::__construct($options['dryrun'], $verbose);
+    public function __construct($options = array()) {
+        parent::__construct($options);
         self::$config = get_config('cleaner_replace_urls');
         self::$skiptables = self::get_skiptables(self::$config);
         self::$tables = self::get_tables(self::$skiptables);
