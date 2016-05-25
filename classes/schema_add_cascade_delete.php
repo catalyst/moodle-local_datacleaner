@@ -162,7 +162,10 @@ class schema_add_cascade_delete extends clean {
         global $DB;
 
         try {
-            if (self::$options['cascade_mismatch_limit']) {
+            $config = get_config('local_datacleaner');
+            $mismatch_limit = isset($config->mismatch_threshold) ? $config->mismatch_threshold : 5;
+
+            if ($mismatch_limit) {
                 /* Before we try to add the index, look for records that will prevent it */
                 self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
                 $conflicts = $DB->count_records_sql(
@@ -172,7 +175,7 @@ class schema_add_cascade_delete extends clean {
                 if ($conflicts) {
                     self::debug("Getting total number of records in {$tablename}.\r");
                     $total = $DB->count_records($tablename);
-                    if ($total > 100 && ($conflicts / $total) < (self::$options['cascade_mismatch_limit'] / 100)) {
+                    if ($total > 100 && ($conflicts / $total) < ($mismatch_limit / 100)) {
                         self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
                         $DB->execute(
                             "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
