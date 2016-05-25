@@ -184,15 +184,15 @@ class schema_add_cascade_delete extends clean {
                         if ($conflicts < $total) {
                             $percentage = round($conflicts * 100 / $total, 2);
                             if ($total < 100) {
-                                $lessthan100  = "Since the total number of records is less than 100, the system is erring on the
-                                side of caution. ";
+                                $lessthan100  = "Since the total number of records is less than 100, the system is erring on the" .
+                                " side of caution. ";
                             }
                             else {
                                 $lessthan100 = '';
                             }
-                            self::debug("{$conflicts}/{$total} records ({$percentage}%) from the {$fieldname} field in {$tablename}
-                            don't match {$parent} ids. {$lessthan100}Assuming this is not really a candidate for referential
-                                                                                                                integrity.\n");
+                            self::debug("{$conflicts}/{$total} records ({$percentage}%) from the {$fieldname} field in " .
+                                "{$tablename} don't match {$parent} ids. {$lessthan100}Assuming this is not really a candidate " .
+                                "for referential integrity.\n");
                         }
                         return false;
                     }
