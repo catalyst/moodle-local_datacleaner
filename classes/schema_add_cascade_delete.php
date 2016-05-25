@@ -195,6 +195,7 @@ class schema_add_cascade_delete extends clean {
         } catch (\dml_write_exception $e) {
             if (substr($e->error, -14) == "already exists") {
                 self::debug("already exists.\n");
+                return true;
             } else {
                 self::debug("failed ({$e->error}).\n");
             }
