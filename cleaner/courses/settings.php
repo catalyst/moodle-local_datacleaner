@@ -41,6 +41,7 @@ if (!isset($CFG->slasharguments)) {
 $categories = core_course_external::get_categories();
 
 $defaultcategories = array();
+$categoriesbyname = array();
 
 foreach ($categories as $category) {
     $categoriesbyname[$category['id']] = $category['name'];

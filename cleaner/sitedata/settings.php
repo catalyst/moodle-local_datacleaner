@@ -34,11 +34,16 @@ $settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allfiletypes',
         new lang_string('allfiletypesdesc', 'cleaner_sitedata'), 0));
 
 $filetypes = new cleaner_sitedata\cleaner_sitedata_supported_file_types();
-$settings->add(new admin_setting_configmultiselect('cleaner_sitedata/filetypes',
+$supportedfiletypes = $filetypes->get_supported_file_types();
+
+if ($supportedfiletypes) {
+
+    $settings->add(new admin_setting_configmultiselect('cleaner_sitedata/filetypes',
         new lang_string('filetypes', 'cleaner_sitedata'),
         new lang_string('filetypesdesc', 'cleaner_sitedata'),
         array(),
-        $filetypes->get_supported_file_types()));
+        $supportedfiletypes));
+}
 
 $settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allcontextlevels',
         new lang_string('allcontextlevels', 'cleaner_sitedata'),
