@@ -1,5 +1,5 @@
-<a href="https://travis-ci.org/brendanheywood/moodle-local_datacleaner">
-<img src="https://travis-ci.org/brendanheywood/moodle-local_datacleaner.svg?branch=master">
+<a href="https://travis-ci.org/catalyst/moodle-local_datacleaner">
+<img src="https://travis-ci.org/catalyst/moodle-local_datacleaner.svg?branch=master">
 </a>
 
 # DataCleaner Moodle Module
