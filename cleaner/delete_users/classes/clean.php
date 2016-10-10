@@ -45,7 +45,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         // Get on with the real work!
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             echo 'Would delete ' . $numusers . " users.\n";
         } else {
             self::new_task($numusers);

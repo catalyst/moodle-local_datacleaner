@@ -110,6 +110,10 @@ class schema_add_cascade_delete extends clean {
                 break;
             case 'user':
                 $checks[] = 'student';
+                $checks[] = 'appraiser';
+                $checks[] = 'manager';
+                $checks[] = 'reportsto';
+                $checks[] = 'useridfrom';
                 break;
             case 'course':
                 $checks[] = 'courses';
@@ -158,27 +162,46 @@ class schema_add_cascade_delete extends clean {
         global $DB;
 
         try {
-            /* Before we try to add the index, look for records that will prevent it */
-            self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
-            $conflicts = $DB->count_records_sql(
+            $config = get_config('local_datacleaner');
+            $mismatch_limit = isset($config->mismatch_threshold) ? $config->mismatch_threshold : 5;
+
+            if ($mismatch_limit) {
+                /* Before we try to add the index, look for records that will prevent it */
+                self::debug("Checking for mismatches between {$parent} and {$tablename}.{$fieldname}.\r");
+                $conflicts = $DB->count_records_sql(
                     "SELECT COUNT('x') FROM {{$tablename}}
                     LEFT JOIN {{$parent}} ON {{$tablename}}.{$fieldname} = {{$parent}}.id
                     WHERE {{$parent}}.id IS NULL");
-            if ($conflicts) {
-                self::debug("Getting total number of records in {$tablename}.\r");
-                $total = $DB->count_records($tablename);
-                if ($total > 100 && ($conflicts / $total) < 0.05) {
-                    self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
-                    $DB->execute(
+                if ($conflicts) {
+                    self::debug("Getting total number of records in {$tablename}.\r");
+                    $total = $DB->count_records($tablename);
+                    if ($total > 100 && ($conflicts / $total) < ($mismatch_limit / 100)) {
+                        self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
+                        $DB->execute(
                             "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
                         SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
-                } else {
-                    if ($conflicts < $total) {
-                        self::debug("{$conflicts}/{$total} records from the {$fieldname} field in {$tablename} don't match " .
-                                "{$parent} ids. Assuming this is not really a candidate for referential integrity.\n");
+                    } else {
+                        if ($conflicts < $total) {
+                            $percentage = round($conflicts * 100 / $total, 2);
+                            if ($total < 100) {
+                                $lessthan100  = "Since the total number of records is less than 100, the system is erring on the" .
+                                " side of caution. ";
+                            }
+                            else {
+                                $lessthan100 = '';
+                            }
+                            self::debug("{$conflicts}/{$total} records ({$percentage}%) from the {$fieldname} field in " .
+                                "{$tablename} don't match {$parent} ids. {$lessthan100}Assuming this is not really a candidate " .
+                                "for referential integrity.\n");
+                        }
+                        return false;
                     }
-                    return false;
                 }
+            }
+            else {
+                $DB->execute(
+                    "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
+                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
             }
             self::debug("Adding cascade delete to {$tablename}, field {$fieldname} for deletions from table {$parent} ... ");
             $DB->execute("ALTER TABLE {{$tablename}}
@@ -192,6 +215,7 @@ class schema_add_cascade_delete extends clean {
         } catch (\dml_write_exception $e) {
             if (substr($e->error, -14) == "already exists") {
                 self::debug("already exists.\n");
+                return true;
             } else {
                 self::debug("failed ({$e->error}).\n");
             }
@@ -211,10 +235,10 @@ class schema_add_cascade_delete extends clean {
     /**
      * Add cascade deletion to courseIDs.
      *
-     * @param array $schema The database schema
      * @param string $param The parent table for which we're seeking children.
+     * @param array $schema The database schema
      */
-    static public function execute($schema = null, $parent = 'course') {
+    static public function execute($parent = 'user', $schema = null) {
         static $visited = array();
         global $DB;
 
@@ -222,6 +246,12 @@ class schema_add_cascade_delete extends clean {
 
         if (is_null($schema)) {
             $schema = self::get_xml_schema();
+            foreach ($schema->getTables() as $table) {
+                if ($table == $parent) {
+                    continue;
+                }
+                self::$unrelated[$table->getName()] = 1;
+            }
         }
 
         if (isset($visited[$parent])) {
@@ -229,15 +259,9 @@ class schema_add_cascade_delete extends clean {
             return;
         }
 
-        if (self::$depth == 1) {
-            foreach ($schema->getTables() as $table) {
-                self::$unrelated[$table->getName()] = 1;
-            }
-        }
-
         $visited[$parent] = true;
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             self::$numindices++;
         } else {
             self::debug(">> Setting up cascade deletion for {$parent}\n");
@@ -259,6 +283,7 @@ class schema_add_cascade_delete extends clean {
         }
 
         $checks = self::get_checks_for_parent_table($parent);
+        $to_recurse_into = array();
 
         // Iterate over tables in the schema ...
         foreach ($schema->getTables() as $table) {
@@ -273,9 +298,9 @@ class schema_add_cascade_delete extends clean {
                 // ... looking for a field of interest ...
                 $willuse = self::will_use_table($checks, $fieldname);
 
-                self::debug($willuse ? 'X ' : '  ') . " {$parent}: {$fieldname} in {$tablename}\n";
-
                 if ($willuse) {
+                    self::debug(($willuse ? 'X ' : '  ') . " {$parent}: {$fieldname} in {$tablename}\n");
+
                     unset(self::$unrelated[$tablename]);
 
                     $indices = $table->getIndexes();
@@ -291,7 +316,7 @@ class schema_add_cascade_delete extends clean {
                         $indexname = "u_{$parent}";
                     }
 
-                    if (self::$dryrun) {
+                    if (self::$options['dryrun']) {
                         self::$numcascadedeletes++;
                     } else {
                         if (!self::try_add_cascade_delete($parent, $tablename, $fieldname, $indexname)) {
@@ -299,14 +324,19 @@ class schema_add_cascade_delete extends clean {
                         }
                     }
 
-                    self::execute($schema, $tablename);
+                    $to_recurse_into[] = $tablename;
                 }
             }
         }
+
+        foreach($to_recurse_into as $tablename) {
+            self::execute($tablename, $schema);
+        }
+
         self::$depth--;
 
         if (!self::$depth) {
-            if (!empty(self::$unrelated) && self::$verbose) {
+            if (!empty(self::$unrelated) && self::$options['verbose']) {
                 $toprint = array_keys(self::$unrelated);
                 sort($toprint);
                 foreach ($toprint as $table) {
@@ -314,9 +344,9 @@ class schema_add_cascade_delete extends clean {
                 }
             }
 
-            if (self::$dryrun && (self::$numindices || self::$numcascadedeletes)) {
+            if (self::$options['dryrun'] && (self::$numindices || self::$numcascadedeletes)) {
                 echo "Would attempt to add " . self::$numindices . " indices and " . self::$numcascadedeletes .
-                    " cascade deletes.\n";
+                    " cascade deletes flowing from table '{$parent}'.\n";
             }
         }
     }

@@ -30,10 +30,16 @@ if (!$hassiteconfig) { // Needs this condition or there is error on login page.
 
 $ADMIN->add('localplugins', new admin_category('datacleaner', get_string('pluginname', 'local_datacleaner')));
 
-$ADMIN->add('datacleaner',
-        new admin_externalpage('local_datacleaner',
-            get_string('manage', 'local_datacleaner'),
-            new moodle_url('/local/datacleaner/index.php')));
+$ADMIN->add('datacleaner', new admin_externalpage('local_datacleaner',
+    get_string('manage', 'local_datacleaner'),
+    new moodle_url('/local/datacleaner/index.php')));
+
+$temp = new admin_settingpage('cascadedeletesettings', new lang_string('cascadedeletesettings', 'local_datacleaner'));
+
+$temp->add(new admin_setting_configtext('local_datacleaner/mismatch_threshold',
+    new lang_string('mismatch_threshold', 'local_datacleaner'),
+    new lang_string('mismatch_thresholddesc', 'local_datacleaner'), '5', PARAM_INT));
+$ADMIN->add('datacleaner', $temp);
 
 $plugins = \local_datacleaner\plugininfo\cleaner::get_plugins_by_sortorder();
 foreach ($plugins as $plugin) {

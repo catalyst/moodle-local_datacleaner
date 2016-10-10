@@ -39,7 +39,7 @@ class clean extends \local_datacleaner\clean {
         $config = get_config('cleaner_grades');
 
         if ($config->deleteall) {
-            if (self::$dryrun) {
+            if (self::$options['dryrun']) {
                 echo "Would truncate the grade_grades and grade_grades_history tables.\n";
             } else {
                 self::new_task(2);
@@ -49,7 +49,7 @@ class clean extends \local_datacleaner\clean {
                 self::next_step();
             }
         } else {
-            if (self::$dryrun) {
+            if (self::$options['dryrun']) {
                 $count = $DB->count_records_select('grade_grades', 'rawgrademax > 0');
                 $count += $DB->count_records_select('grade_grades', 'rawgrademax = 0');
                 $count += $DB->count_records_select('grade_grades_history', 'rawgrademax > 0');

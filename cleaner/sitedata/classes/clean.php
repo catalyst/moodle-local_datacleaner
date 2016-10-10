@@ -89,7 +89,7 @@ class clean extends \local_datacleaner\clean {
 
         $filetypes = new cleaner_sitedata_supported_file_types();
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
 
             if ($count > 0) {
                 foreach ($results as $result) {

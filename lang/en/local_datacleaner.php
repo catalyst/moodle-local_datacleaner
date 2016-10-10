@@ -37,4 +37,10 @@ $string['sortorder'] = 'Sort order';
 $string['noplugins'] = 'No data cleansing plugins found.';
 $string['progress'] = 'Progress';
 $string['errordeletingdir'] = '-- ERROR -- An error was encountered while deleting the directory: {$a}';
-
+$string['cascadedeletesettings'] = 'Cascade delete settings';
+$string['mismatch_threshold'] = 'Mismatch threshold';
+$string['mismatch_thresholddesc'] =  'The data cleaner uses a heuristic to create cascade delete rules in the database that
+aren\'t normally there. Prior to creating a rule, it checks how many records would violate the potential relationship. This setting
+controls the threshold above which the relationship will not be created (which also means records in the target table will not be
+deleted). The threshold is expressed as a percentage of the total number of records involved. If the total number of records in a
+ table is less than 100, this value is ignored and any conflicts cause the rule not to be created.';

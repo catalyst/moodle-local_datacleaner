@@ -35,8 +35,8 @@ class clean extends \local_datacleaner\clean {
     /**
      * Constructor.
      */
-    public function __construct($dryrun = true, $verbose = false) {
-        parent::__construct($dryrun, $verbose);
+    public function __construct($options) {
+        parent::__construct($options);
 
         self::$config = get_config('cleaner_completion');
         $criteria = self::get_courses_criteria(self::$config);
@@ -53,7 +53,7 @@ class clean extends \local_datacleaner\clean {
 
         if (!empty(self::$config->deletecoursecompletion)) {
             list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
-            if (self::$dryrun) {
+            if (self::$options['dryrun']) {
                 $coursecompletion = $DB->get_records_select('course_completion_crit_compl', 'course ' . $sql, $params, false, 'id');
                 echo "\nWould delete " . count($coursecompletion) . " course completion records for "
                         . count($courses) . " courses. \n";
@@ -75,7 +75,7 @@ class clean extends \local_datacleaner\clean {
         if (!empty(self::$config->deleteactivitycompletion)) {
             list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
 
-            if (!empty(self::$dryrun)) {
+            if (!empty(self::$options['dryrun'])) {
                 $coursecompletion = $DB->get_records_select('course_modules_completion',
                         "coursemoduleid IN (SELECT id FROM {course_modules} WHERE course $sql)",
                         $params, false, 'id');

@@ -31,7 +31,7 @@ class clean extends \local_datacleaner\clean {
 
         global $DB;
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
             echo "Would truncate the logstore_standard_log table.\n";
         } else {
             self::new_task(1);

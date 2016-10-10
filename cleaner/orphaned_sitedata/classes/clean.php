@@ -65,7 +65,7 @@ class clean extends \local_datacleaner\clean {
             $totalorphaned = count(self::$orphanedfiles);
         }
 
-        if (self::$dryrun) {
+        if (self::$options['dryrun']) {
 
             if ($deletebackups) {
                 printf("\n\r " . get_string('woulddeletebackups', 'cleaner_orphaned_sitedata', $totalbackups) . "\n");
