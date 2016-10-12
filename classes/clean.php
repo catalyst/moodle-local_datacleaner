@@ -30,10 +30,13 @@ abstract class clean {
     private static $tasks = array(); // For storing task start times.
 
     protected static $options = array();
+
     protected $needscascadedelete = false;
 
     protected static $step = 0;
+
     protected static $maxsteps = 0;
+
     protected static $exectime = 0;
 
     /**
@@ -41,8 +44,7 @@ abstract class clean {
      *
      * @param bool $options Runtime configuration options for the plugin to apply.
      */
-    public function __construct($options = array())
-    {
+    public function __construct($options = array()) {
         self::$options = $options;
     }
 
@@ -59,14 +61,12 @@ abstract class clean {
      * Execute the plugin. Template to be overridden.
      */
     static public function execute() {
-
     }
 
     /**
      * Possibly output a debugging message.
      */
-    static protected function debug($message)
-    {
+    static protected function debug($message) {
         if (self::$options['verbose']) {
             echo $message;
         }
@@ -91,14 +91,13 @@ abstract class clean {
             $start = self::$tasks[$taskname];
             $eta = ($now - $start) * $total / $itemno + $start;
             $elapsed = $now - $start;
-            $timeleft = intval($elapsed) . ' seconds elapsed, ' . intval($eta - $now) . ' seconds remaining';
-
+            $timeleft = intval($elapsed).' seconds elapsed, '.intval($eta - $now).' seconds remaining';
         } else {
             // Save the start time for this task.
             self::$tasks[$taskname] = time();
         }
 
-        printf ("\r %-20s %4d%% (%d/%d)    $timeleft  ", $taskname, $perc, $itemno, $total);
+        printf("\r %-20s %4d%% (%d/%d)    $timeleft  ", $taskname, $perc, $itemno, $total);
 
         if ($itemno == $total) {
             // No more output for this step; move to a new line.
@@ -187,7 +186,7 @@ abstract class clean {
 
         if (isset($criteria['ignored_uids'])) {
             list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored_uids'], SQL_PARAMS_NAMED, 'uid', false);
-            $extrasql .= ' AND id ' . $newextrasql;
+            $extrasql .= ' AND id '.$newextrasql;
             $params = array_merge($params, $extraparams);
         }
 
@@ -198,7 +197,7 @@ abstract class clean {
                     $name = clean_param($name, PARAM_USERNAME);
                 }
                 list($newextrasql, $extraparams) = $DB->get_in_or_equal($keepusernames, SQL_PARAMS_NAMED, 'uname', false);
-                $extrasql .= ' AND username ' . $newextrasql;
+                $extrasql .= ' AND username '.$newextrasql;
                 $params = array_merge($params, $extraparams);
             }
         }
@@ -224,14 +223,14 @@ abstract class clean {
         $criteria = self::get_user_criteria($config);
         list($where, $whereparams) = self::get_user_where_sql($criteria);
 
-        return $DB->count_records_select('user', 'id > 2 ' . $where, $whereparams);
+        return $DB->count_records_select('user', 'id > 2 '.$where, $whereparams);
     }
 
     /**
      * Get an array of user objects meeting the criteria provided - possibly not all of them.
      *
-     * @param array  $config An array of plugin configuration settings to apply.
-     * @param string $sort   A SQL ORDER BY parameter.
+     * @param array $config An array of plugin configuration settings to apply.
+     * @param string $sort A SQL ORDER BY parameter.
      * @param string $fields A command separated list of fields to return.
      *
      * @return array $result An array of user records.
@@ -242,7 +241,7 @@ abstract class clean {
         $criteria = self::get_user_criteria($config);
         list($where, $whereparams) = self::get_user_where_sql($criteria);
 
-        $uids = $DB->get_records_select('user', 'id > 2 ' . $where, $whereparams, 'id', 'id', $offset, 10000);
+        $uids = $DB->get_records_select('user', 'id > 2 '.$where, $whereparams, 'id', 'id', $offset, 10000);
         return array_keys($uids);
     }
 
@@ -308,16 +307,16 @@ abstract class clean {
 
         if (isset($criteria['categories'])) {
             list($sql, $sqlparams) = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
-            $extrasql .= ' AND category ' . $sql;
+            $extrasql .= ' AND category '.$sql;
             $params = array_merge($params, $sqlparams);
         }
 
         if (isset($criteria['courses'])) {
             list($sql, $sqlparams) = $DB->get_in_or_equal(explode("\n", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
-            $extrasql .= ' AND shortname ' . $sql;
+            $extrasql .= ' AND shortname '.$sql;
             $params = array_merge($params, $sqlparams);
         }
 
-        return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
+        return $DB->get_records_select_menu('course', 'id > 1 '.$extrasql, $params, '', 'id, id');
     }
 }
