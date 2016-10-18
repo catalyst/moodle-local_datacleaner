@@ -6,6 +6,7 @@ notifications:
     recipients:
     - brendan.heywood@gmail.com
     - marcus@boon.mx
+    - danielroperto@catalyst-au.net
 
 sudo: false
 
