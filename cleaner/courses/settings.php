@@ -85,7 +85,7 @@ foreach ($shortnames as $name) {
 }
 
 if ($where) {
-    $itemstoignore = $DB->get_records_sql("SELECT c.fullname, ca.name
+    $itemstoignore = $DB->get_records_sql("SELECT c.id, c.fullname, ca.name
                                              FROM {course} c
                                              JOIN {course_categories} ca
                                                ON ca.id = c.category
