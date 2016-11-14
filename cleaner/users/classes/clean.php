@@ -242,14 +242,16 @@ class clean extends \local_datacleaner\clean {
         $conditions = array();
 
         foreach ($fields as $field) {
-            $sets[] = "{$field} = {temp_table}.{$field}";
+            $sets[] = "u.{$field} = {temp_table}.{$field}";
         }
 
         list($inequalsql, $params) = $DB->get_in_or_equal($users);
 
-        $sql = 'UPDATE {user} u SET ' . implode(',', $sets) .
-            " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
-            AND u.id " . $inequalsql;
+        $sql = "
+            UPDATE {user} u
+            INNER JOIN {temp_table} ON (1 + (u.id % {$distinctvalues})) = {temp_table}.id
+            SET " . implode(',', $sets) . "
+            WHERE u.id " . $inequalsql;
 
         $DB->execute($sql, $ineqparam);
 
