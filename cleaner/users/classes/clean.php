@@ -96,7 +96,7 @@ class clean extends \local_datacleaner\clean {
         }
     }
 
-    private static function randomize_fields_build_sql_for_mysql($tablename, $fields, $inequalsql, $distinctvalues):string {
+    private static function randomize_fields_build_sql_for_mysql($tablename, $fields, $inequalsql, $distinctvalues) {
         // Now that we have the temporary tables, use them to update the original table.
         $sets = [];
 
@@ -113,7 +113,7 @@ class clean extends \local_datacleaner\clean {
         return $sql;
     }
 
-    private static function randomize_fields_build_sql_for_postgres($tablename, $fields, $inequalsql, $distinctvalues):string {
+    private static function randomize_fields_build_sql_for_postgres($tablename, $fields, $inequalsql, $distinctvalues) {
         // Now that we have the temporary tables, use them to update the original table.
         $sets = [];
 
