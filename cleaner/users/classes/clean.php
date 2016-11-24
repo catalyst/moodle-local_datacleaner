@@ -198,7 +198,6 @@ class clean extends \local_datacleaner\clean {
     static public function randomise_fields($users = array(), $fields = array(), $prime, $inequalsql, $ineqparam) {
         global $DB, $CFG;
         static $userstructure = null, $userkeys;
-        $tmptables = array();
         $dbmanager = $DB->get_manager();
 
         if (is_null($userstructure)) {
@@ -239,13 +238,10 @@ class clean extends \local_datacleaner\clean {
 
         // Now that we have the temporary tables, use them to update the original table.
         $sets = array();
-        $conditions = array();
 
         foreach ($fields as $field) {
             $sets[] = "u.{$field} = {temp_table}.{$field}";
         }
-
-        list($inequalsql, $params) = $DB->get_in_or_equal($users);
 
         $sql = "
             UPDATE {user} u
