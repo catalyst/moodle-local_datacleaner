@@ -82,6 +82,53 @@ class clean extends \local_datacleaner\clean {
      */
     private static $lastprime = 0;
 
+    private static function randomize_fields_build_sql($fields, $inequalsql, $distinctvalues) {
+        global $DB;
+
+        $family = $DB->get_dbfamily();
+        switch ($family) {
+            case 'mysql':
+                return self::randomize_fields_build_sql_for_mysql($fields, $inequalsql, $distinctvalues);
+            case 'postgres':
+                return self::randomize_fields_build_sql_for_postgres($fields, $inequalsql, $distinctvalues);
+            default:
+                cli_error('Scramble users not implemented for database: '.$family);
+        }
+        return self::randomize_fields_build_sql_for_mysql($fields, $inequalsql, $distinctvalues);
+    }
+
+    private static function randomize_fields_build_sql_for_mysql($fields, $inequalsql, $distinctvalues):string {
+        // Now that we have the temporary tables, use them to update the original table.
+        $sets = [];
+
+        foreach ($fields as $field) {
+            $sets[] = "u.{$field} = {temp_table}.{$field}";
+        }
+
+        $sql = "
+            UPDATE {user} u
+            INNER JOIN {temp_table} ON (1 + (u.id % {$distinctvalues})) = {temp_table}.id
+            SET ".implode(',', $sets)."
+            WHERE u.id ".$inequalsql;
+
+        return $sql;
+    }
+
+    private static function randomize_fields_build_sql_for_postgres($fields, $inequalsql, $distinctvalues):string {
+        // Now that we have the temporary tables, use them to update the original table.
+        $sets = [];
+
+        foreach ($fields as $field) {
+            $sets[] = "{$field} = {temp_table}.{$field}";
+        }
+
+        $sql = 'UPDATE {user} u SET '.implode(',', $sets).
+            " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
+            AND u.id ".$inequalsql;
+        
+        return $sql;
+    }
+
     /**
      * Constructor - hash the password.
      */
@@ -236,18 +283,7 @@ class clean extends \local_datacleaner\clean {
 
         $distinctvalues = $DB->count_records('temp_table');
 
-        // Now that we have the temporary tables, use them to update the original table.
-        $sets = array();
-
-        foreach ($fields as $field) {
-            $sets[] = "u.{$field} = {temp_table}.{$field}";
-        }
-
-        $sql = "
-            UPDATE {user} u
-            INNER JOIN {temp_table} ON (1 + (u.id % {$distinctvalues})) = {temp_table}.id
-            SET " . implode(',', $sets) . "
-            WHERE u.id " . $inequalsql;
+        $sql = self::randomize_fields_build_sql($fields, $inequalsql, $distinctvalues);
 
         $DB->execute($sql, $ineqparam);
 
