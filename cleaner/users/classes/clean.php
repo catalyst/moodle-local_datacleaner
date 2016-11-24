@@ -82,22 +82,21 @@ class clean extends \local_datacleaner\clean {
      */
     private static $lastprime = 0;
 
-    private static function randomize_fields_build_sql($fields, $inequalsql, $distinctvalues) {
+    private static function randomize_fields_build_sql($tablename, $fields, $inequalsql, $distinctvalues) {
         global $DB;
 
         $family = $DB->get_dbfamily();
         switch ($family) {
             case 'mysql':
-                return self::randomize_fields_build_sql_for_mysql($fields, $inequalsql, $distinctvalues);
+                return self::randomize_fields_build_sql_for_mysql($tablename, $fields, $inequalsql, $distinctvalues);
             case 'postgres':
-                return self::randomize_fields_build_sql_for_postgres($fields, $inequalsql, $distinctvalues);
+                return self::randomize_fields_build_sql_for_postgres($tablename, $fields, $inequalsql, $distinctvalues);
             default:
                 cli_error('Scramble users not implemented for database: '.$family);
         }
-        return self::randomize_fields_build_sql_for_mysql($fields, $inequalsql, $distinctvalues);
     }
 
-    private static function randomize_fields_build_sql_for_mysql($fields, $inequalsql, $distinctvalues):string {
+    private static function randomize_fields_build_sql_for_mysql($tablename, $fields, $inequalsql, $distinctvalues):string {
         // Now that we have the temporary tables, use them to update the original table.
         $sets = [];
 
@@ -106,7 +105,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         $sql = "
-            UPDATE {user} u
+            UPDATE {".$tablename."} u
             INNER JOIN {temp_table} ON (1 + (u.id % {$distinctvalues})) = {temp_table}.id
             SET ".implode(',', $sets)."
             WHERE u.id ".$inequalsql;
@@ -114,7 +113,7 @@ class clean extends \local_datacleaner\clean {
         return $sql;
     }
 
-    private static function randomize_fields_build_sql_for_postgres($fields, $inequalsql, $distinctvalues):string {
+    private static function randomize_fields_build_sql_for_postgres($tablename, $fields, $inequalsql, $distinctvalues):string {
         // Now that we have the temporary tables, use them to update the original table.
         $sets = [];
 
@@ -122,7 +121,7 @@ class clean extends \local_datacleaner\clean {
             $sets[] = "{$field} = {temp_table}.{$field}";
         }
 
-        $sql = 'UPDATE {user} u SET '.implode(',', $sets).
+        $sql = 'UPDATE {'.$tablename.'} u SET '.implode(',', $sets).
             " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
             AND u.id ".$inequalsql;
         
@@ -197,7 +196,7 @@ class clean extends \local_datacleaner\clean {
      * @param string $file the full path to the XMLDB file.
      * @return xmldbfile the loaded file.
      */
-    static private function load_xmldbfile($file) {
+    static public function load_xmldbfile($file) {
         global $CFG;
 
         $xmldbfile = new \xmldb_file($file);
@@ -235,15 +234,16 @@ class clean extends \local_datacleaner\clean {
      * - Copy first 101 unique firstnames to 1 temporary table and first 103 unique lastnames to another
      * - Use a single SQL statement to update the original fields in a cycle.
      *
-     * @param array  $users      The UIDS of users who will be modified and from whom data will be selected
+     * @param string $tablename  The name of the user table.
      * @param array  $fields     The names of user tables fields that will be changed. More than one means
      *                           values will be changed together  (ie keep the city, country and timezone
      *                           making sense together).
      * @param int    $prime      The prime number to use for this set of fields.
      * @param string $inequalsql SQL where fragment for the batch.
      * @param array  $ineqparam  The array of parameters for $inequalsql
+     * @internal param array $users The UIDS of users who will be modified and from whom data will be selected
      */
-    static public function randomise_fields($users = array(), $fields = array(), $prime, $inequalsql, $ineqparam) {
+    static public function randomise_fields($tablename, $fields, $prime, $inequalsql, $ineqparam) {
         global $DB, $CFG;
         static $userstructure = null, $userkeys;
         $dbmanager = $DB->get_manager();
@@ -276,7 +276,7 @@ class clean extends \local_datacleaner\clean {
         $fieldlist = implode(',', $fields);
 
         $sql = "INSERT INTO {temp_table} ({$fieldlist}) (
-            SELECT DISTINCT ${fieldlist} FROM {user}
+            SELECT DISTINCT ${fieldlist} FROM {".$tablename."}
                    ORDER BY ${fieldlist}
                       LIMIT {$prime}
                       )";
@@ -284,7 +284,7 @@ class clean extends \local_datacleaner\clean {
 
         $distinctvalues = $DB->count_records('temp_table');
 
-        $sql = self::randomize_fields_build_sql($fields, $inequalsql, $distinctvalues);
+        $sql = self::randomize_fields_build_sql($tablename, $fields, $inequalsql, $distinctvalues);
 
         $DB->execute($sql, $ineqparam);
 
@@ -335,7 +335,7 @@ class clean extends \local_datacleaner\clean {
             list($inequalsql, $params) = $DB->get_in_or_equal($users);
 
             foreach (self::$scramble as $prime => $setoffields) {
-                self::randomise_fields($users, $setoffields, $prime, $inequalsql, $params);
+                self::randomise_fields('user', $setoffields, $prime, $inequalsql, $params);
                 self::next_step(count($params));
             }
 
