@@ -27,6 +27,7 @@
 namespace local_datacleaner;
 
 use invalid_parameter_exception;
+use stdClass;
 use xmldb_table;
 
 /**
@@ -128,8 +129,7 @@ class table_scrambler {
         $factors = self::get_prime_factors($f_fields, $n_records);
         $maxprime = end($factors);
 
-        $table = $this->create_temp_table();
-        $this->populate_temp_table($maxprime);
+        $table = $this->populate_temp_table($maxprime);
 
         $data = $DB->get_records(self::TEMPORARY_TABLE_NAME);
     }
@@ -169,23 +169,53 @@ class table_scrambler {
 
     /**
      * @param $rows Number of rows to populate.
+     * @return xmldb_table
      */
     private function populate_temp_table($rows) {
         global $DB;
 
-        $intotable = '{'.self::TEMPORARY_TABLE_NAME.'}';
-        $fromtable = '{'.$this->table.'}';
+        $data = $this->populate_temp_table_fetch_rows($rows);
+        $data = $this->populate_temp_table_sort_data($data);
+        $table = $this->create_temp_table();
+        $DB->insert_records(self::TEMPORARY_TABLE_NAME, $data);
+
+        return $table;
+    }
+
+    private function populate_temp_table_fetch_rows($rows) {
+        global $DB;
         $fields = implode(',', $this->fieldstoscramble);
+        $fromtable = '{'.$this->table.'}';
+        return $DB->get_records_sql("SELECT DISTINCT {$fields} FROM {$fromtable} ORDER BY {$fields} LIMIT {$rows}");
+    }
 
-        $sql = <<<SQL
-INSERT INTO {$intotable} ({$fields}) (
-    SELECT DISTINCT {$fields}
-    FROM {$fromtable}
-    ORDER BY {$fields}
-    LIMIT {$rows}
-)
-SQL;
+    private function populate_temp_table_sort_data($data) {
+        // Make one array for each columns (transpose).
+        $data = array_values($data);
+        $transposed = [];
+        for ($i = 0; $i < count($data); $i++) {
+            for ($j = 0; $j < count($this->fieldstoscramble); $j++) {
+                $row = $data[$i];
+                $field = $this->fieldstoscramble[$j];
+                $transposed[$j][$i] = $row->$field;
+            }
+        }
 
-        $DB->execute($sql);
+        // Sort them.
+        for ($i = 0; $i < count($transposed); $i++) {
+            sort($transposed[$i]);
+        }
+
+        // Rebuild data (transpose back).
+        for ($i = 0; $i < count($data); $i++) {
+            $row = new stdClass();
+            for ($j = 0; $j < count($this->fieldstoscramble); $j++) {
+                $field = $this->fieldstoscramble[$j];
+                $row->$field = $transposed[$j][$i];
+            }
+            $data[$i] = $row;
+        }
+
+        return $data;
     }
 }
