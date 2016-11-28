@@ -25,198 +25,99 @@ namespace cleaner_users;
 defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
+    /** All users will have this password after cleaning. */
+    const PASSWORD_AFTER_CLEANING = 'F4k3p3s5w0rD%';
+
+    /** All usernames will use this prefix followed by their id number. */
+    const USERNAME_PREFIX = 'user_';
+
     const TASK = 'Scrambling user data';
 
-    // Make all accounts
-    // - Manual auth
-    // - Non mnet
-    // - Reset password
-    // - Email address undeliverable
-    // - Emailstop on
-    // - Clear firstaccess, lastlogin, currentlogin, picture, description  and lastip
-    // - Empty other contact details.
+    /**
+     * A SQL string with the comma-separated IDs of the users to update.
+     *
+     * @var string
+     */
+    protected static $updateuserssql;
 
-    const PASS = 'F4k3p3s5w0rD%';
+    private static $scramble = [
+        'firstname fields'  => ['firstname', 'firstnamephonetic', 'alternatename'],
+        'middlename fields' => ['middlename'],
+        'surname fields'    => ['lastname', 'lastnamephonetic'],
+        'department'        => ['institution', 'department'],
+        'address'           => ['address', 'city', 'country', 'lang', 'calendartype', 'timezone'],
+    ];
 
-    private static $fixedmods = array(
-        'auth' => 'manual',
-        'mnethostid' => 1,
-        'password' => '',
-        'email' => 'dev_null@localhost',
-        'emailstop' => 1,
-        'firstaccess' => 0,
-        'lastlogin' => 0,
-        'currentlogin' => 0,
-        'picture' => 0,
-        'description' => '',
-        'lastip' => '',
-        'icq' => '',
-        'skype' => '',
-        'yahoo' => '',
-        'aim' => '',
-        'msn' => '',
-        'phone1' => '',
-        'phone2' => '',
-        'idnumber' => '',
-    );
-
-    // Plus scramble
-    // - usernames
-    // - idnumbers
-    // - name fields
-    // - city, country and timezone.
-    private static $scramble = array(
-        'firstname fields' => array('firstname', 'firstnamephonetic', 'alternatename'),
-        'middlename fields' => array('middlename'),
-        'surname fields' => array('lastname', 'lastnamephonetic'),
-        'department' => array('institution', 'department'),
-        'address' => array('address', 'city', 'country', 'lang', 'calendartype', 'timezone')
-    );
-
-    private static $functions = array(
-        'usernames' => 'username_substitution',
-    );
+    public static function execute() {
+        self::$updateuserssql = self::create_update_users_sql();
+        self::set_fixed_fields();
+        self::replace_usernames();
+        // self::scramble_fields();
+    }
 
     /**
-     * The last prime number used in scrambling field contents.
+     * Do the hard work of cleaning up users.
      */
-    private static $lastprime = 0;
-
-    private static function randomize_fields_build_sql($tablename, $fields, $inequalsql, $distinctvalues) {
+    static public function execute_old() {
         global $DB;
 
-        $family = $DB->get_dbfamily();
-        switch ($family) {
-            case 'mysql':
-                return self::randomize_fields_build_sql_for_mysql($tablename, $fields, $inequalsql, $distinctvalues);
-            case 'postgres':
-                return self::randomize_fields_build_sql_for_postgres($tablename, $fields, $inequalsql, $distinctvalues);
-            default:
-                cli_error('Scramble users not implemented for database: '.$family);
-        }
-    }
+        // Get the settings, handling the case where new ones (dev) haven't been set yet.
+        $config = get_config('cleaner_users');
+        $numusers = self::get_user_count($config);
 
-    private static function randomize_fields_build_sql_for_mysql($tablename, $fields, $inequalsql, $distinctvalues) {
-        // Now that we have the temporary tables, use them to update the original table.
-        $sets = [];
-
-        foreach ($fields as $field) {
-            $sets[] = "u.{$field} = {temp_table}.{$field}";
+        if (!$numusers) {
+            echo "No users require data scrambling.\n";
+            return;
         }
 
-        $sql = "
-            UPDATE {".$tablename."} u
-            INNER JOIN {temp_table} ON (1 + (u.id % {$distinctvalues})) = {temp_table}.id
-            SET ".implode(',', $sets)."
-            WHERE u.id ".$inequalsql;
-
-        return $sql;
-    }
-
-    private static function randomize_fields_build_sql_for_postgres($tablename, $fields, $inequalsql, $distinctvalues) {
-        // Now that we have the temporary tables, use them to update the original table.
-        $sets = [];
-
-        foreach ($fields as $field) {
-            $sets[] = "{$field} = {temp_table}.{$field}";
+        if (self::$options['dryrun']) {
+            echo "Would scramble the data of {$numusers} users.\n";
+            return;
         }
 
-        $sql = 'UPDATE {'.$tablename.'} u SET '.implode(',', $sets).
-            " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
-            AND u.id ".$inequalsql;
+        echo "Scrambling the data of {$numusers} users.\n";
 
-        return $sql;
-    }
+        // Scramble the eggs.
+        $stepsperuser = count(self::$scramble) + count(self::$fixedmods) + count(self::$functions);
+        $numsteps = $numusers * $stepsperuser;
 
-    /**
-     * Constructor - hash the password.
-     */
-    public function __construct($options) {
-        parent::__construct($options);
-        self::$fixedmods['password'] = hash_internal_user_password(self::PASS);
-    }
+        // Set up the prime numbers.
+        $thisnum = intval(sqrt($numusers));
+        $newscramble = [];
 
-    /**
-     * username_substitution - Replace usernames with user_XXX
-     *
-     * @param array $users - The userIDs on which to operate.
-     */
-    private static function username_substitution($users = array(), $inequalsql, $ineqparams) {
-        global $DB;
+        foreach (self::$scramble as $description => $setoffields) {
+            $thisnum = self::next_prime($thisnum);
+            $newscramble[$thisnum] = $setoffields;
+        }
+        self::$scramble = $newscramble;
 
-        $DB->execute('UPDATE {user} SET username = CONCAT(\'user\', id) WHERE id ' . $inequalsql, $ineqparams);
-    }
+        self::new_task($numsteps);
+        $users = self::get_user_chunk($config);
+        $offset = 0;
+        while (!empty($users)) {
+            list($inequalsql, $params) = $DB->get_in_or_equal($users);
 
-    /**
-     * Find next prime number above n
-     *
-     * Note that n is assumed to be relatively low. If you have 50,000 users,
-     * you will be sending sqr(50,000) = 223.
-     *
-     * Table taken from http://www.factmonster.com/math/numbers/prime.html
-     *
-     * @param int lowerlimit - The returned value will be greater than this number.
-     * @return int - The next prime number
-     */
-    private static function next_prime($lowerlimit) {
-        $primes = array(
-            2, 3, 5, 7, 11, 13, 17, 19, 23,
-            29, 31, 37, 41, 43, 47, 53, 59, 61, 67,
-            71, 73, 79, 83, 89, 97, 101, 103, 107, 109,
-            113, 127, 131, 137, 139, 149, 151, 157, 163, 167,
-            173, 179, 181, 191, 193, 197, 199, 211, 223, 227,
-            229, 233, 239, 241, 251, 257, 263, 269, 271, 277,
-            281, 283, 293, 307, 311, 313, 317, 331, 337, 347,
-            349, 353, 359, 367, 373, 379, 383, 389, 397, 401,
-            409, 419, 421, 431, 433, 439, 443, 449, 457, 461,
-            463, 467, 479, 487, 491, 499, 503, 509, 521, 523,
-            541, 547, 557, 563, 569, 571, 577, 587, 593, 599,
-            601, 607, 613, 617, 619, 631, 641, 643, 647, 653,
-            659, 661, 673, 677, 683, 691, 701, 709, 719, 727,
-            733, 739, 743, 751, 757, 761, 769, 773, 787, 797,
-            809, 811, 821, 823, 827, 829, 839, 853, 857, 859,
-            863, 877, 881, 883, 887, 907, 911, 919, 929, 937,
-            941, 947, 953, 967, 971, 977, 983, 991, 997);
-
-        $base = 0;
-        for ($i = intval((count($primes) / 2) + .5); $i > 1; $i = intval(($i / 2) + .5)) {
-            if ($primes[$base + $i] <= $lowerlimit) {
-                $base += $i;
+            foreach (self::$scramble as $prime => $setoffields) {
+                self::randomise_fields('user', $setoffields, $prime, $inequalsql, $params);
+                self::next_step(count($params));
             }
-        }
 
-        return $primes[$base + 1] <= $lowerlimit ? $primes[$base + 2] : $primes[$base + 1];
-    }
-
-    /**
-     * Load an install.xml file, checking that it exists, and that the structure is OK.
-     *
-     * This is copied from lib/ddl/database_manager.php because it's a private method there.
-     *
-     * @param string $file the full path to the XMLDB file.
-     * @return xmldbfile the loaded file.
-     */
-    static public function load_xmldbfile($file) {
-        global $CFG;
-
-        $xmldbfile = new \xmldb_file($file);
-
-        if (!$xmldbfile->fileExists()) {
-            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
-        }
-
-        $loaded = $xmldbfile->loadXMLStructure();
-        if (!$loaded || !$xmldbfile->isLoaded()) {
-            // Show info about the error if we can find it.
-            if ($structure = $xmldbfile->getStructure()) {
-                if ($errors = $structure->getAllErrors()) {
-                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
-                }
+            // Apply the fixed values. One step for what remains because this is fast.
+            foreach (self::$fixedmods as $field => $value) {
+                $DB->set_field_select('user', $field, $value, 'id '.$inequalsql, $params);
+                self::next_step(count($params));
             }
-            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
-        }
 
-        return $xmldbfile;
+            // Apply the functions.
+            foreach (self::$functions as $field => $fnname) {
+                self::$fnname($users, $inequalsql, $params);
+                self::next_step(count($params));
+            }
+
+            // Get the next batch of users.
+            $offset += count($users);
+            $users = self::get_user_chunk($config, $offset);
+        }
     }
 
     /**
@@ -251,7 +152,7 @@ class clean extends \local_datacleaner\clean {
         if (is_null($userstructure)) {
             // Get the user table definition from the XMLDB file so we can pull
             // out fields and create temporary tables with the same definition.
-            $xmldbfile = self::load_xmldbfile($CFG->dirroot . '/lib/db/install.xml');
+            $xmldbfile = self::load_xmldbfile($CFG->dirroot.'/lib/db/install.xml');
             $xmldbstructure = $xmldbfile->getStructure();
             $userstructure = $xmldbstructure->getTable('user');
             $userkeys = $userstructure->getKeys();
@@ -261,7 +162,7 @@ class clean extends \local_datacleaner\clean {
         // Get the details of the field config from the XMLDB structure.
         $temptablestruct = new \xmldb_table('temp_table');
 
-        $fieldlist = array($userstructure->getField('id'));
+        $fieldlist = [$userstructure->getField('id')];
 
         for ($i = 0; $i < count($fields); $i++) {
             $fieldlist[] = $userstructure->getField($fields[$i]);
@@ -270,7 +171,7 @@ class clean extends \local_datacleaner\clean {
         $temptablestruct->setFields($fieldlist);
 
         // Copy the userID key and index. This assumes they are the first key/index.
-        $temptablestruct->setKeys(array($userkeys[0]));
+        $temptablestruct->setKeys([$userkeys[0]]);
         $dbmanager->create_temp_table($temptablestruct);
 
         $fieldlist = implode(',', $fields);
@@ -291,69 +192,62 @@ class clean extends \local_datacleaner\clean {
         $dbmanager->drop_table($temptablestruct);
     }
 
+    private static function create_update_users_sql() {
+        global $DB;
+
+        $criteria = self::get_user_criteria(static::$options);
+        list($where, $whereparams) = self::get_user_where_sql($criteria);
+
+        $ids = $DB->get_records_select('user', 'id > 2 '.$where, $whereparams, 'id', 'id');
+        $ids = array_keys($ids);
+        $ids = implode(',', $ids);
+
+        return $ids;
+    }
+
     /**
-     * Do the hard work of cleaning up users.
+     * Replace all usernames.
      */
-    static public function execute() {
+    private static function replace_usernames() {
+        global $DB;
+        $where = 'id IN ('.self::$updateuserssql.')';
+        $prefix = self::USERNAME_PREFIX;
+        $sql = <<<SQL
+UPDATE {user}
+SET username = CONCAT('{$prefix}', id)
+WHERE $where
+SQL;
+        $DB->execute($sql);
+    }
 
-        global $DB, $CFG;
+    private static function set_fixed_fields() {
+        global $DB;
 
-        // Get the settings, handling the case where new ones (dev) haven't been set yet.
-        $config = get_config('cleaner_users');
-        $numusers = self::get_user_count($config);
+        $fields = [
+            'auth'         => 'manual',
+            'mnethostid'   => 1,
+            'password'     => hash_internal_user_password(self::PASSWORD_AFTER_CLEANING),
+            'email'        => 'cleaned@local.datacleaner',
+            'emailstop'    => 1,
+            'firstaccess'  => 0,
+            'lastlogin'    => 0,
+            'currentlogin' => 0,
+            'picture'      => 0,
+            'description'  => '',
+            'lastip'       => '',
+            'icq'          => '',
+            'skype'        => '',
+            'yahoo'        => '',
+            'aim'          => '',
+            'msn'          => '',
+            'phone1'       => '',
+            'phone2'       => '',
+            'idnumber'     => '',
+        ];
 
-        if (!$numusers) {
-            echo "No users require data scrambling.\n";
-            return;
-        }
-
-        if (self::$options['dryrun']) {
-            echo "Would scramble the data of {$numusers} users.\n";
-            return;
-        }
-
-        echo "Scrambling the data of {$numusers} users.\n";
-
-        // Scramble the eggs.
-        $stepsperuser = count(self::$scramble) + count(self::$fixedmods) + count(self::$functions);
-        $numsteps = $numusers * $stepsperuser;
-
-        // Set up the prime numbers.
-        $thisnum = intval(sqrt($numusers));
-        $newscramble = array();
-
-        foreach (self::$scramble as $description => $setoffields) {
-            $thisnum = self::next_prime($thisnum);
-            $newscramble[$thisnum] = $setoffields;
-        }
-        self::$scramble = $newscramble;
-
-        self::new_task($numsteps);
-        $users = self::get_user_chunk($config);
-        $offset = 0;
-        while (!empty($users)) {
-            list($inequalsql, $params) = $DB->get_in_or_equal($users);
-
-            foreach (self::$scramble as $prime => $setoffields) {
-                self::randomise_fields('user', $setoffields, $prime, $inequalsql, $params);
-                self::next_step(count($params));
-            }
-
-            // Apply the fixed values. One step for what remains because this is fast.
-            foreach (self::$fixedmods as $field => $value) {
-                $DB->set_field_select('user', $field, $value, 'id ' . $inequalsql, $params);
-                self::next_step(count($params));
-            }
-
-            // Apply the functions.
-            foreach (self::$functions as $field => $fnname) {
-                self::$fnname($users, $inequalsql, $params);
-                self::next_step(count($params));
-            }
-
-            // Get the next batch of users.
-            $offset += count($users);
-            $users = self::get_user_chunk($config, $offset);
+        $select = 'id IN ('.self::$updateuserssql.')';
+        foreach ($fields as $field => $value) {
+            $DB->set_field_select('user', $field, $value, $select);
         }
     }
 }
