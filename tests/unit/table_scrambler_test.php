@@ -198,19 +198,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
     }
 
     private function create_repeated_test_data() {
-        global $DB;
-
-        // Create test table.
-        $dbmanager = $DB->get_manager();
-        $table = new xmldb_table('test_names');
-        $table->add_field('id', XMLDB_TYPE_INTEGER, 5, true, true, true);
-        $table->add_field('first', XMLDB_TYPE_CHAR, 20);
-        $table->add_field('last', XMLDB_TYPE_CHAR, 20);
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $dbmanager->create_temp_table($table);
-
-        // Fill some data.
-        $DB->insert_records('test_names', [
+        return $this->create_test_data([
             ['first' => 'John', 'last' => 'Smith'],
             ['first' => 'John', 'last' => 'Doe'],
             ['first' => 'Daniel', 'last' => 'Silva'],
@@ -218,12 +206,21 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
             ['first' => 'Brendan', 'last' => 'Heywood'],
             ['first' => 'Nicholas', 'last' => 'Hoobin'],
         ]);
-
-        return $table;
     }
 
-    private function create_test_data() {
+    private function create_test_data($data = null) {
         global $DB;
+
+        if (is_null($data)) {
+            $data = [
+                ['first' => 'David', 'last' => 'Smith'],
+                ['first' => 'Nicholas', 'last' => 'Hoobin'],
+                ['first' => 'Bill', 'last' => 'Jones'],
+                ['first' => 'Daniel', 'last' => 'Roperto'],
+                ['first' => 'Brendan', 'last' => 'Heywood'],
+                ['first' => 'Sarah', 'last' => 'Bryce'],
+            ];
+        }
 
         // Create test table.
         $dbmanager = $DB->get_manager();
@@ -235,14 +232,10 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         $dbmanager->create_temp_table($table);
 
         // Fill some data.
-        $DB->insert_records('test_names', [
-            ['first' => 'David', 'last' => 'Smith'],
-            ['first' => 'Nicholas', 'last' => 'Hoobin'],
-            ['first' => 'Bill', 'last' => 'Jones'],
-            ['first' => 'Daniel', 'last' => 'Roperto'],
-            ['first' => 'Brendan', 'last' => 'Heywood'],
-            ['first' => 'Sarah', 'last' => 'Bryce'],
-        ]);
+        // Not using $DB->insert_records() because it did not exist in Moodle 26.
+        foreach ($data as $row) {
+            $DB->insert_record('test_names', $row);
+        }
 
         return $table;
     }
