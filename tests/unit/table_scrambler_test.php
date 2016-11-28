@@ -134,8 +134,12 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         // Check if it was properly screambled.
         $scrambled = $DB->get_records('test_names', null, 'id ASC');
         self::assertCount(6, $scrambled);
+
+        // This should be the same.
         self::assertSame(['id' => '1', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[1]));
         self::assertSame(['id' => '2', 'first' => 'Nicholas', 'last' => 'Hoobin'], (array)($scrambled[2]));
+
+        // This should have been scrambled.
         self::assertSame(['id' => '3', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[3]));
         self::assertSame(['id' => '4', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[4]));
         self::assertSame(['id' => '5', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[5]));

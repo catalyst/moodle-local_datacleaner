@@ -97,12 +97,6 @@ SQL;
             'other names' => ['firstnamephonetic', 'alternatename', 'middlename', 'lastnamephonetic'],
             'department'  => ['institution', 'department'],
             'address'     => ['address', 'city', 'country', 'lang', 'calendartype', 'timezone'],
-
-            // 'firstname fields'  => ['firstname', 'firstnamephonetic', 'alternatename'],
-            // 'middlename fields' => ['middlename'],
-            // 'surname fields'    => ['lastname', 'lastnamephonetic'],
-            // 'department'        => ['institution', 'department'],
-            // 'address'           => ['address', 'city', 'country', 'lang', 'calendartype', 'timezone'],
         ];
 
         foreach ($fieldset as $title => $fields) {
