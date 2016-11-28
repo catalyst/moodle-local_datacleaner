@@ -40,7 +40,7 @@ use xmldb_table;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class table_scrambler {
-    const TEMPORARY_TABLE_NAME_PREFIX = 'local_datacleaner_t_';
+    const TEMPORARY_TABLE_NAME_PREFIX = 'tmp_';
 
     /**
      * Gets the next prime after the given number.
@@ -203,14 +203,18 @@ class table_scrambler {
         // Populate data.
         $sql = <<<SQL
 INSERT INTO {{$name}} (value) (
-  SELECT unsorted.{$field}
+  SELECT unsorted.f
   FROM (
-      SELECT DISTINCT id, {$field}
-      FROM {{$this->tabletoscramble}}
-      ORDER BY id ASC
+      SELECT norepeated.f
+      FROM (
+        SELECT MIN(id), {$field} f
+        FROM {{$this->tabletoscramble}}
+        GROUP BY f
+        ORDER BY MIN(id) ASC
+      ) as norepeated
       LIMIT {$maxprime}
   ) AS unsorted
-  ORDER BY unsorted.{$field} ASC
+  ORDER BY unsorted.f ASC
 )
 SQL;
         $DB->execute($sql);
@@ -224,8 +228,8 @@ SQL;
             $field = $this->fieldstoscramble[$i];
             $name = self::TEMPORARY_TABLE_NAME_PREFIX.$field;
             $prime = $this->primefactors[$i];
-            $sets[] = "{$field} = (SELECT value FROM {{$name}} tmp_{$field}
-                                WHERE tmp_{$field}.id = ((original.id % {$prime}) + 1))";
+            $sets[] = "{$field} = COALESCE((SELECT value FROM {{$name}} tmp_{$field}
+                                WHERE tmp_{$field}.id = ((original.id % {$prime}) + 1)), '')";
         }
         $sets = implode(",\n", $sets);
 

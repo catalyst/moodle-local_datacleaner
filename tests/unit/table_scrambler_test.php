@@ -46,14 +46,14 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         $scrambler->create_temporary_tables();
 
         // Check first name table.
-        $data = $DB->get_records('local_datacleaner_t_first', null, 'id ASC');
+        $data = $DB->get_records('tmp_first', null, 'id ASC');
         self::assertCount(3, $data);
         self::assertSame(['id' => '1', 'value' => 'Bill'], (array)($data[1]));
         self::assertSame(['id' => '2', 'value' => 'David'], (array)($data[2]));
         self::assertSame(['id' => '3', 'value' => 'Nicholas'], (array)($data[3]));
 
         // Check first name table.
-        $data = $DB->get_records('local_datacleaner_t_last', null, 'id ASC');
+        $data = $DB->get_records('tmp_last', null, 'id ASC');
         self::assertCount(3, $data);
         self::assertSame(['id' => '1', 'value' => 'Hoobin'], (array)($data[1]));
         self::assertSame(['id' => '2', 'value' => 'Jones'], (array)($data[2]));
@@ -186,6 +186,59 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
             ['first' => 'Daniel', 'last' => 'Roperto'],
             ['first' => 'Brendan', 'last' => 'Heywood'],
             ['first' => 'Sarah', 'last' => 'Bryce'],
+        ]);
+
+        return $table;
+    }
+
+    public function test_it_creates_sorted_temporary_tables_with_repeated_names() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $table = $this->create_repeated_test_data();
+
+        $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        $scrambler->create_temporary_tables();
+
+        // Check first name table.
+        $data = $DB->get_records('tmp_first', null, 'id ASC');
+        self::assertCount(3, $data);
+        self::assertSame(['id' => '1', 'value' => 'Brendan'], (array)($data[1]));
+        self::assertSame(['id' => '2', 'value' => 'Daniel'], (array)($data[2]));
+        self::assertSame(['id' => '3', 'value' => 'John'], (array)($data[3]));
+
+        // Check first name table.
+        $data = $DB->get_records('tmp_last', null, 'id ASC');
+        self::assertCount(3, $data);
+        self::assertSame(['id' => '1', 'value' => 'Doe'], (array)($data[1]));
+        self::assertSame(['id' => '2', 'value' => 'Silva'], (array)($data[2]));
+        self::assertSame(['id' => '3', 'value' => 'Smith'], (array)($data[3]));
+
+        // Drop test tables.
+        $scrambler->drop_temporary_tables();
+        $DB->get_manager()->drop_table($table);
+    }
+
+    private function create_repeated_test_data() {
+        global $DB;
+
+        // Create test table.
+        $dbmanager = $DB->get_manager();
+        $table = new xmldb_table('test_names');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, 5, true, true, true);
+        $table->add_field('first', XMLDB_TYPE_CHAR, 20);
+        $table->add_field('last', XMLDB_TYPE_CHAR, 20);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $dbmanager->create_temp_table($table);
+
+        // Fill some data.
+        $DB->insert_records('test_names', [
+            ['first' => 'John', 'last' => 'Smith'],
+            ['first' => 'John', 'last' => 'Doe'],
+            ['first' => 'Daniel', 'last' => 'Silva'],
+            ['first' => 'Daniel', 'last' => 'Roperto'],
+            ['first' => 'Brendan', 'last' => 'Heywood'],
+            ['first' => 'Nicholas', 'last' => 'Hoobin'],
         ]);
 
         return $table;
