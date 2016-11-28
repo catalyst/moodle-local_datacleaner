@@ -71,8 +71,7 @@ class table_scrambler {
     public static function get_prime_factors($count, $product) {
         $primes = self::get_primes();
 
-        // Find the Nth root for the product.
-        $firstfactor = (int)pow($product, 1 / $count);
+        $firstfactor = (int)sqrt($product);
 
         // If this number is a prime, use it as the first prime of the factors. Otherwise find the next prime.
         if (!in_array($firstfactor, $primes)) {
