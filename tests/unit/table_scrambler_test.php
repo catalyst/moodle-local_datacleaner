@@ -64,6 +64,34 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         $DB->get_manager()->drop_table($table);
     }
 
+    public function test_it_creates_sorted_temporary_tables_with_repeated_names() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $table = $this->create_repeated_test_data();
+
+        $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        $scrambler->create_temporary_tables();
+
+        // Check first name table.
+        $data = $DB->get_records('tmp_first', null, 'id ASC');
+        self::assertCount(3, $data);
+        self::assertSame(['id' => '1', 'value' => 'Brendan'], (array)($data[1]));
+        self::assertSame(['id' => '2', 'value' => 'Daniel'], (array)($data[2]));
+        self::assertSame(['id' => '3', 'value' => 'John'], (array)($data[3]));
+
+        // Check first name table.
+        $data = $DB->get_records('tmp_last', null, 'id ASC');
+        self::assertCount(3, $data);
+        self::assertSame(['id' => '1', 'value' => 'Doe'], (array)($data[1]));
+        self::assertSame(['id' => '2', 'value' => 'Silva'], (array)($data[2]));
+        self::assertSame(['id' => '3', 'value' => 'Smith'], (array)($data[3]));
+
+        // Drop test tables.
+        $scrambler->drop_temporary_tables();
+        $DB->get_manager()->drop_table($table);
+    }
+
     public function test_it_requires_a_table_name_and_fields() {
         $scrambler = new table_scrambler('table', ['name', 'address']);
         self::assertSame('table', $scrambler->get_table());
@@ -166,59 +194,6 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertSame(929, table_scrambler::get_prime_after(919));
     }
 
-    private function create_test_data() {
-        global $DB;
-
-        // Create test table.
-        $dbmanager = $DB->get_manager();
-        $table = new xmldb_table('test_names');
-        $table->add_field('id', XMLDB_TYPE_INTEGER, 5, true, true, true);
-        $table->add_field('first', XMLDB_TYPE_CHAR, 20);
-        $table->add_field('last', XMLDB_TYPE_CHAR, 20);
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $dbmanager->create_temp_table($table);
-
-        // Fill some data.
-        $DB->insert_records('test_names', [
-            ['first' => 'David', 'last' => 'Smith'],
-            ['first' => 'Nicholas', 'last' => 'Hoobin'],
-            ['first' => 'Bill', 'last' => 'Jones'],
-            ['first' => 'Daniel', 'last' => 'Roperto'],
-            ['first' => 'Brendan', 'last' => 'Heywood'],
-            ['first' => 'Sarah', 'last' => 'Bryce'],
-        ]);
-
-        return $table;
-    }
-
-    public function test_it_creates_sorted_temporary_tables_with_repeated_names() {
-        global $DB;
-        $this->resetAfterTest(true);
-
-        $table = $this->create_repeated_test_data();
-
-        $scrambler = new table_scrambler('test_names', ['first', 'last']);
-        $scrambler->create_temporary_tables();
-
-        // Check first name table.
-        $data = $DB->get_records('tmp_first', null, 'id ASC');
-        self::assertCount(3, $data);
-        self::assertSame(['id' => '1', 'value' => 'Brendan'], (array)($data[1]));
-        self::assertSame(['id' => '2', 'value' => 'Daniel'], (array)($data[2]));
-        self::assertSame(['id' => '3', 'value' => 'John'], (array)($data[3]));
-
-        // Check first name table.
-        $data = $DB->get_records('tmp_last', null, 'id ASC');
-        self::assertCount(3, $data);
-        self::assertSame(['id' => '1', 'value' => 'Doe'], (array)($data[1]));
-        self::assertSame(['id' => '2', 'value' => 'Silva'], (array)($data[2]));
-        self::assertSame(['id' => '3', 'value' => 'Smith'], (array)($data[3]));
-
-        // Drop test tables.
-        $scrambler->drop_temporary_tables();
-        $DB->get_manager()->drop_table($table);
-    }
-
     private function create_repeated_test_data() {
         global $DB;
 
@@ -239,6 +214,31 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
             ['first' => 'Daniel', 'last' => 'Roperto'],
             ['first' => 'Brendan', 'last' => 'Heywood'],
             ['first' => 'Nicholas', 'last' => 'Hoobin'],
+        ]);
+
+        return $table;
+    }
+
+    private function create_test_data() {
+        global $DB;
+
+        // Create test table.
+        $dbmanager = $DB->get_manager();
+        $table = new xmldb_table('test_names');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, 5, true, true, true);
+        $table->add_field('first', XMLDB_TYPE_CHAR, 20);
+        $table->add_field('last', XMLDB_TYPE_CHAR, 20);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $dbmanager->create_temp_table($table);
+
+        // Fill some data.
+        $DB->insert_records('test_names', [
+            ['first' => 'David', 'last' => 'Smith'],
+            ['first' => 'Nicholas', 'last' => 'Hoobin'],
+            ['first' => 'Bill', 'last' => 'Jones'],
+            ['first' => 'Daniel', 'last' => 'Roperto'],
+            ['first' => 'Brendan', 'last' => 'Heywood'],
+            ['first' => 'Sarah', 'last' => 'Bryce'],
         ]);
 
         return $table;
