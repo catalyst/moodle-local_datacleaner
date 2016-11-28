@@ -36,6 +36,34 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_datacleaner_table_scrambler_test extends advanced_testcase {
+    public function test_it_creates_sorted_temporary_tables() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $table = $this->create_test_data();
+
+        $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        $scrambler->create_temporary_tables();
+
+        // Check first name table.
+        $data = $DB->get_records('local_datacleaner_t_first', null, 'id ASC');
+        self::assertCount(3, $data);
+        self::assertSame(['id' => '1', 'value' => 'Bill'], (array)($data[1]));
+        self::assertSame(['id' => '2', 'value' => 'David'], (array)($data[2]));
+        self::assertSame(['id' => '3', 'value' => 'Nicholas'], (array)($data[3]));
+
+        // Check first name table.
+        $data = $DB->get_records('local_datacleaner_t_last', null, 'id ASC');
+        self::assertCount(3, $data);
+        self::assertSame(['id' => '1', 'value' => 'Hoobin'], (array)($data[1]));
+        self::assertSame(['id' => '2', 'value' => 'Jones'], (array)($data[2]));
+        self::assertSame(['id' => '3', 'value' => 'Smith'], (array)($data[3]));
+
+        // Drop test tables.
+        $scrambler->drop_temporary_tables();
+        $DB->get_manager()->drop_table($table);
+    }
+
     public function test_it_requires_a_table_name_and_fields() {
         $scrambler = new table_scrambler('table', ['name', 'address']);
         self::assertSame('table', $scrambler->get_table());
@@ -45,6 +73,77 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
     public function test_it_scrambles_names() {
         global $DB;
         $this->resetAfterTest(true);
+
+        $table = $this->create_test_data();
+
+        $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        $scrambler->execute();
+
+        // Check if it was properly screambled.
+        $scrambled = $DB->get_records('test_names', null, 'id ASC');
+        self::assertCount(6, $scrambled);
+        self::assertSame(['id' => '1', 'first' => 'David', 'last' => 'Jones'], (array)($scrambled[1]));
+        self::assertSame(['id' => '2', 'first' => 'Bill', 'last' => 'Smith'], (array)($scrambled[2]));
+        self::assertSame(['id' => '3', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[3]));
+        self::assertSame(['id' => '4', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[4]));
+        self::assertSame(['id' => '5', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[5]));
+        self::assertSame(['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'], (array)($scrambled[6]));
+
+        // Drop test table.
+        $DB->get_manager()->drop_table($table);
+    }
+
+    public function test_it_throws_an_exception_if_cannot_find_the_next_prime() {
+        $this->setExpectedException(invalid_parameter_exception::class);
+        table_scrambler::get_prime_after(999999);
+    }
+
+    public function test_the_2_prime_factors_for_14351_are_113_127() {
+        $factors = table_scrambler::get_prime_factors(2, 14351);
+        $product = array_product($factors);
+        self::assertGreaterThanOrEqual(113 * 127, $product);
+        // We could possibly get something smaller, ensure another algorithm is not worst than our current one.
+        self::assertLessThanOrEqual(127 * 131, $product);
+    }
+
+    public function test_the_2_prime_factors_for_1_are_1_2() {
+        $factors = table_scrambler::get_prime_factors(2, 3);
+        self::assertSame([2, 3], $factors);
+    }
+
+    public function test_the_2_prime_factors_for_24_are_5_6() {
+        $factors = table_scrambler::get_prime_factors(2, 24);
+        self::assertSame([5, 7], $factors);
+    }
+
+    public function test_the_2_prime_factors_for_25_are_5_6() {
+        $factors = table_scrambler::get_prime_factors(2, 25);
+        self::assertSame([5, 7], $factors);
+    }
+
+    public function test_the_2_prime_factors_for_6_are_2_3() {
+        $factors = table_scrambler::get_prime_factors(2, 6);
+        self::assertSame([2, 3], $factors);
+    }
+
+    public function test_the_next_prime_after_0_is_2() {
+        self::assertSame(2, table_scrambler::get_prime_after(0));
+    }
+
+    public function test_the_next_prime_after_1_is_2() {
+        self::assertSame(2, table_scrambler::get_prime_after(1));
+    }
+
+    public function test_the_next_prime_after_2_is_3() {
+        self::assertSame(3, table_scrambler::get_prime_after(2));
+    }
+
+    public function test_the_next_prime_after_919_is_929() {
+        self::assertSame(929, table_scrambler::get_prime_after(919));
+    }
+
+    private function create_test_data() {
+        global $DB;
 
         // Create test table.
         $dbmanager = $DB->get_manager();
@@ -65,69 +164,6 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
             ['first' => 'Sarah', 'last' => 'Bryce'],
         ]);
 
-        $scrambler = new table_scrambler('test_names', ['first', 'last']);
-        $scrambler->execute();
-
-        // Check if it was properly screambled.
-        $scrambled = $DB->get_records('test_names', null, 'id ASC');
-        self::assertCount(6, $scrambled);
-        self::assertSame(['id' => '1', 'first' => 'Bill', 'last' => 'Hoobin'], (array)($scrambled[1]));
-        self::assertSame(['id' => '2', 'first' => 'David', 'last' => 'Jones'], (array)($scrambled[2]));
-        self::assertSame(['id' => '3', 'first' => 'Bill', 'last' => 'Smith'], (array)($scrambled[3]));
-        self::assertSame(['id' => '4', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[4]));
-        self::assertSame(['id' => '5', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[5]));
-        self::assertSame(['id' => '6', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[6]));
-
-        // Drop test table.
-        $dbmanager->drop_table($table);
-    }
-
-    public function test_the_2_prime_factors_for_1_are_1_2() {
-        $factors = table_scrambler::get_prime_factors(2, 3);
-        self::assertSame([2, 3], $factors);
-    }
-
-    public function test_the_2_prime_factors_for_6_are_2_3() {
-        $factors = table_scrambler::get_prime_factors(2, 6);
-        self::assertSame([2, 3], $factors);
-    }
-
-    public function test_the_2_prime_factors_for_24_are_5_6() {
-        $factors = table_scrambler::get_prime_factors(2, 24);
-        self::assertSame([5, 7], $factors);
-    }
-
-    public function test_the_2_prime_factors_for_25_are_5_6() {
-        $factors = table_scrambler::get_prime_factors(2, 25);
-        self::assertSame([5, 7], $factors);
-    }
-
-    public function test_the_2_prime_factors_for_14351_are_113_127() {
-        $factors = table_scrambler::get_prime_factors(2, 14351);
-        $product = array_product($factors);
-        self::assertGreaterThanOrEqual(113 * 127, $product);
-        // We could possibly get something smaller, ensure another algorithm is not worst than our current one.
-        self::assertLessThanOrEqual(127 * 131, $product);
-    }
-
-    public function test_the_next_prime_after_0_is_2() {
-        self::assertSame(2, table_scrambler::get_prime_after(0));
-    }
-
-    public function test_the_next_prime_after_1_is_2() {
-        self::assertSame(2, table_scrambler::get_prime_after(1));
-    }
-
-    public function test_the_next_prime_after_2_is_3() {
-        self::assertSame(3, table_scrambler::get_prime_after(2));
-    }
-
-    public function test_the_next_prime_after_919_is_929() {
-        self::assertSame(929, table_scrambler::get_prime_after(919));
-    }
-
-    public function test_it_throws_an_exception_if_cannot_find_the_next_prime() {
-        $this->setExpectedException(invalid_parameter_exception::class);
-        table_scrambler::get_prime_after(999999);
+        return $table;
     }
 }

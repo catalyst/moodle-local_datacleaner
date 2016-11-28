@@ -124,7 +124,7 @@ class clean extends \local_datacleaner\clean {
         $sql = 'UPDATE {'.$tablename.'} u SET '.implode(',', $sets).
             " FROM {temp_table} WHERE (1 + (u.id % {$distinctvalues})) = {temp_table}.id
             AND u.id ".$inequalsql;
-        
+
         return $sql;
     }
 

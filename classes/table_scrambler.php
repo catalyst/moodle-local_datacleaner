@@ -26,8 +26,9 @@
 
 namespace local_datacleaner;
 
+defined('MOODLE_INTERNAL') || die();
+
 use invalid_parameter_exception;
-use stdClass;
 use xmldb_table;
 
 /**
@@ -39,7 +40,7 @@ use xmldb_table;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class table_scrambler {
-    const TEMPORARY_TABLE_NAME = 'local_datacleaner_temp';
+    const TEMPORARY_TABLE_NAME_PREFIX = 'local_datacleaner_t_';
 
     /**
      * Gets the next prime after the given number.
@@ -102,12 +103,6 @@ class table_scrambler {
         ];
     }
 
-    /** @var string[] */
-    private $fieldstoscramble = [];
-
-    /** @var string */
-    private $table;
-
     /**
      * table_scrambler constructor.
      *
@@ -115,23 +110,47 @@ class table_scrambler {
      * @param string[] $fieldstoscramble Fields to scramble.
      */
     public function __construct($table, array $fieldstoscramble) {
-        $this->table = $table;
+        $this->tabletoscramble = $table;
         $this->fieldstoscramble = $fieldstoscramble;
+    }
+
+    /** @var string[] */
+    private $fieldstoscramble;
+
+    /** @var int[] */
+    private $primefactors;
+
+    /** @var string */
+    private $tabletoscramble;
+
+    /** @var xmldb_table[] */
+    private $temporarytables = [];
+
+    public function create_temporary_tables() {
+        global $DB;
+        $recordcount = $DB->count_records($this->tabletoscramble);
+        $fieldcount = count($this->fieldstoscramble);
+        $this->primefactors = self::get_prime_factors($fieldcount, $recordcount);
+
+        for ($i = 0; $i < $fieldcount; $i++) {
+            $this->create_temporary_table($i);
+        }
+    }
+
+    public function drop_temporary_tables() {
+        global $DB;
+        foreach ($this->temporarytables as $table) {
+            $DB->get_manager()->drop_table($table);
+        }
     }
 
     /**
      * Runs the scrambler.
      */
     public function execute() {
-        global $DB;
-        $n_records = $DB->count_records($this->table);
-        $f_fields = count($this->fieldstoscramble);
-        $factors = self::get_prime_factors($f_fields, $n_records);
-        $maxprime = end($factors);
-
-        $table = $this->populate_temp_table($maxprime);
-
-        $data = $DB->get_records(self::TEMPORARY_TABLE_NAME);
+        $this->create_temporary_tables();
+        $this->scramble();
+        $this->drop_temporary_tables();
     }
 
     /**
@@ -145,77 +164,65 @@ class table_scrambler {
      * @return string
      */
     public function get_table() {
-        return $this->table;
+        return $this->tabletoscramble;
     }
 
     /**
-     * @return xmldb_table
+     * @param int $index
      */
-    private function create_temp_table() {
+    private function create_temporary_table($index) {
         global $DB;
         $dbmanager = $DB->get_manager();
 
-        $table = new xmldb_table(self::TEMPORARY_TABLE_NAME);
+        $field = $this->fieldstoscramble[$index];
+        $name = self::TEMPORARY_TABLE_NAME_PREFIX.$field;
+
+        // We could use prime number for this field instead, but it would change the algorithm expected output.
+        // See https://github.com/catalyst/moodle-local_datacleaner/issues/17 for more information.
+        $maxprime = end($this->primefactors);
+
+        // Create table.
+        $table = new xmldb_table($name);
         $table->add_field('id', XMLDB_TYPE_INTEGER, 10, true, true, true);
-        foreach ($this->fieldstoscramble as $field) {
-            // We do not know what type was the field in the original table.
-            $table->add_field($field, XMLDB_TYPE_TEXT);
-        }
+        $table->add_field('value', XMLDB_TYPE_TEXT);
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
         $dbmanager->create_temp_table($table);
+        $this->temporarytables[$index] = $table;
 
-        return $table;
+        // Populate data.
+        $sql = <<<SQL
+INSERT INTO {{$name}} (value) (
+  SELECT unsorted.{$field}
+  FROM (
+      SELECT DISTINCT id, {$field}
+      FROM {{$this->tabletoscramble}}
+      ORDER BY id ASC
+      LIMIT {$maxprime}
+  ) AS unsorted
+  ORDER BY unsorted.{$field} ASC
+)
+SQL;
+        $DB->execute($sql);
     }
 
-    /**
-     * @param $rows Number of rows to populate.
-     * @return xmldb_table
-     */
-    private function populate_temp_table($rows) {
+    private function scramble() {
         global $DB;
 
-        $data = $this->populate_temp_table_fetch_rows($rows);
-        $data = $this->populate_temp_table_sort_data($data);
-        $table = $this->create_temp_table();
-        $DB->insert_records(self::TEMPORARY_TABLE_NAME, $data);
-
-        return $table;
-    }
-
-    private function populate_temp_table_fetch_rows($rows) {
-        global $DB;
-        $fields = implode(',', $this->fieldstoscramble);
-        $fromtable = '{'.$this->table.'}';
-        return $DB->get_records_sql("SELECT DISTINCT {$fields} FROM {$fromtable} ORDER BY {$fields} LIMIT {$rows}");
-    }
-
-    private function populate_temp_table_sort_data($data) {
-        // Make one array for each columns (transpose).
-        $data = array_values($data);
-        $transposed = [];
-        for ($i = 0; $i < count($data); $i++) {
-            for ($j = 0; $j < count($this->fieldstoscramble); $j++) {
-                $row = $data[$i];
-                $field = $this->fieldstoscramble[$j];
-                $transposed[$j][$i] = $row->$field;
-            }
+        $sets = [];
+        for ($i = 0; $i < count($this->fieldstoscramble); $i++) {
+            $field = $this->fieldstoscramble[$i];
+            $name = self::TEMPORARY_TABLE_NAME_PREFIX.$field;
+            $prime = $this->primefactors[$i];
+            $sets[] = "{$field} = (SELECT value FROM {{$name}} tmp_{$field}
+                                WHERE tmp_{$field}.id = ((original.id % {$prime}) + 1))";
         }
+        $sets = implode(",\n", $sets);
 
-        // Sort them.
-        for ($i = 0; $i < count($transposed); $i++) {
-            sort($transposed[$i]);
-        }
+        $sql = <<<SQL
+UPDATE {{$this->tabletoscramble}} original
+SET {$sets}
+SQL;
 
-        // Rebuild data (transpose back).
-        for ($i = 0; $i < count($data); $i++) {
-            $row = new stdClass();
-            for ($j = 0; $j < count($this->fieldstoscramble); $j++) {
-                $field = $this->fieldstoscramble[$j];
-                $row->$field = $transposed[$j][$i];
-            }
-            $data[$i] = $row;
-        }
-
-        return $data;
+        $DB->execute($sql);
     }
 }
