@@ -93,6 +93,30 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         $DB->get_manager()->drop_table($table);
     }
 
+    public function test_it_scrambles_names_except_the_ids_1_and_2() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $table = $this->create_test_data();
+
+        $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        $scrambler->set_change_only_ids('3,4,5,6');
+        $scrambler->execute();
+
+        // Check if it was properly screambled.
+        $scrambled = $DB->get_records('test_names', null, 'id ASC');
+        self::assertCount(6, $scrambled);
+        self::assertSame(['id' => '1', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[1]));
+        self::assertSame(['id' => '2', 'first' => 'Nicholas', 'last' => 'Hoobin'], (array)($scrambled[2]));
+        self::assertSame(['id' => '3', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[3]));
+        self::assertSame(['id' => '4', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[4]));
+        self::assertSame(['id' => '5', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[5]));
+        self::assertSame(['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'], (array)($scrambled[6]));
+
+        // Drop test table.
+        $DB->get_manager()->drop_table($table);
+    }
+
     public function test_it_throws_an_exception_if_cannot_find_the_next_prime() {
         $this->setExpectedException(invalid_parameter_exception::class);
         table_scrambler::get_prime_after(999999);
@@ -111,12 +135,12 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertSame([2, 3], $factors);
     }
 
-    public function test_the_2_prime_factors_for_24_are_5_6() {
+    public function test_the_2_prime_factors_for_24_are_5_7() {
         $factors = table_scrambler::get_prime_factors(2, 24);
         self::assertSame([5, 7], $factors);
     }
 
-    public function test_the_2_prime_factors_for_25_are_5_6() {
+    public function test_the_2_prime_factors_for_25_are_5_7() {
         $factors = table_scrambler::get_prime_factors(2, 25);
         self::assertSame([5, 7], $factors);
     }

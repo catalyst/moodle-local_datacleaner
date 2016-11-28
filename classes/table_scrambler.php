@@ -113,6 +113,9 @@ class table_scrambler {
         $this->fieldstoscramble = $fieldstoscramble;
     }
 
+    /** @var string */
+    protected $changeonlyids;
+
     /** @var string[] */
     private $fieldstoscramble;
 
@@ -167,6 +170,15 @@ class table_scrambler {
     }
 
     /**
+     * If provided, only the given $ids will be changed, all others will be kept unmodified.
+     *
+     * @param string|null $ids A comma-separated string with the ids that can be changed. Null means all.
+     */
+    public function set_change_only_ids($ids) {
+        $this->changeonlyids = $ids;
+    }
+
+    /**
      * @param int $index
      */
     private function create_temporary_table($index) {
@@ -217,9 +229,12 @@ SQL;
         }
         $sets = implode(",\n", $sets);
 
+        $where = is_null($this->changeonlyids) ? '' : "WHERE original.id IN ({$this->changeonlyids})";
+
         $sql = <<<SQL
 UPDATE {{$this->tabletoscramble}} original
 SET {$sets}
+$where
 SQL;
 
         $DB->execute($sql);
