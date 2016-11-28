@@ -112,10 +112,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertCount(6, $scrambled);
         self::assertSame(['id' => '1', 'first' => 'David', 'last' => 'Jones'], (array)($scrambled[1]));
         self::assertSame(['id' => '2', 'first' => 'Bill', 'last' => 'Smith'], (array)($scrambled[2]));
-        self::assertSame(['id' => '3', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[3]));
-        self::assertSame(['id' => '4', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[4]));
-        self::assertSame(['id' => '5', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[5]));
-        self::assertSame(['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'], (array)($scrambled[6]));
+        $this->assert_it_was_scrambled($scrambled);
 
         // Drop test table.
         $DB->get_manager()->drop_table($table);
@@ -134,16 +131,9 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         // Check if it was properly screambled.
         $scrambled = $DB->get_records('test_names', null, 'id ASC');
         self::assertCount(6, $scrambled);
-
-        // This should be the same.
         self::assertSame(['id' => '1', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[1]));
         self::assertSame(['id' => '2', 'first' => 'Nicholas', 'last' => 'Hoobin'], (array)($scrambled[2]));
-
-        // This should have been scrambled.
-        self::assertSame(['id' => '3', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[3]));
-        self::assertSame(['id' => '4', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[4]));
-        self::assertSame(['id' => '5', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[5]));
-        self::assertSame(['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'], (array)($scrambled[6]));
+        $this->assert_it_was_scrambled($scrambled);
 
         // Drop test table.
         $DB->get_manager()->drop_table($table);
@@ -196,6 +186,15 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
 
     public function test_the_next_prime_after_919_is_929() {
         self::assertSame(929, table_scrambler::get_prime_after(919));
+    }
+
+    private function assert_it_was_scrambled($scrambled) {
+        // Unfortunately we are getting errors from Copy and Paste detector that cannot be suppressed.
+        // This would be better back together with the test.
+        self::assertSame(['id' => '3', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[3]));
+        self::assertSame(['id' => '4', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[4]));
+        self::assertSame(['id' => '5', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[5]));
+        self::assertSame(['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'], (array)($scrambled[6]));
     }
 
     private function create_repeated_test_data() {
