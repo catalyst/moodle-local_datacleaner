@@ -48,7 +48,8 @@ class clean extends \local_datacleaner\clean {
         self::$idstoupdate = self::create_user_id_list_to_update();
 
         if (self::$options['dryrun']) {
-            echo "Dry run mode, no records were updated.";
+            echo "Dry run mode, no records were updated.\n";
+            return;
         }
 
         self::set_fixed_fields();
