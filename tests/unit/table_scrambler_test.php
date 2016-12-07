@@ -36,56 +36,108 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_datacleaner_table_scrambler_test extends advanced_testcase {
-    public function test_it_creates_sorted_temporary_tables() {
-        global $DB;
-        $this->resetAfterTest(true);
-
-        $table = $this->create_test_data();
-
-        $scrambler = new table_scrambler('test_names', ['first', 'last']);
-        $scrambler->create_temporary_tables();
-
-        // Check first name table.
-        $data = $DB->get_records('tmp_first', null, 'id ASC');
-        self::assertCount(3, $data);
-        self::assertSame(['id' => '1', 'value' => 'Bill'], (array)($data[1]));
-        self::assertSame(['id' => '2', 'value' => 'David'], (array)($data[2]));
-        self::assertSame(['id' => '3', 'value' => 'Nicholas'], (array)($data[3]));
-
-        // Check first name table.
-        $data = $DB->get_records('tmp_last', null, 'id ASC');
-        self::assertCount(3, $data);
-        self::assertSame(['id' => '1', 'value' => 'Hoobin'], (array)($data[1]));
-        self::assertSame(['id' => '2', 'value' => 'Jones'], (array)($data[2]));
-        self::assertSame(['id' => '3', 'value' => 'Smith'], (array)($data[3]));
-
-        // Drop test tables.
-        $scrambler->drop_temporary_tables();
-        $DB->get_manager()->drop_table($table);
+    public function provider_for_it_creates_sorted_temporary_tables() {
+        return [
+            'unrepeated' => [
+                $this->create_test_data_array(),
+                [
+                    ['id' => '1', 'value' => 'Bill'],
+                    ['id' => '2', 'value' => 'David'],
+                    ['id' => '3', 'value' => 'Nicholas'],
+                ],
+                [
+                    ['id' => '1', 'value' => 'Hoobin'],
+                    ['id' => '2', 'value' => 'Jones'],
+                    ['id' => '3', 'value' => 'Smith'],
+                ],
+            ],
+            'repeated'   => [
+                [
+                    ['first' => 'John', 'last' => 'Smith'],
+                    ['first' => 'John', 'last' => 'Doe'],
+                    ['first' => 'Daniel', 'last' => 'Silva'],
+                    ['first' => 'Daniel', 'last' => 'Roperto'],
+                    ['first' => 'Brendan', 'last' => 'Heywood'],
+                    ['first' => 'Nicholas', 'last' => 'Hoobin'],
+                ],
+                [
+                    ['id' => '1', 'value' => 'Brendan'],
+                    ['id' => '2', 'value' => 'Daniel'],
+                    ['id' => '3', 'value' => 'John'],
+                ],
+                [
+                    ['id' => '1', 'value' => 'Doe'],
+                    ['id' => '2', 'value' => 'Silva'],
+                    ['id' => '3', 'value' => 'Smith'],
+                ],
+            ],
+        ];
     }
 
-    public function test_it_creates_sorted_temporary_tables_with_repeated_names() {
+    public function provider_for_it_scrambles_names() {
+        return [
+            ['', [
+                ['id' => '1', 'first' => 'David', 'last' => 'Jones'],
+                ['id' => '2', 'first' => 'Bill', 'last' => 'Smith'],
+                ['id' => '3', 'first' => 'David', 'last' => 'Hoobin'],
+                ['id' => '4', 'first' => 'Bill', 'last' => 'Jones'],
+                ['id' => '5', 'first' => 'David', 'last' => 'Smith'],
+                ['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'],
+            ]],
+            ['3,4,5,6', [
+                ['id' => '1', 'first' => 'David', 'last' => 'Smith'],
+                ['id' => '2', 'first' => 'Nicholas', 'last' => 'Hoobin'],
+                ['id' => '3', 'first' => 'David', 'last' => 'Hoobin'],
+                ['id' => '4', 'first' => 'Bill', 'last' => 'Jones'],
+                ['id' => '5', 'first' => 'David', 'last' => 'Smith'],
+                ['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'],
+            ]],
+        ];
+    }
+
+    public function provider_for_the_next_prime_after() {
+        return [
+            [0, 2],
+            [1, 2],
+            [2, 3],
+            [919, 929],
+        ];
+    }
+
+    public function provider_for_the_prime_factors() {
+        return [
+            [2, 1, [2, 3]],
+            [2, 3, [2, 3]],
+            [2, 6, [2, 3]],
+            [2, 24, [5, 7]],
+        ];
+    }
+
+    /**
+     * @dataProvider provider_for_it_creates_sorted_temporary_tables
+     */
+    public function test_it_creates_sorted_temporary_tables($inputdata, $expectedfirst, $expectedlast) {
         global $DB;
         $this->resetAfterTest(true);
 
-        $table = $this->create_repeated_test_data();
+        $table = $this->create_test_data($inputdata);
 
         $scrambler = new table_scrambler('test_names', ['first', 'last']);
         $scrambler->create_temporary_tables();
 
         // Check first name table.
         $data = $DB->get_records('tmp_first', null, 'id ASC');
-        self::assertCount(3, $data);
-        self::assertSame(['id' => '1', 'value' => 'Brendan'], (array)($data[1]));
-        self::assertSame(['id' => '2', 'value' => 'Daniel'], (array)($data[2]));
-        self::assertSame(['id' => '3', 'value' => 'John'], (array)($data[3]));
+        self::assertCount(count($expectedfirst), $data);
+        for ($i = 0; $i < count($expectedfirst); $i++) {
+            self::assertSame($expectedfirst[$i], (array)($data[$i + 1]));
+        }
 
-        // Check first name table.
+        // Check last name table.
         $data = $DB->get_records('tmp_last', null, 'id ASC');
-        self::assertCount(3, $data);
-        self::assertSame(['id' => '1', 'value' => 'Doe'], (array)($data[1]));
-        self::assertSame(['id' => '2', 'value' => 'Silva'], (array)($data[2]));
-        self::assertSame(['id' => '3', 'value' => 'Smith'], (array)($data[3]));
+        self::assertCount(count($expectedlast), $data);
+        for ($i = 0; $i < count($expectedlast); $i++) {
+            self::assertSame($expectedlast[$i], (array)($data[$i + 1]));
+        }
 
         // Drop test tables.
         $scrambler->drop_temporary_tables();
@@ -98,42 +150,27 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertSame(['name', 'address'], $scrambler->get_fields_to_scramble());
     }
 
-    public function test_it_scrambles_names() {
+    /**
+     * @dataProvider provider_for_it_scrambles_names
+     */
+    public function test_it_scrambles_names($except, $expected) {
         global $DB;
         $this->resetAfterTest(true);
 
         $table = $this->create_test_data();
 
         $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        if (!empty($except)) {
+            $scrambler->set_change_only_ids($except);
+        }
         $scrambler->execute();
 
         // Check if it was properly screambled.
         $scrambled = $DB->get_records('test_names', null, 'id ASC');
-        self::assertCount(6, $scrambled);
-        self::assertSame(['id' => '1', 'first' => 'David', 'last' => 'Jones'], (array)($scrambled[1]));
-        self::assertSame(['id' => '2', 'first' => 'Bill', 'last' => 'Smith'], (array)($scrambled[2]));
-        $this->assert_it_was_scrambled($scrambled);
-
-        // Drop test table.
-        $DB->get_manager()->drop_table($table);
-    }
-
-    public function test_it_scrambles_names_except_the_ids_1_and_2() {
-        global $DB;
-        $this->resetAfterTest(true);
-
-        $table = $this->create_test_data();
-
-        $scrambler = new table_scrambler('test_names', ['first', 'last']);
-        $scrambler->set_change_only_ids('3,4,5,6');
-        $scrambler->execute();
-
-        // Check if it was properly screambled.
-        $scrambled = $DB->get_records('test_names', null, 'id ASC');
-        self::assertCount(6, $scrambled);
-        self::assertSame(['id' => '1', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[1]));
-        self::assertSame(['id' => '2', 'first' => 'Nicholas', 'last' => 'Hoobin'], (array)($scrambled[2]));
-        $this->assert_it_was_scrambled($scrambled);
+        self::assertCount(count($expected), $scrambled);
+        for ($i = 0; $i < count($expected); $i++) {
+            self::assertSame($expected[$i], (array)($scrambled[$i + 1]));
+        }
 
         // Drop test table.
         $DB->get_manager()->drop_table($table);
@@ -152,74 +189,27 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertLessThanOrEqual(127 * 131, $product);
     }
 
-    public function test_the_2_prime_factors_for_1_are_1_2() {
-        $factors = table_scrambler::get_prime_factors(2, 3);
-        self::assertSame([2, 3], $factors);
+    /**
+     * @dataProvider provider_for_the_next_prime_after
+     */
+    public function test_the_next_prime_after($number, $expected) {
+        $next = table_scrambler::get_prime_after($number);
+        self::assertSame($expected, $next);
     }
 
-    public function test_the_2_prime_factors_for_24_are_5_7() {
-        $factors = table_scrambler::get_prime_factors(2, 24);
-        self::assertSame([5, 7], $factors);
-    }
-
-    public function test_the_2_prime_factors_for_25_are_5_7() {
-        $factors = table_scrambler::get_prime_factors(2, 25);
-        self::assertSame([5, 7], $factors);
-    }
-
-    public function test_the_2_prime_factors_for_6_are_2_3() {
-        $factors = table_scrambler::get_prime_factors(2, 6);
-        self::assertSame([2, 3], $factors);
-    }
-
-    public function test_the_next_prime_after_0_is_2() {
-        self::assertSame(2, table_scrambler::get_prime_after(0));
-    }
-
-    public function test_the_next_prime_after_1_is_2() {
-        self::assertSame(2, table_scrambler::get_prime_after(1));
-    }
-
-    public function test_the_next_prime_after_2_is_3() {
-        self::assertSame(3, table_scrambler::get_prime_after(2));
-    }
-
-    public function test_the_next_prime_after_919_is_929() {
-        self::assertSame(929, table_scrambler::get_prime_after(919));
-    }
-
-    private function assert_it_was_scrambled($scrambled) {
-        // Unfortunately we are getting errors from Copy and Paste detector that cannot be suppressed.
-        // This would be better back together with the test.
-        self::assertSame(['id' => '3', 'first' => 'David', 'last' => 'Hoobin'], (array)($scrambled[3]));
-        self::assertSame(['id' => '4', 'first' => 'Bill', 'last' => 'Jones'], (array)($scrambled[4]));
-        self::assertSame(['id' => '5', 'first' => 'David', 'last' => 'Smith'], (array)($scrambled[5]));
-        self::assertSame(['id' => '6', 'first' => 'Bill', 'last' => 'Hoobin'], (array)($scrambled[6]));
-    }
-
-    private function create_repeated_test_data() {
-        return $this->create_test_data([
-            ['first' => 'John', 'last' => 'Smith'],
-            ['first' => 'John', 'last' => 'Doe'],
-            ['first' => 'Daniel', 'last' => 'Silva'],
-            ['first' => 'Daniel', 'last' => 'Roperto'],
-            ['first' => 'Brendan', 'last' => 'Heywood'],
-            ['first' => 'Nicholas', 'last' => 'Hoobin'],
-        ]);
+    /**
+     * @dataProvider provider_for_the_prime_factors
+     */
+    public function test_the_prime_factors($count, $number, $expected) {
+        $factors = table_scrambler::get_prime_factors($count, $number);
+        self::assertSame($expected, $factors);
     }
 
     private function create_test_data($data = null) {
         global $DB;
 
         if (is_null($data)) {
-            $data = [
-                ['first' => 'David', 'last' => 'Smith'],
-                ['first' => 'Nicholas', 'last' => 'Hoobin'],
-                ['first' => 'Bill', 'last' => 'Jones'],
-                ['first' => 'Daniel', 'last' => 'Roperto'],
-                ['first' => 'Brendan', 'last' => 'Heywood'],
-                ['first' => 'Sarah', 'last' => 'Bryce'],
-            ];
+            $data = $this->create_test_data_array();
         }
 
         // Create test table.
@@ -238,5 +228,16 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         }
 
         return $table;
+    }
+
+    private function create_test_data_array() {
+        return [
+            ['first' => 'David', 'last' => 'Smith'],
+            ['first' => 'Nicholas', 'last' => 'Hoobin'],
+            ['first' => 'Bill', 'last' => 'Jones'],
+            ['first' => 'Daniel', 'last' => 'Roperto'],
+            ['first' => 'Brendan', 'last' => 'Heywood'],
+            ['first' => 'Sarah', 'last' => 'Bryce'],
+        ];
     }
 }
