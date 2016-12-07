@@ -117,7 +117,7 @@ SQL;
             'auth'         => 'manual',
             'mnethostid'   => 1,
             'password'     => hash_internal_user_password(self::PASSWORD_AFTER_CLEANING),
-            'email'        => 'cleaned@local.datacleaner',
+            'email'        => 'cleaned@datacleaner.example',
             'emailstop'    => 1,
             'firstaccess'  => 0,
             'lastlogin'    => 0,

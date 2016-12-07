@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2015072200;
-$plugin->release   = '2.3.2';
+$plugin->version   = 2016120700;
+$plugin->release   = '2.3.6';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
 $plugin->component = 'cleaner_users';
