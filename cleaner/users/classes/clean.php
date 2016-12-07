@@ -101,7 +101,7 @@ SQL;
         ];
 
         foreach ($fieldset as $title => $fields) {
-            echo "Scrambling: ${title} ...\n";
+            echo "Scrambling: {$title} ...\n";
             $scrambler = new table_scrambler('user', $fields);
             $scrambler->set_change_only_ids(self::$idstoupdate);
             $scrambler->execute();

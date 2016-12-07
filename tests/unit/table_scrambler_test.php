@@ -34,6 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_datacleaner_table_scrambler_test extends advanced_testcase {
     public function provider_for_it_creates_sorted_temporary_tables() {
