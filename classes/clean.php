@@ -89,9 +89,10 @@ abstract class clean {
             $now = time();
 
             $start = self::$tasks[$taskname];
-            $eta = ($now - $start) * $total / $itemno + $start;
             $elapsed = $now - $start;
-            $timeleft = intval($elapsed).' seconds elapsed, '.intval($eta - $now).' seconds remaining';
+            $timeleft = gmdate("H:i:s", intval($elapsed)).' seconds elapsed for this step';
+
+            self::$tasks[$taskname] = time();
         } else {
             // Save the start time for this task.
             self::$tasks[$taskname] = time();
@@ -129,7 +130,7 @@ abstract class clean {
         // Print the execution time if we're done.
         if (static::$step == static::$maxsteps) {
             static::$exectime += microtime(true);
-            echo "Execution took ", sprintf('%f', static::$exectime), " seconds.", PHP_EOL;
+            echo "Execution took ", gmdate("H:i:s", static::$exectime), " seconds.", PHP_EOL;
         }
     }
 
