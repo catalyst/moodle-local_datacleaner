@@ -90,8 +90,9 @@ abstract class clean {
 
             $start = self::$tasks[$taskname];
             $elapsed = $now - $start;
-            $timeleft = gmdate("H:i:s", intval($elapsed)).' seconds elapsed for this step';
+            $timeleft = gmdate("H:i:s", intval($elapsed)).' seconds elapsed.';
 
+            // Reset the current task starting execution time.
             self::$tasks[$taskname] = time();
         } else {
             // Save the start time for this task.
