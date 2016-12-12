@@ -51,8 +51,6 @@ class clean extends \local_datacleaner\clean {
                 case 'task_adhoc':
                 case 'message':
                 case 'message_popup':
-                case 'message_processors':
-                case 'message_providers':
                 case 'message_read':
                 case 'message_working':
                 case 'tool_monitor':
