@@ -98,9 +98,23 @@ class clean extends \local_datacleaner\clean {
             mtrace("Replacing in $table ...");
 
             if ($columns = $DB->get_columns($table)) {
+                $potential = array();
                 foreach ($columns as $column) {
-                    $DB->replace_all_text($table, $column,  self::$config->origsiteurl, self::$config->newsiteurl);
+
+                    if (preg_match('/(.*)format$/', $column->name, $matches)) {
+                        $potential[] = $matches[1];
+                    }
                 }
+
+                foreach ($potential as $name) {
+                    if (array_key_exists($name, $columns)) {
+                        $column = $columns[$name];
+                        if ($column->type === "text" || $column->type === "varchar") {
+                            $DB->replace_all_text($table, $column,  self::$config->origsiteurl, self::$config->newsiteurl);
+                        }
+                    }
+                }
+
             }
             self::next_step();
         }
