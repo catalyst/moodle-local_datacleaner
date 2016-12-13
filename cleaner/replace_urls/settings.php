@@ -41,3 +41,15 @@ $settings->add(new admin_setting_configtextarea(
     'cleaner_replace_urls/skiptables',
     new lang_string('skiptables', 'cleaner_replace_urls'),
     new lang_string('skiptablesdesc', 'cleaner_replace_urls'), $defaultskiptables, PARAM_TEXT, 60, 5));
+
+$settings->add(new admin_setting_configcheckbox('cleaner_replace_urls/cleanconfig',
+            new lang_string('cleanconfig', 'cleaner_replace_urls'),
+            new lang_string('cleanconfigdesc', 'cleaner_replace_urls'), 0));
+
+$settings->add(new admin_setting_configcheckbox('cleaner_replace_urls/cleanwysiwyg',
+            new lang_string('cleanwysiwyg', 'cleaner_replace_urls'),
+            new lang_string('cleanwysiwygdesc', 'cleaner_replace_urls'), 0));
+
+$settings->add(new admin_setting_configcheckbox('cleaner_replace_urls/cleantext',
+            new lang_string('cleantext', 'cleaner_replace_urls'),
+            new lang_string('cleantextdesc', 'cleaner_replace_urls'), 0));

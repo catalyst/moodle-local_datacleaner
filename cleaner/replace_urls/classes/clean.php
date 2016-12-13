@@ -63,6 +63,15 @@ class clean extends \local_datacleaner\clean {
             }
         }
 
+        if (self::$config->cleanconfig) {
+            $cfgtables = array('config', 'config_plugins');
+            foreach ($cfgtables as $table) {
+                if (!in_array($table, $finaltables)) {
+                    $finaltables[] = $table;
+                }
+            }
+        }
+
         return $finaltables;
     }
 
@@ -98,19 +107,34 @@ class clean extends \local_datacleaner\clean {
             mtrace("Replacing in $table ...");
 
             if ($columns = $DB->get_columns($table)) {
-                $potential = array();
-                foreach ($columns as $column) {
+                $replaced = array();
 
-                    if (preg_match('/(.*)format$/', $column->name, $matches)) {
-                        $potential[] = $matches[1];
+                if (self::$config->cleantext) {
+                    foreach ($columns as $column) {
+                        if (self::$config->cleantext) {
+                            if ($column->type === "text" || $column->type === "varchar") {
+                                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
+                                $replaced[] = $column->name;
+                            }
+                        }
                     }
                 }
 
-                foreach ($potential as $name) {
-                    if (array_key_exists($name, $columns)) {
-                        $column = $columns[$name];
-                        if ($column->type === "text" || $column->type === "varchar") {
-                            $DB->replace_all_text($table, $column,  self::$config->origsiteurl, self::$config->newsiteurl);
+                if (self::$config->cleanwysiwyg) {
+                    $potential = array();
+                    foreach ($columns as $column) {
+                        if (preg_match('/(.*)format$/', $column->name, $matches)) {
+                            $potential[] = $matches[1];
+                        }
+                    }
+
+                    foreach ($potential as $name) {
+                        if (array_key_exists($name, $columns)) {
+                            $column = $columns[$name];
+                            if (!in_array($name, $replaced)) {
+                                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
+                                $replaced[] = $column->name;
+                            }
                         }
                     }
                 }
