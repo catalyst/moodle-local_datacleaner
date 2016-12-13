@@ -100,21 +100,18 @@ class clean extends \local_datacleaner\clean {
         // Turn off time limits.
         \core_php_time_limit::raise();
 
-        self::new_task(count(self::$tables) + 1); // Blocks as one task.
+        $replacing = array();
+        $count = 1; // Blocks as one task.
 
         foreach (self::$tables as $table) {
 
-            mtrace("Replacing in $table ...");
-
             if ($columns = $DB->get_columns($table)) {
-                $replaced = array();
-
                 if (self::$config->cleantext) {
                     foreach ($columns as $column) {
                         if (self::$config->cleantext) {
                             if ($column->type === "text" || $column->type === "varchar") {
-                                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
-                                $replaced[] = $column->name;
+                                $replacing[$table][$column->name] = $column;
+                                $count += 1;
                             }
                         }
                     }
@@ -131,17 +128,25 @@ class clean extends \local_datacleaner\clean {
                     foreach ($potential as $name) {
                         if (array_key_exists($name, $columns)) {
                             $column = $columns[$name];
-                            if (!in_array($name, $replaced)) {
-                                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
-                                $replaced[] = $column->name;
+                            if (!array_key_exists($name, $replacing[$table])) {
+                                $replacing[$table][$column->name] = $column;
+                                $count += 1;
                             }
                         }
                     }
                 }
-
             }
-            self::next_step();
         }
+
+        self::new_task($count);
+        foreach ($replacing as $table => $columns) {
+            foreach ($columns as $column) {
+                mtrace("Replacing in $table::$column->name ...");
+                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
+                self::next_step();
+            }
+        }
+
 
         // Delete modinfo caches.
         rebuild_course_cache(0, true);
