@@ -63,15 +63,6 @@ class clean extends \local_datacleaner\clean {
             }
         }
 
-        if (self::$config->cleanconfig) {
-            $cfgtables = array('config', 'config_plugins');
-            foreach ($cfgtables as $table) {
-                if (!in_array($table, $finaltables)) {
-                    $finaltables[] = $table;
-                }
-            }
-        }
-
         return $finaltables;
     }
 
@@ -85,6 +76,14 @@ class clean extends \local_datacleaner\clean {
         $skiptables = array();
         if (isset($config->skiptables)) {
             $skiptables = array_map('trim', explode(",", $config->skiptables));
+        }
+
+        if (self::$config->cleanconfig) {
+            foreach ($skiptables as $key => $table) {
+                if (strpos($table, 'config') !== false) {
+                    unset($skiptables[$key]);
+                }
+            }
         }
 
         return $skiptables;
@@ -106,37 +105,51 @@ class clean extends \local_datacleaner\clean {
         foreach (self::$tables as $table) {
 
             if ($columns = $DB->get_columns($table)) {
-                if (self::$config->cleantext) {
-                    foreach ($columns as $column) {
-                        if (self::$config->cleantext) {
-                            if ($column->type === "text" || $column->type === "varchar") {
-                                $replacing[$table][$column->name] = $column;
-                                $count += 1;
+                $wysiwyg = array();
+
+                foreach ($columns as $column) {
+
+                    // Clean all columns in tables with the name 'config'.
+                    if (self::$config->cleanconfig) {
+                        if (strpos($table, 'config') !== false) {
+                            $replacing[$table][$column->name] = $column;
+                            $count += 1;
+                        }
+
+                    }
+
+                    // Clean all columns of type 'text' or 'varchar'.
+                    if (self::$config->cleantext) {
+                        if ($column->type === "text" || $column->type === "varchar") {
+                            $replacing[$table][$column->name] = $column;
+                            $count += 1;
+                        }
+                    }
+
+                    // Clean oof wysiwyg columns that have a pair 'format' column.
+                    if (self::$config->cleanwysiwyg) {
+                        foreach ($columns as $column) {
+                            if (preg_match('/(.*)format$/', $column->name, $matches)) {
+
+                                if (!empty($matches[1])) {
+                                    $wysiwyg[$column->name] = $matches[1];
+                                }
                             }
                         }
+                    } // End cleanwysiwyg.
+                } // End foreach columns as column.
+
+                // Add found wysiwyg columns to the list of things to clean.
+                foreach ($wysiwyg as $name) {
+                    if (array_key_exists($name, $columns)) {
+                        $column = $columns[$name];
+                        $replacing[$table][$column->name] = $column;
+                        $count += 1;
                     }
                 }
 
-                if (self::$config->cleanwysiwyg) {
-                    $potential = array();
-                    foreach ($columns as $column) {
-                        if (preg_match('/(.*)format$/', $column->name, $matches)) {
-                            $potential[] = $matches[1];
-                        }
-                    }
-
-                    foreach ($potential as $name) {
-                        if (array_key_exists($name, $columns)) {
-                            $column = $columns[$name];
-                            if (!array_key_exists($name, $replacing[$table])) {
-                                $replacing[$table][$column->name] = $column;
-                                $count += 1;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+            } // End db get columns on table.
+        } // End foreach tables.
 
         self::new_task($count);
         foreach ($replacing as $table => $columns) {
@@ -146,7 +159,6 @@ class clean extends \local_datacleaner\clean {
                 self::next_step();
             }
         }
-
 
         // Delete modinfo caches.
         rebuild_course_cache(0, true);
