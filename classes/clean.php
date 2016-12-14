@@ -103,6 +103,7 @@ abstract class clean {
 
         if ($itemno == $total) {
             // No more output for this step; move to a new line.
+            unset(self::$tasks[$taskname]);
             printf("\n");
         }
     }

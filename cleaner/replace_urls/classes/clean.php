@@ -100,7 +100,6 @@ class clean extends \local_datacleaner\clean {
         \core_php_time_limit::raise();
 
         $replacing = array();
-        $count = 1; // Blocks as one task.
 
         foreach (self::$tables as $table) {
 
@@ -113,7 +112,6 @@ class clean extends \local_datacleaner\clean {
                     if (self::$config->cleanconfig) {
                         if (strpos($table, 'config') !== false) {
                             $replacing[$table][$column->name] = $column;
-                            $count += 1;
                         }
 
                     }
@@ -122,7 +120,6 @@ class clean extends \local_datacleaner\clean {
                     if (self::$config->cleantext) {
                         if ($column->type === "text" || $column->type === "varchar") {
                             $replacing[$table][$column->name] = $column;
-                            $count += 1;
                         }
                     }
 
@@ -144,15 +141,14 @@ class clean extends \local_datacleaner\clean {
                     if (array_key_exists($name, $columns)) {
                         $column = $columns[$name];
                         $replacing[$table][$column->name] = $column;
-                        $count += 1;
                     }
                 }
 
             } // End db get columns on table.
         } // End foreach tables.
 
-        self::new_task($count);
         foreach ($replacing as $table => $columns) {
+            self::new_task(count($columns));
             foreach ($columns as $column) {
                 mtrace("Replacing in $table::$column->name ...");
                 $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
@@ -172,8 +168,7 @@ class clean extends \local_datacleaner\clean {
         global $CFG;
 
         $blocks = \core_component::get_plugin_list('block');
-
-        mtrace("Replacing using block_XXXX_global_db_replace function ...");
+        $blockfunctions = array();
 
         foreach ($blocks as $blockname => $fullblock) {
             if ($blockname === 'NEWBLOCK') {
@@ -190,12 +185,20 @@ class clean extends \local_datacleaner\clean {
                 continue;
             }
 
+            $blockfunctions[] = $function;
+
+        }
+
+        self::new_task(count($blockfunctions));
+
+        foreach ($blockfunctions as $function) {
+            mtrace("Replacing using $function function ...");
             $function(self::$config->origsiteurl, self::$config->newsiteurl);
+            self::next_step();
         }
 
         purge_all_caches();
 
-        self::next_step();
     }
 
     /**
