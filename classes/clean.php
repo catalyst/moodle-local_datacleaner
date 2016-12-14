@@ -90,7 +90,7 @@ abstract class clean {
 
             $start = self::$tasks[$taskname];
             $elapsed = $now - $start;
-            $timeleft = gmdate("H:i:s", intval($elapsed)).' seconds elapsed.';
+            $timeleft = gmdate("H:i:s", intval($elapsed)).' elapsed.';
 
             // Reset the current task starting execution time.
             self::$tasks[$taskname] = time();
@@ -132,7 +132,7 @@ abstract class clean {
         // Print the execution time if we're done.
         if (static::$step == static::$maxsteps) {
             static::$exectime += microtime(true);
-            echo "Execution took ", gmdate("H:i:s", static::$exectime), " seconds.", PHP_EOL;
+            echo "Execution took ", gmdate("H:i:s", static::$exectime), PHP_EOL;
         }
     }
 
