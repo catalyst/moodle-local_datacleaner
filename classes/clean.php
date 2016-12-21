@@ -64,12 +64,35 @@ abstract class clean {
     }
 
     /**
-     * Possibly output a debugging message.
+     * Dump memory usage.
      */
-    static protected function debug($message) {
-        if (self::$options['verbose']) {
-            echo $message;
+    public static function debugmemory() {
+        if (isset(self::$options['verbose']) && self::$options['verbose']) {
+            $before = display_size(memory_get_usage());
+            $cycles = gc_collect_cycles();
+            $after = display_size(memory_get_usage());
+            self::debug(sprintf('Collected %03d cycles, memory use from %s to %s.', $cycles, $before, $after));
         }
+    }
+
+    /**
+     * Possibly output a debugging message.
+     *
+     * @param string $message
+     */
+    public static function debug($message = '') {
+        if (isset(self::$options['verbose']) && self::$options['verbose']) {
+            mtrace(sprintf('%s [%6s] %s', date('H:i:s'), display_size(memory_get_usage()), $message));
+        }
+    }
+
+    /**
+     * Shows a message with timestamp.
+     *
+     * @param string $message
+     */
+    public static function println($message = '') {
+        printf("%s %s\n", date('H:i:s'), $message);
     }
 
     /**
