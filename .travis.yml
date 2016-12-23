@@ -16,7 +16,6 @@ cache:
 php:
  - 5.5
  - 7.0
- - 7.1
 
 env:
   - DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE
@@ -37,6 +36,15 @@ env:
   - DB=mysqli MOODLE_BRANCH=master
 
 matrix:
+  include:
+    - php: 7.1
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
+    - php: 7.1
+      env: DB=pgsql MOODLE_BRANCH=master
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=master
   exclude:
     - php: 5.5
       env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
@@ -61,22 +69,6 @@ matrix:
     - php: 7.0
       env: DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE
     - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_28_STABLE
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
-    - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE
-    - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_27_STABLE
-    - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE
-    - php: 7.1
       env: DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
 
 
