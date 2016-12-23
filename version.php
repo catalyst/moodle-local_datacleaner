@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2016120700;
-$plugin->release   = '2.3.6';
+$plugin->version   = 2016122300;
+$plugin->release   = '2.3.7';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
 $plugin->component = 'local_datacleaner';

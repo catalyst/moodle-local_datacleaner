@@ -25,10 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2015090800;
-$plugin->release   = '2.3.2';
+$plugin->version   = 2016122300;
+$plugin->release   = '2.3.7';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
+$plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
 $plugin->component = 'cleaner_orphaned_sitedata';
 // Run this before cleaner_sitedata sub-plugin.
 $plugin->sortorder = 180;
