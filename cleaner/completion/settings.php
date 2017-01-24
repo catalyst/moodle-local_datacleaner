@@ -36,6 +36,7 @@ $settings->add(new admin_setting_configcheckbox('cleaner_completion/deletecourse
             new lang_string('deletecoursecompletion', 'cleaner_completion'),
             new lang_string('deletecoursecompletiondesc', 'cleaner_completion'), 1));
 
+require_once($CFG->dirroot . '/local/datacleaner/lib.php');
 require_once($CFG->dirroot . '/course/externallib.php');
 
 // Categories of courses to delete completon.
@@ -44,7 +45,7 @@ require_once($CFG->dirroot . '/course/externallib.php');
 if (!isset($CFG->slasharguments)) {
     $CFG->slasharguments = false;
 }
-$categories = core_course_external::get_categories();
+$categories = local_datacleaner_get_categories();
 
 $defaultcategories = array();
 $categoriesbyname = array();

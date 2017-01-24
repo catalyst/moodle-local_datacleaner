@@ -44,10 +44,10 @@ $string['willdeletebackups'] = 'Will delete {$a} backup file(s).';
 $string['wouldpurgecache'] = 'Would purge the cache.';
 $string['willpurgecache'] = 'Will purge the cache.';
 
-$string['woulddeletetemp'] = 'Would delete temporary files.';
-$string['willdeletetemp'] = 'Will delete temporary files.';
+$string['woulddeletetemp'] = 'Would delete temporary files from: {$a}';
+$string['willdeletetemp'] = 'Will delete temporary files: {$a}';
 
-$string['woulddeleteorphanedfiles'] = 'Would delete {$a} orphaned file(s).';
-$string['willdeleteorphanedfiles'] = 'Will delete {$a} orphaned file(s).';
+$string['woulddeleteorphanedfiles'] = 'Would delete orphaned file(s).';
+$string['willdeleteorphanedfiles'] = 'Will delete orphaned file(s).';
 
-$string['errordeletingfile'] = '-- ERROR -- An error was encountered while deleting the file: {$a}';
+$string['errordeletingfile'] = "ERROR\n\n*** Cound not delete: {\$a}\n\n";

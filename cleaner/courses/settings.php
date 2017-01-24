@@ -26,6 +26,7 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
+require_once($CFG->dirroot . '/local/datacleaner/lib.php');
 require_once($CFG->dirroot . '/course/externallib.php');
 
 $settings->add(new admin_setting_configtext('cleaner_courses/minimumage',
@@ -38,7 +39,7 @@ $settings->add(new admin_setting_configtext('cleaner_courses/minimumage',
 if (!isset($CFG->slasharguments)) {
     $CFG->slasharguments = false;
 }
-$categories = core_course_external::get_categories();
+$categories = local_datacleaner_get_categories();
 
 $defaultcategories = array();
 $categoriesbyname = array();
@@ -84,7 +85,7 @@ foreach ($shortnames as $name) {
 }
 
 if ($where) {
-    $itemstoignore = $DB->get_records_sql("SELECT c.fullname, ca.name
+    $itemstoignore = $DB->get_records_sql("SELECT c.id, c.fullname, ca.name
                                              FROM {course} c
                                              JOIN {course_categories} ca
                                                ON ca.id = c.category

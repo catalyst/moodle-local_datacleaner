@@ -78,6 +78,14 @@ class clean extends \local_datacleaner\clean {
             $skiptables = array_map('trim', explode(",", $config->skiptables));
         }
 
+        if (self::$config->cleanconfig) {
+            foreach ($skiptables as $key => $table) {
+                if (strpos($table, 'config') !== false) {
+                    unset($skiptables[$key]);
+                }
+            }
+        }
+
         return $skiptables;
     }
 
@@ -91,18 +99,61 @@ class clean extends \local_datacleaner\clean {
         // Turn off time limits.
         \core_php_time_limit::raise();
 
-        self::new_task(count(self::$tables) + 1); // Blocks as one task.
+        $replacing = array();
 
         foreach (self::$tables as $table) {
 
-            mtrace("Replacing in $table ...");
-
             if ($columns = $DB->get_columns($table)) {
+                $wysiwyg = array();
+
                 foreach ($columns as $column) {
-                    $DB->replace_all_text($table, $column,  self::$config->origsiteurl, self::$config->newsiteurl);
+
+                    // Clean all columns in tables with the name 'config'.
+                    if (self::$config->cleanconfig) {
+                        if (strpos($table, 'config') !== false) {
+                            $replacing[$table][$column->name] = $column;
+                        }
+
+                    }
+
+                    // Clean all columns of type 'text' or 'varchar'.
+                    if (self::$config->cleantext) {
+                        if ($column->type === "text" || $column->type === "varchar") {
+                            $replacing[$table][$column->name] = $column;
+                        }
+                    }
+
+                    // Clean oof wysiwyg columns that have a pair 'format' column.
+                    if (self::$config->cleanwysiwyg) {
+                        foreach ($columns as $column) {
+                            if (preg_match('/(.*)format$/', $column->name, $matches)) {
+
+                                if (!empty($matches[1])) {
+                                    $wysiwyg[$column->name] = $matches[1];
+                                }
+                            }
+                        }
+                    } // End cleanwysiwyg.
+                } // End foreach columns as column.
+
+                // Add found wysiwyg columns to the list of things to clean.
+                foreach ($wysiwyg as $name) {
+                    if (array_key_exists($name, $columns)) {
+                        $column = $columns[$name];
+                        $replacing[$table][$column->name] = $column;
+                    }
                 }
+
+            } // End db get columns on table.
+        } // End foreach tables.
+
+        foreach ($replacing as $table => $columns) {
+            self::new_task(count($columns));
+            foreach ($columns as $column) {
+                mtrace("Replacing in $table::$column->name ...");
+                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
+                self::next_step();
             }
-            self::next_step();
         }
 
         // Delete modinfo caches.
@@ -117,8 +168,7 @@ class clean extends \local_datacleaner\clean {
         global $CFG;
 
         $blocks = \core_component::get_plugin_list('block');
-
-        mtrace("Replacing using block_XXXX_global_db_replace function ...");
+        $blockfunctions = array();
 
         foreach ($blocks as $blockname => $fullblock) {
             if ($blockname === 'NEWBLOCK') {
@@ -135,12 +185,20 @@ class clean extends \local_datacleaner\clean {
                 continue;
             }
 
+            $blockfunctions[] = $function;
+
+        }
+
+        self::new_task(count($blockfunctions));
+
+        foreach ($blockfunctions as $function) {
+            mtrace("Replacing using $function function ...");
             $function(self::$config->origsiteurl, self::$config->newsiteurl);
+            self::next_step();
         }
 
         purge_all_caches();
 
-        self::next_step();
     }
 
     /**

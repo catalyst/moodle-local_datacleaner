@@ -21,6 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Print a message to the terminal.
  *
@@ -139,7 +141,7 @@ function safety_checks($options) {
 
     // 4. Check for an explicit flag in config.php just to be extra mega cautious!
     if (empty($CFG->config_php_settings['local_datacleaner_allowexecution'])) {
-        abort_message(get_string('error:explicitconfigphp', 'local_datacleaner'));
+        abort_message(get_string('error:explicitconfigphp', 'local_datacleaner'), '');
         $willdie = true;
     }
 

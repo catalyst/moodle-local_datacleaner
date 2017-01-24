@@ -21,7 +21,33 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/*
- * Nothing needed in this file at the moment. It just has to exist
- * to avoid warnings (if debug messages are enabled) on our index.php.
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * This function should be called instead of core_course_external::get_categories().
+ *
+ * See Issue #2.
+ *
+ * @return array Categories.
  */
+function local_datacleaner_get_categories() {
+    global $DB;
+    static $categories = null;
+
+    if (is_null($categories)) {
+        // Fetch from database.
+        $categories = $DB->get_records('course_categories');
+
+        // Sort by path.
+        usort($categories, function ($a, $b) {
+            return strcmp($a->path, $b->path);
+        });
+
+        // Convert all to array.
+        for ($i = 0; $i < count($categories); $i++) {
+            $categories[$i] = (array)$categories[$i];
+        }
+    }
+
+    return $categories;
+}
