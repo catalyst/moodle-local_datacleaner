@@ -35,6 +35,10 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir.'/adminlib.php');
 
+if (file_exists($CFG->libdir.'/filestorage/stored_file.php')) {
+    require_once($CFG->libdir.'/filestorage/stored_file.php');
+}
+
 /**
  * orphaned_sitedata testcase.
  *
@@ -67,10 +71,16 @@ class orphaned_sitedata_testcase extends advanced_testcase {
         return $fs->create_file_from_string($filerecord, 'backup data');
     }
 
-    protected function get_pathname(stored_file $file) {
-        // Let's be a little naughty and hack access the protected method in stored_file.
-        $reflection = new ReflectionMethod(stored_file::class, 'get_pathname_by_contenthash');
-        $reflection->setAccessible(true);
-        return $reflection->invoke($file);
+    protected function get_pathname(\stored_file $file) {
+        global $CFG;
+        $contenthash = $file->get_contenthash();
+        if (isset($CFG->filedir)) {
+            $filedir = $CFG->filedir;
+        } else {
+            $filedir = $CFG->dataroot.'/filedir';
+        }
+        $l1 = $contenthash[0] . $contenthash[1];
+        $l2 = $contenthash[2] . $contenthash[3];
+        return "$filedir/$l1/$l2/$contenthash";
     }
 }
