@@ -63,22 +63,22 @@ class backup_cleaner_test extends orphaned_sitedata_testcase {
     public function test_it_removes_backup_files() {
         $this->resetAfterTest(true);
         $file = $this->create_backup_file('test_it_removes_backup_files.backup');
-        self::assertFileExists($file);
+        self::assertTrue($this->file_is_readable($file));
         $this->execute(new backup_cleaner(false));
-        self::assertFileNotExists($file);
+        self::assertFalse($this->file_is_readable($file));
     }
 
     public function test_it_does_not_remove_backup_files_in_dry_run() {
         $this->resetAfterTest(true);
         $file = $this->create_backup_file('test_it_does_not_remove_backup_files_in_dry_run.backup');
-        self::assertFileExists($file);
+        self::assertTrue($this->file_is_readable($file));
         $this->execute(new backup_cleaner(true));
-        self::assertFileExists($file);
+        self::assertTrue($this->file_is_readable($file));
     }
 
     public function create_backup_file($filename) {
         $file = $this->create_file('backup', '/somebackups/', $filename);
-        return $this->get_pathname($file);
+        return $file;
     }
 
     private function get_files() {

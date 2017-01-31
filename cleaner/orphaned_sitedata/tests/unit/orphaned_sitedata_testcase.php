@@ -67,10 +67,18 @@ class orphaned_sitedata_testcase extends advanced_testcase {
         return $fs->create_file_from_string($filerecord, 'backup data');
     }
 
-    protected function get_pathname(stored_file $file) {
-        // Let's be a little naughty and hack access the protected method in stored_file.
-        $reflection = new ReflectionMethod(stored_file::class, 'get_pathname_by_contenthash');
-        $reflection->setAccessible(true);
-        return $reflection->invoke($file);
+    protected function file_is_readable(stored_file $file) {
+        if (class_exists('\core_files\filestorage\file_system')) {
+            $filesystem = \core_files\filestorage\file_system::instance();
+            $filesystem->cleanup_trash(); // So is_readable wont retrieve it.
+            $isreadable = $filesystem->is_readable($file);
+        } else {
+            // Let's be a little naughty and hack access the protected method in stored_file.
+            $reflection = new ReflectionMethod(stored_file::class, 'get_pathname_by_contenthash');
+            $reflection->setAccessible(true);
+            $path = $reflection->invoke($file);
+            $isreadable = is_readable($path);
+        }
+        return $isreadable;
     }
 }

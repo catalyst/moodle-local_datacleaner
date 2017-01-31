@@ -52,13 +52,13 @@ class orphan_cleaner_test extends orphaned_sitedata_testcase {
         $this->resetAfterTest(true);
 
         $file = $this->create_test_file('test_it_removes_orphaned_files.test');
-        self::assertFileExists($this->get_pathname($file));
+        self::assertTrue($this->file_is_readable($file));
 
         $DB->delete_records('files', ['id' => $file->get_id()]); // Make it orphaned.
 
         $this->execute(new orphan_cleaner(false));
 
-        self::assertFileNotExists($this->get_pathname($file));
+        self::assertFalse($this->file_is_readable($file));
     }
 
     public function test_it_does_not_remove_orphaned_files_in_dry_run() {
@@ -66,24 +66,24 @@ class orphan_cleaner_test extends orphaned_sitedata_testcase {
         $this->resetAfterTest(true);
 
         $file = $this->create_test_file('test_it_does_not_remove_orphaned_files_in_dry_run.test');
-        self::assertFileExists($this->get_pathname($file));
+        self::assertTrue($this->file_is_readable($file));
 
         $DB->delete_records('files', ['id' => $file->get_id()]); // Make it orphaned.
 
         $this->execute(new orphan_cleaner(true));
 
-        self::assertFileExists($this->get_pathname($file));
+        self::assertTrue($this->file_is_readable($file));
     }
 
     public function test_it_does_not_remove_non_orphaned_files() {
         $this->resetAfterTest(true);
 
         $file = $this->create_test_file('test_it_does_not_remove_non_orphaned_files.test');
-        self::assertFileExists($this->get_pathname($file));
+        self::assertTrue($this->file_is_readable($file));
 
         $this->execute(new orphan_cleaner(false));
 
-        self::assertFileExists($this->get_pathname($file));
+        self::assertTrue($this->file_is_readable($file));
     }
 
     private function create_test_file($filename) {
