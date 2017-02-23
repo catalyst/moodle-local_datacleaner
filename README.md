@@ -12,7 +12,7 @@ Supported versions of Moodle: 2.6 to 3.1 inclusive
 
 Standard practice when hosting most applications, Moodle included, is to have
 various environments in a 'pipeline' leading to production at the end. eg a
-typicaly flow might be `dev > stage > prod` but there could be as many as
+typical flow might be `dev > stage > prod` but there could be as many as
 you want for various reasons, like load testing, penetration testing etc.
 
 To test properly it's often useful to have real production data in these other
@@ -61,8 +61,10 @@ right hand side of the Github page. Once you've done this, unzip the
 DataCleaner code and copy it to the local/datacleaner directory within your
 Moodle codebase. On most modern Linux systems, this can be accomplished with:
 
-`unzip ./mdl-local_datacleaner-master.zip
-cp -r ./mdl-local_datacleaner-master <your_moodle_directory>/local/datacleaner`
+```sh
+unzip ./mdl-local_datacleaner-master.zip
+cp -r ./mdl-local_datacleaner-master <your_moodle_directory>/local/datacleaner
+```
 
 Once you've copied the plugin, you can finish the installation process by
 logging into your Moodle site as an administrator and visiting the
@@ -79,9 +81,12 @@ configuration details. Note that you MUST visit the DataCleaner config page to
 save the current wwwroot, or the cleaner will not run later in the other
 environments.
 
-You have to add a `local_datacleaner_allowexecution = true;` config item to your
-config.php in each of the environments you want the cleaner to run. DO NOT add
-that config setting to a Production environment!
+```
+$CFG->local_datacleaner_allowexecution = true;
+```
+
+You have to add the config item above to your config.php in each of the environments you
+want the cleaner to run. DO NOT add that config setting to a Production environment!
 
 There are multiple 'cleaners' which process different types of data in Moodle.
 Each one can be enabled individually and may have additional config settings.
@@ -124,7 +129,7 @@ Enable to delete grade history or replace with fake data. This has its own Setti
 
 #### Replace URLs:
 
-Enable to replace all occurrences of the production URL with a another URl. This has its own Settings page.
+Enable to replace all occurrences of the production URL with another URL. This has its own Settings page.
 
 #### Cleanup sitedata:
 
@@ -136,7 +141,9 @@ After installing and configuring DataCleaner, copy your database and optionally 
 
 From here run the cli script. On most modern Linux systems, this can be accomplished with:
 
-`sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cli/clean.php --run`
+```sh
+sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cli/clean.php --run
+```
 
 There are protections in place which prevent accidental running on this on your production system - which would of course be catastrophic!
 
@@ -144,5 +151,7 @@ There are protections in place which prevent accidental running on this on your 
 
 Run the cli script with --help for more options:
 
-`sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cli/clean.php --help`
+```sh
+sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cli/clean.php --help
+```
 
