@@ -114,12 +114,12 @@ class cleaner extends base {
         $section = $this->get_settings_section_name();
         $settings = new \admin_settingpage($section, $this->displayname, 'moodle/site:config', $this->is_enabled() === false);
 
-        $settings->add(new \admin_setting_configcheckbox('cleaner_' . $this->name . '/enabled',
-            new \lang_string('enabledisable', 'local_datacleaner'), null, 0));
-
         include($this->full_path('settings.php')); // This may also set $settings to null.
 
         if ($settings) {
+            $settings->add(new \admin_setting_configcheckbox('cleaner_' . $this->name . '/enabled',
+                new \lang_string('enabledisable', 'local_datacleaner'), null, 0));
+
             $ADMIN->add($parentnodename, $settings);
         }
     }
