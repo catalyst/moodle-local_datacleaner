@@ -26,6 +26,8 @@
 
 namespace cleaner_environment_matrix\local;
 
+use stdClass;
+
 require_once(__DIR__ . '/../../../../../../config.php');
 
 if (!defined('MOODLE_INTERNAL')) {
@@ -33,17 +35,86 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 
 class matrix {
-    public static function search($query) {
+    public static function environmentbar_exists() {
+        if (class_exists('\local_envbar\local\envbarlib')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function search($query, $configitems = []) {
         global $DB;
+
+        $result = [];
 
         $select = $DB->sql_like('name', ':name', false);
         $params = ['name' => '%' . $query . '%'];
-        $records = $DB->get_records_select('config', $select, $params, '', '*');
+        $records = $DB->get_records_select('config', $select, $params, 'name', '*');
+
+        foreach ($records as $record) {
+            if (!array_key_exists($record->name, $configitems)) {
+                $result[] = $record;
+            }
+        }
+
+        return $result;
+    }
+
+    public static function get_environments() {
+        global $DB;
+
+        self::populate_envbar_environments();
+
+        $records = $DB->get_records('cleaner_env_matrix');
 
         if (!empty($records)) {
             return $records;
         }
 
-        return null;
+        return [];
+    }
+
+    public static function populate_envbar_environments() {
+        global $DB;
+
+        if (!self::environmentbar_exists()) {
+            return false;
+        }
+
+        $environments = \local_envbar\local\envbarlib::get_records();
+
+        foreach ($environments as $key => $env) {
+            $select = $DB->sql_compare_text('wwwroot') . ' = ' . $DB->sql_compare_text(':wwwroot');
+            $params = ['wwwroot' => $env->matchpattern];
+            $record = $DB->get_record_select('cleaner_env_matrix', $select, $params);
+
+            $data = new stdClass();
+            $data->environment = $env->showtext;
+            $data->wwwroot = $env->matchpattern;
+
+            if (empty($record)) {
+                $DB->insert_record('cleaner_env_matrix', $data);
+            } else {
+                $data->id = $record->id;
+                $DB->update_record('cleaner_env_matrix', $data);
+            }
+        }
+
+        return true;
+    }
+
+    public static function get_matrix_data() {
+        global $DB;
+
+        $data = [];
+
+        $records = $DB->get_records('cleaner_env_matrix_data');
+
+        foreach ($records as $record) {
+            $data[$record->config][$record->envid] = $record;
+        }
+
+        return $data;
     }
 }

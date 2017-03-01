@@ -59,10 +59,15 @@ class matrix extends moodleform {
 
         // Construct environment header group. This will be used multiple times.
         $environmentheader = [];
-        $environmentheader[] = &$mform->createElement('checkbox', "cb_header", 'name', '');
+        $environmentheader[] = &$mform->createElement('checkbox', 'cb_header', 'name', ''); // TODO replace with hidden item with the same width.
         foreach ($environments as $eid => $env) {
-            $environmentheader[] = &$mform->createElement('text', "text_$eid$env", '', null);
-            $mform->setType("text_$eid$env", PARAM_TEXT);
+            $site = $env->environment;
+            $root = $env->wwwroot;
+
+            $key = 'header_' . $eid . '_' . $site;
+            $environmentheader[] = &$mform->createElement('text', $key, '', ['disabled']);
+            $mform->setType($key, PARAM_TEXT);
+            $mform->setDefault($key, "$site ($root)");
         }
 
         // Add the search element.
@@ -70,56 +75,65 @@ class matrix extends moodleform {
         $searchgroup[] = &$mform->createElement('text', 'search', '', null);
         $searchgroup[] = &$mform->createElement('submit', 'searchbutton', get_string('button_search', 'cleaner_environment_matrix'), null);
         $mform->setType('search', PARAM_TEXT);
-        $mform->addGroup($searchgroup, 'searchgroup', '' ,' ', false);
+        $mform->addGroup($searchgroup, 'searchgroup', '' , ' ', false);
 
-        // Basic separator between search and the defined list.
-        $mform->addElement('html', html_writer::empty_tag('hr'));
-
-        // Add an environment header group.
-        $mform->addGroup($environmentheader, "group_header1", '', ' ', false);
+        if (!empty($searchitems)) {
+            // Basic separator between search and the defined list.
+            $mform->addElement('html', html_writer::empty_tag('hr'));
+            // Add an environment header group.
+            $mform->addGroup($environmentheader, 'group_header1', '', ' ', false);
+        }
 
         // Display the configured items associated to each environment.
         foreach ($searchitems as $sid => $item) {
-
-            $id = $item->id;
             $configname = $item->name;
             $value = $item->value;
 
             $group = [];
-            $group[] = &$mform->createElement('checkbox', "cb_$configname", 'name', '');
+            $group[] = &$mform->createElement('advcheckbox', "enable_s_$configname", 'name', '', null, [0, 1]);
+            $mform->setDefault("enable_s_$configname", 0);
 
             foreach ($environments as $eid => $env) {
-                $group[] = &$mform->createElement('text', "text_$eid$env", '', null);
-                $mform->setType("text_$eid$env", PARAM_TEXT);
+                $key = 'search_' . $eid . '_' . $configname;
+
+                $group[] = &$mform->createElement('text', $key, '', null);
+                $mform->setType($key, PARAM_TEXT);
+                $mform->setDefault($key, $value);
             }
 
             $mform->addGroup($group, "group_$configname", $configname, ' ', false);
         }
 
-        // Basic separator between search and the defined list.
-        $mform->addElement('html', html_writer::empty_tag('hr'));
+        if (!empty($configitems)) {
+            // Basic separator between search and the defined list.
+            $mform->addElement('html', html_writer::empty_tag('hr'));
+            // Add an environment header group.
+            $mform->addGroup($environmentheader, 'group_header2', '', ' ', false);
+        }
 
-        // Add an environment header group.
-        $mform->addGroup($environmentheader, "group_header2", '', ' ', false);
-
-        // Display the configured items associated to each environment.
-        foreach ($configitems as $cid => $config) {
+        // Display the configured items associated to each config type.
+        foreach ($configitems as $configname => $items) {
             $group = [];
-            $group[] = &$mform->createElement('checkbox', "cb_$config", 'name', '');
+            $group[] = &$mform->createElement('advcheckbox', "enable_c_$configname", 'name', '', null, [0, 1]);
+            $mform->setDefault("enable_c_$configname", 1);
 
             foreach ($environments as $eid => $env) {
-                $group[] = &$mform->createElement('text', "text_$eid$env", '', null);
-                $mform->setType("text_$eid$env", PARAM_TEXT);
+                $key = 'config_' . $eid . '_' . $configname;
+
+                $group[] = &$mform->createElement('text', $key, '', null);
+                $mform->setType($key, PARAM_TEXT);
+                $mform->setDefault($key, $items[$eid]->value);
             }
 
-            $mform->addGroup($group, "group_$config", '', ' ', false);
+            $mform->addGroup($group, "group_$configname", $configname, ' ', false);
         }
 
-
-        foreach ($environments as $eid => $env) {
-            $mform->setDefault("text_$eid$env", $env);
-        }
-
+        $buttonarray = array();
+        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'));
+        $buttonarray[] = &$mform->createElement('reset', 'resetbutton', get_string('revert'));
+        $buttonarray[] = &$mform->createElement('cancel');
+        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->closeHeaderBefore('buttonar');
     }
 
     /**

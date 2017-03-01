@@ -29,19 +29,97 @@ require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('cleaner_environment_matrix');
 
-$searchresult = []; // key => 'id, name, value'
-$configitems = [];  // key => 'envid, config, value'
-$environments = ['e1', 'e2', 'e3']; // key => 'environement, wwwroot'
+global $DB;
+
+$configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
+$environments = \cleaner_environment_matrix\local\matrix::get_environments();
+$searchitems = [];
 
 // Lookup possible {config} table entries.
 $search = optional_param('search', null, PARAM_TEXT);
 if (!empty($search)) {
-    $searchresult = \cleaner_environment_matrix\local\matrix::search($search);
-//    var_dump($searchresult);
+    $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
 }
 
 $customdata = [
-    'searchitems' => $searchresult,
+    'searchitems' => $searchitems,
+    'configitems' => $configitems,
+    'environments' => $environments,
+];
+
+$post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
+$matrix = new \cleaner_environment_matrix\form\matrix($post, $customdata);
+
+// We have created the form with the correct fields and data, but we don't want to display this one.
+if ($matrix->is_cancelled()) {
+    redirect($post);
+} else if ($data = $matrix->get_data()) {
+    // Find which items are are enabled or disabled.
+    $enabled = [];
+    $disabled = [];
+    foreach ($data as $key => $item) {
+        preg_match('/enable_[sc]_(.*)/', $key, $match);
+
+        // Checking for enabled.
+        if (!empty($match) && $item == 1) {
+            $config = $match[count($match) - 1];
+            $enabled[] = $config;
+            // Checking for disabled.
+        } else if (!empty($match) && $item == 0) {
+            $config = $match[count($match) - 1];
+            $disabled[] = $config;
+        }
+    }
+
+    // Find items that have been set.
+    foreach ($data as $key => $item) {
+        preg_match('/[search|config]_(\d*)_(.*)/', $key, $match);
+
+        // Search for the $config name in the list of setting with an enabled checkbox.
+        if (!empty($match)) {
+            $config = $match[count($match) - 1];
+            $envid = $match[count($match) - 2];
+
+            $entry = new stdClass();
+            $entry->envid = $envid;
+            $entry->config = $config;
+            $entry->value = $item;
+
+            $select = 'envid = :envid AND ' . $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
+            $params = ['config' => $config, 'envid' => $envid];
+            $record = $DB->get_record_select('cleaner_env_matrix_data', $select, $params);
+
+            if (in_array($match[count($match) - 1], $enabled)) {
+                if (empty($record)) {
+                    $DB->insert_record('cleaner_env_matrix_data', $entry);
+                } else {
+                    $entry->id = $record->id;
+                    $DB->update_record('cleaner_env_matrix_data', $entry);
+                }
+
+            } else if (in_array($match[count($match) - 1], $disabled)) {
+                $select = $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
+                $params = ['config' => $config];
+                $DB->delete_records_select('cleaner_env_matrix_data', $select, $params);
+            }
+
+        }
+    }
+
+}
+
+$configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
+$environments = \cleaner_environment_matrix\local\matrix::get_environments();
+$searchitems = [];
+
+// Lookup possible {config} table entries.
+$search = optional_param('search', null, PARAM_TEXT);
+if (!empty($search)) {
+    $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
+}
+
+$customdata = [
+    'searchitems' => $searchitems,
     'configitems' => $configitems,
     'environments' => $environments,
 ];
@@ -50,7 +128,5 @@ $post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php'
 $matrix = new \cleaner_environment_matrix\form\matrix($post, $customdata);
 
 echo $OUTPUT->header();
-
 $matrix->display();
-
 echo $OUTPUT->footer();
