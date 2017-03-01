@@ -29,13 +29,14 @@ require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('cleaner_environment_matrix');
 
-global $DB;
+$PAGE->requires->css('/local/datacleaner/cleaner/environment_matrix/styles.css');
+$PAGE->add_body_class('cleaner_environment_matrix');
 
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
+$overflow = false;
 
-// Lookup possible {config} table entries.
 $search = optional_param('search', null, PARAM_TEXT);
 if (!empty($search)) {
     $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
@@ -45,6 +46,7 @@ $customdata = [
     'searchitems' => $searchitems,
     'configitems' => $configitems,
     'environments' => $environments,
+    'overflow' => $overflow,
 ];
 
 $post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
@@ -77,16 +79,15 @@ if ($matrix->is_cancelled()) {
 
         // Search for the $config name in the list of setting with an enabled checkbox.
         if (!empty($match)) {
-            $config = $match[count($match) - 1];
-            $envid = $match[count($match) - 2];
+            $element = $matrix->find_element($key);
 
             $entry = new stdClass();
-            $entry->envid = $envid;
-            $entry->config = $config;
-            $entry->value = $item;
+            $entry->envid = $element->getAttribute('envid');
+            $entry->config = $element->getAttribute('configname');
+            $entry->value = $element->getAttribute('value');
 
             $select = 'envid = :envid AND ' . $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
-            $params = ['config' => $config, 'envid' => $envid];
+            $params = ['config' => $entry->config, 'envid' => $entry->envid];
             $record = $DB->get_record_select('cleaner_env_matrix_data', $select, $params);
 
             if (in_array($match[count($match) - 1], $enabled)) {
@@ -100,6 +101,14 @@ if ($matrix->is_cancelled()) {
             } else if (in_array($match[count($match) - 1], $disabled)) {
                 $select = $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
                 $params = ['config' => $config];
+
+//                $select = $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
+//                $select .= ' AND ' . $DB->sql_compare_text('plugin') . ' = ' . $DB->sql_compare_text(':plugin');
+//                $params = [
+//                    'config' => $config,
+//                    'plugin' => $plugin
+//                ];
+
                 $DB->delete_records_select('cleaner_env_matrix_data', $select, $params);
             }
 
@@ -111,17 +120,23 @@ if ($matrix->is_cancelled()) {
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
+$overflow = false;
 
-// Lookup possible {config} table entries.
 $search = optional_param('search', null, PARAM_TEXT);
 if (!empty($search)) {
     $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
+
+    if (count($searchitems) > \cleaner_environment_matrix\local\matrix::MAX_LIMIT) {
+        array_pop($searchitems);
+        $overflow = true;
+    }
 }
 
 $customdata = [
     'searchitems' => $searchitems,
     'configitems' => $configitems,
     'environments' => $environments,
+    'overflow' => $overflow,
 ];
 
 $post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');

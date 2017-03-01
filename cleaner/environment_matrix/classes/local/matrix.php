@@ -35,6 +35,8 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 
 class matrix {
+    const MAX_LIMIT = 5;
+
     public static function environmentbar_exists() {
         if (class_exists('\local_envbar\local\envbarlib')) {
             return true;
@@ -50,7 +52,16 @@ class matrix {
 
         $select = $DB->sql_like('name', ':name', false);
         $params = ['name' => '%' . $query . '%'];
-        $records = $DB->get_records_select('config', $select, $params, 'name', '*');
+        $records = $DB->get_records_select('config', $select, $params, 'name', '*', 0 , self::MAX_LIMIT + 1);
+
+        foreach ($records as $record) {
+            if (!array_key_exists($record->name, $configitems)) {
+                $record->plugin = 'core';
+                $result[] = $record;
+            }
+        }
+
+        $records = $DB->get_records_select('config_plugins', $select, $params, 'name', '*', 0 , self::MAX_LIMIT + 1);
 
         foreach ($records as $record) {
             if (!array_key_exists($record->name, $configitems)) {
