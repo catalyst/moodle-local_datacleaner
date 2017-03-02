@@ -45,27 +45,51 @@ class matrix {
         return false;
     }
 
-    public static function search($query, $configitems = []) {
+    public static function search($search, $configitems = []) {
         global $DB;
 
         $result = [];
 
+        $query = explode(' ', $search);
+        if (count($query) == 2) {
+            $name = $query[0];
+            $plugin = $query[1];
+        } else {
+            $name = $search;
+        }
+
         $select = $DB->sql_like('name', ':name', false);
-        $params = ['name' => '%' . $query . '%'];
-        $records = $DB->get_records_select('config', $select, $params, 'name', '*', 0 , self::MAX_LIMIT + 1);
+        $params = ['name' => '%' . $name . '%'];
+
+        $records = $DB->get_records_select('config', $select, $params, 'name', 'id, name', 0 , self::MAX_LIMIT + 1);
 
         foreach ($records as $record) {
             if (!array_key_exists($record->name, $configitems)) {
                 $record->plugin = 'core';
-                $result[] = $record;
+
+                // If the plugin is empty then will only append core results.
+                if (empty($plugin)) {
+                    $result[] = $record;
+                }
             }
         }
 
-        $records = $DB->get_records_select('config_plugins', $select, $params, 'name', '*', 0 , self::MAX_LIMIT + 1);
+        // If plugin has been set, we will modify the SQL query to include it.
+        if (!empty($plugin)) {
+            $select .= ' AND '. $DB->sql_like('plugin', ':plugin', false);
+            $params['plugin'] = '%' . $plugin . '%';
+        }
+
+        $records = $DB->get_records_select('config_plugins', $select, $params, 'name', 'id, plugin, name', 0 , self::MAX_LIMIT + 1);
 
         foreach ($records as $record) {
             if (!array_key_exists($record->name, $configitems)) {
-                $result[] = $record;
+                // If the plugin was specified as a search query, prepend the results to the list as we have a limited set.
+                if (!empty($plugin)) {
+                    array_unshift($result, $record);
+                } else {
+                    $result[] = $record;
+                }
             }
         }
 
@@ -95,7 +119,7 @@ class matrix {
 
         $environments = \local_envbar\local\envbarlib::get_records();
 
-        foreach ($environments as $key => $env) {
+        foreach ($environments as $env) {
             $select = $DB->sql_compare_text('wwwroot') . ' = ' . $DB->sql_compare_text(':wwwroot');
             $params = ['wwwroot' => $env->matchpattern];
             $record = $DB->get_record_select('cleaner_env_matrix', $select, $params);

@@ -57,24 +57,25 @@ class matrix extends moodleform {
         $configitems = $this->_customdata['configitems'];
         $environments = $this->_customdata['environments'];
 
-        // Construct environment header group. This will be used multiple times.
+        // Construct environment header group. This will be used multiple times. Once for search and configured items.
         $environmentheader = [];
         $environmentheader[] = &$mform->createElement('checkbox', 'cb_header', 'name', '', ['class' => 'cb_header']);
         foreach ($environments as $eid => $env) {
             $site = $env->environment;
             $root = $env->wwwroot;
 
-            $key = 'header_' . $eid . '_' . $site;
+            $key = "environments[$eid]";
             $environmentheader[] = &$mform->createElement('text', $key, '', ['disabled']);
             $mform->setType($key, PARAM_TEXT);
             $mform->setDefault($key, "$site ($root)");
         }
 
-        // Add the search element.
+        // Add the search element group.
+        $searchstring = get_string('button_search', 'cleaner_environment_matrix');
         $searchgroup = [];
         $searchgroup[] = &$mform->createElement('checkbox', 'search_cb', 'name', '', ['class' => 'cb_header']);
         $searchgroup[] = &$mform->createElement('text', 'search', '', null);
-        $searchgroup[] = &$mform->createElement('submit', 'searchbutton', get_string('button_search', 'cleaner_environment_matrix'), null);
+        $searchgroup[] = &$mform->createElement('submit', 'searchbutton', $searchstring, null);
         $mform->setType('search', PARAM_TEXT);
         $mform->addGroup($searchgroup, 'searchgroup', '' , ' ', false);
 
@@ -86,27 +87,19 @@ class matrix extends moodleform {
         }
 
         // Display the configured items associated to each environment.
-        foreach ($searchitems as $sid => $item) {
+        foreach ($searchitems as $item) {
             $configname = $item->name;
-            $value = $item->value;
             $plugin = $item->plugin;
 
             $group = [];
-            $group[] = &$mform->createElement('advcheckbox', "enable_s_$configname", 'name', '', '', [0, 1]);
-            $mform->setDefault("enable_s_$configname", 0);
+            $cbkey = "selected[$plugin][$configname]";
+            $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
+            $mform->setDefault($cbkey, 0);
 
             foreach ($environments as $eid => $env) {
-                $key = 'search_' . $eid . '_' . $configname;
-
-                $params = [
-                    'plugin' => $plugin,
-                    'configname' => $configname,
-                    'envid' => $eid,
-                ];
-
-                $group[] = &$mform->createElement('text', $key, '', $params);
+                $key = "config[$plugin][$configname][$eid]";
+                $group[] = &$mform->createElement('text', $key, '');
                 $mform->setType($key, PARAM_TEXT);
-                //$mform->setDefault($key, $value);
             }
 
             $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
@@ -121,23 +114,18 @@ class matrix extends moodleform {
 
         // Display the configured items associated to each config type.
         foreach ($configitems as $configname => $items) {
-            $plugin = $items[0]->plugin;
+            $plugin = array_values($items)[0]->plugin;
             $group = [];
-            $group[] = &$mform->createElement('advcheckbox', "enable_c_$configname", 'name', '', null, [0, 1]);
-            $mform->setDefault("enable_c_$configname", 1);
+            $cbkey = "selected[$plugin][$configname]";
+            $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
+            $mform->setDefault($cbkey, 1);
 
             foreach ($environments as $eid => $env) {
-                $key = 'config_' . $eid . '_' . $configname;
-
-                $params = [
-                    'plugin' => $plugin,
-                    'configname' => $configname,
-                    'envid' => $eid,
-                ];
-
-                $group[] = &$mform->createElement('text', $key, '', $params);
+                $key = "config[$plugin][$configname][$eid]";
+                $group[] = &$mform->createElement('text', $key, '');
                 $mform->setType($key, PARAM_TEXT);
-                $mform->setDefault($key, $items[$eid]->value);
+                $value = empty($items[$eid]->value) ? '' : $items[$eid]->value;
+                $mform->setDefault($key, $value);
             }
 
             $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
@@ -160,39 +148,6 @@ class matrix extends moodleform {
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-
-        foreach ($data as $name => $value) {
-            $element = $this->find_element($name, $this->_form->_elements);
-
-            if (!empty($element)) {
-
-            }
-        }
         return $errors;
-    }
-
-    public function find_element($name, $elements = null) {
-        if (empty($elements)) {
-            $elements = $this->_form->_elements;
-        }
-
-        foreach ($elements as $element) {
-
-            if (!empty($element->_elements)) {
-                $ret = $this->find_element($name, $element->_elements);
-            }
-
-            if (!empty($ret)) {
-                return $ret;
-            }
-
-            if (!empty($element->_attributes)) {
-                if ($element->_attributes['name'] == $name) {
-                    return $element;
-                }
-            }
-        }
-
-        return false;
     }
 }

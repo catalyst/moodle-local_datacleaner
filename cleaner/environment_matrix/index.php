@@ -40,6 +40,11 @@ $overflow = false;
 $search = optional_param('search', null, PARAM_TEXT);
 if (!empty($search)) {
     $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
+
+    if (count($searchitems) > \cleaner_environment_matrix\local\matrix::MAX_LIMIT) {
+        array_pop($searchitems);
+        $overflow = true;
+    }
 }
 
 $customdata = [
@@ -56,65 +61,66 @@ $matrix = new \cleaner_environment_matrix\form\matrix($post, $customdata);
 if ($matrix->is_cancelled()) {
     redirect($post);
 } else if ($data = $matrix->get_data()) {
-    // Find which items are are enabled or disabled.
-    $enabled = [];
-    $disabled = [];
-    foreach ($data as $key => $item) {
-        preg_match('/enable_[sc]_(.*)/', $key, $match);
 
-        // Checking for enabled.
-        if (!empty($match) && $item == 1) {
-            $config = $match[count($match) - 1];
-            $enabled[] = $config;
-            // Checking for disabled.
-        } else if (!empty($match) && $item == 0) {
-            $config = $match[count($match) - 1];
-            $disabled[] = $config;
-        }
-    }
+    $select = $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
+    $select .= ' AND ' . $DB->sql_compare_text('plugin') . ' = ' . $DB->sql_compare_text(':plugin');
+    $select .= ' AND envid = :envid';
 
-    // Find items that have been set.
-    foreach ($data as $key => $item) {
-        preg_match('/[search|config]_(\d*)_(.*)/', $key, $match);
+    $selected = !empty($data->selected) ? $data->selected : [];
+    $config = !empty($data->config) ? $data->config : [];
 
-        // Search for the $config name in the list of setting with an enabled checkbox.
-        if (!empty($match)) {
-            $element = $matrix->find_element($key);
+    foreach ($selected as $plugin => $configs) {
+        foreach ($configs as $name => $ticked) {
 
-            $entry = new stdClass();
-            $entry->envid = $element->getAttribute('envid');
-            $entry->config = $element->getAttribute('configname');
-            $entry->value = $element->getAttribute('value');
-
-            $select = 'envid = :envid AND ' . $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
-            $params = ['config' => $entry->config, 'envid' => $entry->envid];
-            $record = $DB->get_record_select('cleaner_env_matrix_data', $select, $params);
-
-            if (in_array($match[count($match) - 1], $enabled)) {
-                if (empty($record)) {
-                    $DB->insert_record('cleaner_env_matrix_data', $entry);
-                } else {
-                    $entry->id = $record->id;
-                    $DB->update_record('cleaner_env_matrix_data', $entry);
+            $envs = [];
+            if (!empty($config[$plugin])) {
+                if (!empty($config[$plugin][$name])) {
+                    $envs = $config[$plugin][$name];
                 }
-
-            } else if (in_array($match[count($match) - 1], $disabled)) {
-                $select = $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
-                $params = ['config' => $config];
-
-//                $select = $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
-//                $select .= ' AND ' . $DB->sql_compare_text('plugin') . ' = ' . $DB->sql_compare_text(':plugin');
-//                $params = [
-//                    'config' => $config,
-//                    'plugin' => $plugin
-//                ];
-
-                $DB->delete_records_select('cleaner_env_matrix_data', $select, $params);
             }
 
+            // The checkbox has been ticked. Update this field for all environments.
+            if ($ticked == '1') {
+                foreach ($envs as $envid => $value) {
+
+                    $entry = [
+                        'plugin' => $plugin,
+                        'config' => $name,
+                        'envid' => $envid,
+                        'value' => $value,
+                    ];
+
+                    $record = $DB->get_record_select('cleaner_env_matrix_data', $select, $entry);
+
+                    if (empty($record)) {
+                        $DB->insert_record('cleaner_env_matrix_data', $entry);
+                    } else {
+                        $entry['id'] = $record->id;
+                        $DB->update_record('cleaner_env_matrix_data', $entry);
+                    }
+
+                }
+
+                // Else we will reset / remove all the unticked groups.
+            } else {
+                foreach ($envs as $envid => $value) {
+
+                    $entry = [
+                        'plugin' => $plugin,
+                        'config' => $name,
+                        'envid' => $envid,
+                        'value' => $value,
+                    ];
+
+                    $record = $DB->get_record_select('cleaner_env_matrix_data', $select, $entry);
+
+                    if (!empty($record)) {
+                        $DB->delete_records_select('cleaner_env_matrix_data', $select, $entry);
+                    }
+                }
+            }
         }
     }
-
 }
 
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
