@@ -78,6 +78,10 @@ class matrix {
         if (!empty($plugin)) {
             $select .= ' AND '. $DB->sql_like('plugin', ':plugin', false);
             $params['plugin'] = '%' . $plugin . '%';
+        } else {
+            // Search for the plugin name or value instead.
+            $select .= ' OR '. $DB->sql_like('plugin', ':name2', false);
+            $params['name2'] = '%' . $name . '%';
         }
 
         $records = $DB->get_records_select('config_plugins', $select, $params, 'name', 'id, plugin, name', 0 , self::MAX_LIMIT + 1);
