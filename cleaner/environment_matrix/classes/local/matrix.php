@@ -139,12 +139,18 @@ class matrix {
         return true;
     }
 
-    public static function get_matrix_data() {
+    public static function get_matrix_data($environment = null) {
         global $DB;
 
         $data = [];
 
-        $records = $DB->get_records('cleaner_env_matrix_data');
+        $params = [];
+
+        if (!empty($environment)) {
+            $params['envid'] = $environment->id;
+        }
+
+        $records = $DB->get_records('cleaner_env_matrix_data', $params);
 
         foreach ($records as $record) {
             $data[$record->config][$record->envid] = $record;
