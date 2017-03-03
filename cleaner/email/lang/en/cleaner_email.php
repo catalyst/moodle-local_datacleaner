@@ -24,14 +24,14 @@
  */
 
 
-$string['divertallemailsexcept'] = 'Set $CFG->divertallemailsexcept';
-$string['divertallemailsexceptdesc'] = '';
-$string['divertallemailsto'] = 'Set $CFG->dirvertallemailsto';
-$string['divertallemailstodesc'] = '';
-$string['emailsuffix'] = 'Append a suffix to all user addresses';
-$string['emailsuffixdesc'] = '';
-$string['emailsuffixignore'] = 'Do not append the suffix to these addresses';
-$string['emailsuffixignoredesc'] = '';
-$string['noemailever'] = 'Enable $CFG->noemailever';
-$string['noemaileverdesc'] = '';
+$string['divertallemailsexcept'] = 'Divert all emails except';
+$string['divertallemailsexceptdesc'] = 'Set this value to $CFG->divertallemailsexcept';
+$string['divertallemailsto'] = 'Divert all emails to';
+$string['divertallemailstodesc'] = 'Set this value to $CFG->dirvertallemailsto';
+$string['emailsuffix'] = 'Suffix append';
+$string['emailsuffixdesc'] = 'Append a suffix to all user addresses';
+$string['emailsuffixignore'] = 'Suffix ignore';
+$string['emailsuffixignoredesc'] = 'Do not append the suffix to these addresses';
+$string['noemailever'] = 'No email ever';
+$string['noemaileverdesc'] = 'Enable the setting $CFG->noemailever';
 $string['pluginname'] = 'Cleanup email';
