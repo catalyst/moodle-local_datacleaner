@@ -35,23 +35,40 @@ class clean extends \local_datacleaner\clean {
      * Do the work.
      */
     static public function execute() {
-        global $DB;
 
         $config = get_config('cleaner_email');
         $dryrun = (bool)self::$options['dryrun'];
         $verbose = (bool)self::$options['verbose'];
 
         self::debugmemory();
-        self::new_task(2);
 
-        // Set the defined $CFG items.
+        self::new_task(3);
+
+        self::execute_configreplace($config, $verbose, $dryrun);
+        self::next_step();
+
+        self::execute_appendsuffix($config, $verbose, $dryrun);
+        self::next_step();
+
+        self::execute_ignoresuffix($config, $verbose, $dryrun);
+        self::next_step();
+    }
+
+    /**
+     * Replace the defined $CFG settings.
+     *
+     * @param $config
+     * @param $verbose
+     * @param $dryrun
+     */
+    public static function execute_configreplace($config, $verbose, $dryrun) {
         $cfgsettings = [
             'noemailever',
             'divertallemailsto',
             'divertallemailsexcept',
         ];
-        foreach ($cfgsettings as $setting) {
 
+        foreach ($cfgsettings as $setting) {
             $value = $config->$setting;
 
             if ($verbose) {
@@ -62,14 +79,28 @@ class clean extends \local_datacleaner\clean {
                 set_config($setting, $value);
             }
         }
+    }
 
-        self::next_step();
+    /**
+     * Append a suffix to all {user} email addresses.
+     *
+     * @param $config
+     * @param $verbose
+     * @param $dryrun
+     *
+     * @return bool
+     */
+    public static function execute_appendsuffix($config, $verbose, $dryrun) {
+        global $DB;
 
-        // Append the email suffix.
         $dbtype = $DB->get_dbfamily();
         $suffix = $config->emailsuffix;
 
         $query = '';
+
+        if (empty($suffix)) {
+            return false;
+        }
 
         if ($dbtype == 'postgres') {
             $query = "UPDATE {user} SET email = email || '$suffix'";
@@ -87,6 +118,47 @@ class clean extends \local_datacleaner\clean {
             $DB->execute($query);
         }
 
-        self::next_step();
+        return true;
+    }
+
+    /**
+     * Remove the suffix from a set of users based on the defined regular expression.
+     *
+     * @param $config
+     * @param $verbose
+     * @param $dryrun
+     *
+     * @return bool
+     */
+    public static function execute_ignoresuffix($config, $verbose, $dryrun) {
+        global $DB;
+
+        $dbtype = $DB->get_dbfamily();
+        $suffix = $config->emailsuffix;
+        $emailsuffixignore = $config->emailsuffixignore;
+
+        $query = '';
+
+        if (empty($suffix) || empty($emailsuffixignore)) {
+            return false;
+        }
+
+        if ($dbtype == 'postgres') {
+            $query = "UPDATE {user} SET email = regexp_replace(email, '$suffix', '', 'g') WHERE email ~ '$emailsuffixignore'";
+        } else if ($dbtype == 'mysql') {
+            $query = "UPDATE {user} SET email = TRIM(TRAILING '$suffix' FROM email) WHERE email REGEXP '$emailsuffixignore'";
+        } else {
+            mtrace("Database not supported: $dbtype");
+        }
+
+        if ($verbose) {
+            mtrace("Executing: $query");
+        }
+
+        if (!$dryrun) {
+            $DB->execute($query);
+        }
+
+        return true;
     }
 }
