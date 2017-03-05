@@ -91,8 +91,6 @@ class cleaner_email_test extends advanced_testcase {
             $this->assertNotContains('.test', $user->email);
         }
 
-
-
         // Check that suffix exists.
         foreach ($this->users as $user) {
             $record = $DB->get_record('user', ['id' => $user->id]);
