@@ -26,9 +26,21 @@
 
 namespace cleaner_email;
 
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Cleaner.
+ *
+ * @package    cleaner_email
+ * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
+ * @copyright  2017 Catalyst IT
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+
+    /** The task name */
     const TASK = 'Email cleaner';
 
     /**
@@ -57,9 +69,10 @@ class clean extends \local_datacleaner\clean {
     /**
      * Replace the defined $CFG settings.
      *
-     * @param $config
-     * @param $verbose
-     * @param $dryrun
+     * @param stdClass $config
+     * @param bool $verbose
+     * @param bool $dryrun
+     *
      */
     public static function execute_configreplace($config, $verbose, $dryrun) {
         $cfgsettings = [
@@ -84,9 +97,9 @@ class clean extends \local_datacleaner\clean {
     /**
      * Append a suffix to all {user} email addresses.
      *
-     * @param $config
-     * @param $verbose
-     * @param $dryrun
+     * @param stdClass $config
+     * @param bool $verbose
+     * @param bool $dryrun
      *
      * @return bool
      */
@@ -124,9 +137,9 @@ class clean extends \local_datacleaner\clean {
     /**
      * Remove the suffix from a set of users based on the defined regular expression.
      *
-     * @param $config
-     * @param $verbose
-     * @param $dryrun
+     * @param stdClass $config
+     * @param bool $verbose
+     * @param bool $dryrun
      *
      * @return bool
      */

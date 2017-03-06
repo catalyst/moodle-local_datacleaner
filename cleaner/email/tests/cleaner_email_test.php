@@ -37,10 +37,13 @@ defined('MOODLE_INTERNAL') || die();
  */
 class cleaner_email_test extends advanced_testcase {
 
+    /** @var stdClass $config */
     private $config;
 
+    /** @var array $users */
     private $users;
 
+    /** Number of users created */
     const MAX_USERS = 10;
 
     /**
@@ -101,6 +104,11 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Test appending the suffix and ignoring a regular expression.
      *
+     * @param string $input
+     * @param string $expected
+     * @param string $suffix
+     * @param string $ignorepattern
+     *
      * @dataProvider provider_for_cleaner_email_suffix_ignore_pattern
      */
     public function test_cleaner_email_suffix_ignore_pattern($input, $expected, $suffix, $ignorepattern) {
@@ -119,6 +127,11 @@ class cleaner_email_test extends advanced_testcase {
         $this->assertEquals($expected, $record->email);
     }
 
+    /**
+     * Provider for test_cleaner_email_suffix_ignore_pattern.
+     *
+     * @return array
+     */
     public function provider_for_cleaner_email_suffix_ignore_pattern() {
         return [
             ['user@example.com',     'user@example.com.suffix',     '.suffix',   'moodle.com'],
