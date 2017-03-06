@@ -24,5 +24,7 @@
  */
 
 
-$string['pluginname'] = 'Environment matrix';
 $string['button_search'] = 'Search';
+$string['existing_configuration'] = 'Existing configuration';
+$string['pluginname'] = 'Environment matrix';
+$string['search_results'] = 'Search results';

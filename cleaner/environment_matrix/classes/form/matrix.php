@@ -80,6 +80,11 @@ class matrix extends moodleform {
         $mform->addGroup($searchgroup, 'searchgroup', '' , ' ', false);
 
         if (!empty($searchitems)) {
+            $searchtitle = [];
+            $searchtitle[] = &$mform->createElement('checkbox', 'searchtitle_cb', 'name', '', ['class' => 'cb_header']);
+            $searchtitle[] = &$mform->createElement('static', 'stitle', 'stitle', get_string('search_results', 'cleaner_environment_matrix'));
+            $mform->addGroup($searchtitle, 'searchtitle', '' , ' ', false);
+
             // Basic separator between search and the defined list.
             $mform->addElement('html', html_writer::empty_tag('hr'));
             // Add an environment header group.
@@ -106,6 +111,13 @@ class matrix extends moodleform {
         }
 
         if (!empty($configitems)) {
+            $mform->addElement('html', html_writer::empty_tag('br'));
+
+            $existingtitle = [];
+            $existingtitle[] = &$mform->createElement('checkbox', 'existing_cb', 'name', '', ['class' => 'cb_header']);
+            $existingtitle[] = &$mform->createElement('static', 'etitle', 'etitle', get_string('existing_configuration', 'cleaner_environment_matrix'));
+            $mform->addGroup($existingtitle, 'existingtitle', '' , ' ', false);
+
             // Basic separator between search and the defined list.
             $mform->addElement('html', html_writer::empty_tag('hr'));
             // Add an environment header group.
