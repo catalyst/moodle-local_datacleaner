@@ -94,7 +94,19 @@ class cleaner_email_test extends advanced_testcase {
             $this->assertNotContains('.test', $user->email);
         }
 
+        // Lets clean!
+        clean::execute_appendsuffix($this->config, false, false);
+
         // Check that suffix exists.
+        foreach ($this->users as $user) {
+            $record = $DB->get_record('user', ['id' => $user->id]);
+            $this->assertContains('.test', $record->email);
+        }
+
+        // Lets go back and fix the suffix!
+        clean::execute_ignoresuffix($this->config, false, false);
+
+        // Check that suffix was removed.
         foreach ($this->users as $user) {
             $record = $DB->get_record('user', ['id' => $user->id]);
             $this->assertNotContains('.test', $record->email);
