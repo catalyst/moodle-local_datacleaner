@@ -28,9 +28,9 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
-$plugin->version   = 2017022800;
-$plugin->release   = 2017022800;
-$plugin->maturity  = MATURITY_ALPHA;
+$plugin->version   = 2017030600;
+$plugin->release   = 2017030600;
+$plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
 $plugin->component = 'cleaner_environment_matrix';
 $plugin->sortorder = 200;
