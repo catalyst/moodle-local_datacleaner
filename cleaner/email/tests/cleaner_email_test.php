@@ -57,9 +57,10 @@ class cleaner_email_test extends advanced_testcase {
             $this->users[] = $this->getDataGenerator()->create_user();
         }
 
+        // Set some defaults.
         $this->config = new stdClass();
         $this->config->emailsuffix = '.test';
-        $this->config->emailsuffixignore = 'example.com';
+        $this->config->emailsuffixignore = '';
     }
 
     /**
@@ -89,6 +90,9 @@ class cleaner_email_test extends advanced_testcase {
     public function test_cleaner_email_suffix_ignore() {
         global $DB;
 
+        // Prevent emails of this pattern to have the suffix.
+        $this->config->emailsuffixignore = 'example.com';
+
         // Obtain the list of generated users.
         foreach ($this->users as $user) {
             $this->assertNotContains('.test', $user->email);
@@ -97,16 +101,7 @@ class cleaner_email_test extends advanced_testcase {
         // Lets clean!
         clean::execute_appendsuffix($this->config, false, false);
 
-        // Check that suffix exists.
-        foreach ($this->users as $user) {
-            $record = $DB->get_record('user', ['id' => $user->id]);
-            $this->assertContains('.test', $record->email);
-        }
-
-        // Lets go back and fix the suffix!
-        clean::execute_ignoresuffix($this->config, false, false);
-
-        // Check that suffix was removed.
+        // Check that suffix does not exist for users.
         foreach ($this->users as $user) {
             $record = $DB->get_record('user', ['id' => $user->id]);
             $this->assertNotContains('.test', $record->email);
@@ -133,7 +128,6 @@ class cleaner_email_test extends advanced_testcase {
 
         // Lets clean!
         clean::execute_appendsuffix($this->config, false, false);
-        clean::execute_ignoresuffix($this->config, false, false);
 
         $record = $DB->get_record('user', ['id' => $user->id]);
         $this->assertEquals($expected, $record->email);
@@ -141,6 +135,13 @@ class cleaner_email_test extends advanced_testcase {
 
     /**
      * Provider for test_cleaner_email_suffix_ignore_pattern.
+     *
+     * The array values are,
+     *
+     * 1. Input.
+     * 2. Expected output.
+     * 3. Suffix.
+     * 4. Ignore pattern.
      *
      * @return array
      */

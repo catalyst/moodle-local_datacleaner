@@ -54,15 +54,12 @@ class clean extends \local_datacleaner\clean {
 
         self::debugmemory();
 
-        self::new_task(3);
+        self::new_task(2);
 
         self::execute_configreplace($config, $verbose, $dryrun);
         self::next_step();
 
         self::execute_appendsuffix($config, $verbose, $dryrun);
-        self::next_step();
-
-        self::execute_ignoresuffix($config, $verbose, $dryrun);
         self::next_step();
     }
 
@@ -106,62 +103,17 @@ class clean extends \local_datacleaner\clean {
     public static function execute_appendsuffix($config, $verbose, $dryrun) {
         global $DB;
 
-        $dbtype = $DB->get_dbfamily();
         $suffix = $config->emailsuffix;
-
-        $query = '';
+        $emailsuffixignore = $config->emailsuffixignore;
 
         if (empty($suffix)) {
             return false;
         }
 
-        if ($dbtype == 'postgres') {
-            $query = "UPDATE {user} SET email = email || '$suffix'";
-        } else if ($dbtype == 'mysql') {
-            $query = "UPDATE {user} SET email = CONCAT(email, '$suffix') ";
-        } else {
-            mtrace("Database not supported: $dbtype");
-        }
+        $query  = "UPDATE {user} SET email = " . $DB->sql_concat_join("''", ['email', "'$suffix'"]);
 
-        if ($verbose) {
-            mtrace("Executing: $query");
-        }
-
-        if (!$dryrun) {
-            $DB->execute($query);
-        }
-
-        return true;
-    }
-
-    /**
-     * Remove the suffix from a set of users based on the defined regular expression.
-     *
-     * @param stdClass $config
-     * @param bool $verbose
-     * @param bool $dryrun
-     *
-     * @return bool
-     */
-    public static function execute_ignoresuffix($config, $verbose, $dryrun) {
-        global $DB;
-
-        $dbtype = $DB->get_dbfamily();
-        $suffix = $config->emailsuffix;
-        $emailsuffixignore = $config->emailsuffixignore;
-
-        $query = '';
-
-        if (empty($suffix) || empty($emailsuffixignore)) {
-            return false;
-        }
-
-        if ($dbtype == 'postgres') {
-            $query = "UPDATE {user} SET email = regexp_replace(email, '$suffix', '', 'g') WHERE email ~ '$emailsuffixignore'";
-        } else if ($dbtype == 'mysql') {
-            $query = "UPDATE {user} SET email = TRIM(TRAILING '$suffix' FROM email) WHERE email REGEXP '$emailsuffixignore'";
-        } else {
-            mtrace("Database not supported: $dbtype");
+        if (!empty($emailsuffixignore)) {
+            $query .= " WHERE email " . $DB->sql_regex(false) . " '$emailsuffixignore'";
         }
 
         if ($verbose) {
