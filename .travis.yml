@@ -24,7 +24,6 @@ env:
   - DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
   - DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
   - DB=pgsql MOODLE_BRANCH=master
   - DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
@@ -35,7 +34,6 @@ env:
   - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
   - DB=mysqli MOODLE_BRANCH=master
-  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
 
 
 matrix:

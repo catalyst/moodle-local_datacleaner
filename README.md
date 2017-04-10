@@ -135,6 +135,17 @@ Enable to replace all occurrences of the production URL with another URL. This h
 
 Clean orphaned files or replace with a generic file for the specific file type.
 
+#### Cleanup email:
+
+When a suffix has been configured in the settings, this will append that value to all emails.
+There is also a regular expression field that will ignore users when appending the suffix.
+
+Also this will allow you to configure following Moodle settings:
+ - noemailever
+ - divertallemailsto
+ - divertallemailsexcept
+
+
 ## Running
 
 After installing and configuring DataCleaner, copy your database and optionally your site data to another Moodle instance.
