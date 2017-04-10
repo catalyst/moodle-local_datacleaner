@@ -49,11 +49,43 @@ class matrix extends moodleform {
      * @see moodleform::definition()
      */
     public function definition() {
+
+        // A text field to seach for config and plugin items.
+        $this->render_search_field();
+
+        // Create the header to be used multiple times.
+        $environmentheader = $this->render_environment_list();
+
+        // Search results that do not have any saved configuration will be displayed here.
+        $this->render_search_results($environmentheader);
+
+        // Saved configuration items will be displayed here.
+        $this->render_saved_results($environmentheader);
+
+        // Submit / cancel buttons.
+        $this->render_submit_buttons();
+    }
+
+    /**
+     * Validate the parts of the request form for this module
+     *
+     * @param array $data An array of form data
+     * @param array $files An array of form files
+     * @return array of error messages
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        return $errors;
+    }
+
+    /**
+     * A list of environments from data passed to the forum. This is populated from the environment bar configuration.
+     *
+     * @return array
+     */
+    private function render_environment_list() {
         $mform = $this->_form;
 
-        // Obtain the data that has been passed to this form.
-        $searchitems = $this->_customdata['searchitems'];
-        $configitems = $this->_customdata['configitems'];
         $environments = $this->_customdata['environments'];
 
         // Construct environment header group. This will be used multiple times. Once for search and configured items.
@@ -69,6 +101,23 @@ class matrix extends moodleform {
             $mform->setDefault($key, "$site ($root)");
         }
 
+        return $environmentheader;
+    }
+
+    /**
+     * Search field.
+     *
+     * The order of search terms is important.
+     *
+     * Word 1: Searches {config} name
+     * Word 2: Searches {config_plugins} plugin.
+     *
+     * If one word is specified it will search for both {config} name and {config_plugins} name.
+     * If both words are specified it will search for both {config} name and {config_plugins} name, plugin.
+     */
+    private function render_search_field() {
+        $mform = $this->_form;
+
         // Add the search element group.
         $searchstring = get_string('button_search', 'cleaner_environment_matrix');
         $searchgroup = [];
@@ -77,6 +126,18 @@ class matrix extends moodleform {
         $searchgroup[] = &$mform->createElement('submit', 'searchbutton', $searchstring, null);
         $mform->setType('search', PARAM_TEXT);
         $mform->addGroup($searchgroup, 'searchgroup', '' , ' ', false);
+    }
+
+    /**
+     * Display only results from the search that do not have saved configuration.
+     *
+     * @param array $environmentheader
+     */
+    private function render_search_results($environmentheader) {
+        $mform = $this->_form;
+
+        $searchitems = $this->_customdata['searchitems'];
+        $environments = $this->_customdata['environments'];
 
         if (!empty($searchitems)) {
             $searchtitle = [];
@@ -108,6 +169,19 @@ class matrix extends moodleform {
 
             $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
         }
+
+    }
+
+    /**
+     * Display only results that have saved configuration.
+     *
+     * @param array $environmentheader
+     */
+    private function render_saved_results($environmentheader) {
+        $mform = $this->_form;
+
+        $configitems = $this->_customdata['configitems'];
+        $environments = $this->_customdata['environments'];
 
         if (!empty($configitems)) {
             $mform->addElement('html', html_writer::empty_tag('br'));
@@ -141,6 +215,13 @@ class matrix extends moodleform {
 
             $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
         }
+    }
+
+    /**
+     * Display submit / cancel buttons.
+     */
+    private function render_submit_buttons() {
+        $mform = $this->_form;
 
         $buttonarray = array();
         $buttonarray[] = &$mform->createElement('checkbox', 'submit_cb', 'name', '', ['class' => 'cb_header']);
@@ -148,17 +229,5 @@ class matrix extends moodleform {
         $buttonarray[] = &$mform->createElement('cancel');
         $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
         $mform->closeHeaderBefore('buttonar');
-    }
-
-    /**
-     * Validate the parts of the request form for this module
-     *
-     * @param array $data An array of form data
-     * @param array $files An array of form files
-     * @return array of error messages
-     */
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-        return $errors;
     }
 }
