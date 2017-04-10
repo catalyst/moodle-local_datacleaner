@@ -121,15 +121,14 @@ class matrix {
     }
 
     /**
-     * Obtains the list of environments from envbar.
+     * Obtains the visible list of environments from envbar.
      * @return array
      */
     public static function get_environments() {
-        global $DB;
 
         self::populate_envbar_environments();
 
-        $records = $DB->get_records('cleaner_env_matrix');
+        $records = self::filter_envbar_environments();
 
         if (!empty($records)) {
             return $records;
@@ -170,6 +169,35 @@ class matrix {
         }
 
         return true;
+    }
+
+    public static function filter_envbar_environments() {
+        global $DB;
+
+        if (!self::environmentbar_exists()) {
+            return false;
+        }
+
+        $environments = \local_envbar\local\envbarlib::get_records();
+
+        $records = $DB->get_records('cleaner_env_matrix');
+
+        $display = [];
+
+        foreach ($environments as $env) {
+
+            foreach ($records as $key => $record) {
+
+                if ($record->wwwroot == $env->matchpattern) {
+                    $display[$key] = $records[$key];
+                }
+
+            }
+        }
+
+        // $records now contains the tables display
+        return $display;
+
     }
 
     /**
