@@ -34,9 +34,22 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
+/**
+ * Environment matrix class.
+ *
+ * @package    cleaner_environment_matrix
+ * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
+ * @copyright  2017 Catalyst IT
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class matrix {
+    /** @var int The maximum number of config items to return when searching. */
     const MAX_LIMIT = 5;
 
+    /**
+     * Checks to see if environment bar is installed and exists.
+     * @return bool
+     */
     public static function environmentbar_exists() {
         if (class_exists('\local_envbar\local\envbarlib')) {
             return true;
@@ -45,6 +58,13 @@ class matrix {
         return false;
     }
 
+    /**
+     * Search the database for the item specified.
+     *
+     * @param string $search
+     * @param array $configitems
+     * @return array
+     */
     public static function search($search, $configitems = []) {
         global $DB;
 
@@ -100,6 +120,10 @@ class matrix {
         return $result;
     }
 
+    /**
+     * Obtains the list of environments from envbar.
+     * @return array
+     */
     public static function get_environments() {
         global $DB;
 
@@ -114,6 +138,11 @@ class matrix {
         return [];
     }
 
+    /**
+     * Populates the list of available environments.
+     *
+     * @return bool
+     */
     public static function populate_envbar_environments() {
         global $DB;
 
@@ -143,6 +172,12 @@ class matrix {
         return true;
     }
 
+    /**
+     * Obtains the saved matrix values for all or a specified environment.
+     *
+     * @param null $environment
+     * @return array
+     */
     public static function get_matrix_data($environment = null) {
         global $DB;
 

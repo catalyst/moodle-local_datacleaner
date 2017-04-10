@@ -26,9 +26,20 @@
 
 namespace cleaner_environment_matrix;
 
-defined('MOODLE_INTERNAL') || die();
+if (!defined('MOODLE_INTERNAL')) {
+    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
+}
 
+/**
+ * Clean class for Environment matrix.
+ *
+ * @package    cleaner_environment_matrix
+ * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
+ * @copyright  2017 Catalyst IT
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /** @var string The name of the task. */
     const TASK = 'Environment matrix configuration';
 
     /**
