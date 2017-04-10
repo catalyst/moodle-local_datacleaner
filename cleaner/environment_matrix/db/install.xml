@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="cleaner_env_matrix" COMMENT="">
+    <TABLE NAME="cleaner_environment_matrix" COMMENT="">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="environment" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
@@ -14,7 +14,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for cleaner_env_matrix"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="cleaner_env_matrix_data" COMMENT="">
+    <TABLE NAME="cleaner_environment_matrixd" COMMENT="">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="envid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

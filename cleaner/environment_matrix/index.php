@@ -90,13 +90,13 @@ if ($matrix->is_cancelled()) {
                         'value' => $value,
                     ];
 
-                    $record = $DB->get_record_select('cleaner_env_matrix_data', $select, $entry);
+                    $record = $DB->get_record_select('cleaner_environment_matrixd', $select, $entry);
 
                     if (empty($record)) {
-                        $DB->insert_record('cleaner_env_matrix_data', $entry);
+                        $DB->insert_record('cleaner_environment_matrixd', $entry);
                     } else {
                         $entry['id'] = $record->id;
-                        $DB->update_record('cleaner_env_matrix_data', $entry);
+                        $DB->update_record('cleaner_environment_matrixd', $entry);
                     }
 
                 }
@@ -112,10 +112,10 @@ if ($matrix->is_cancelled()) {
                         'value' => $value,
                     ];
 
-                    $record = $DB->get_record_select('cleaner_env_matrix_data', $select, $entry);
+                    $record = $DB->get_record_select('cleaner_environment_matrixd', $select, $entry);
 
                     if (!empty($record)) {
-                        $DB->delete_records_select('cleaner_env_matrix_data', $select, $entry);
+                        $DB->delete_records_select('cleaner_environment_matrixd', $select, $entry);
                     }
                 }
             }

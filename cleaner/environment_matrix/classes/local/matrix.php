@@ -154,17 +154,17 @@ class matrix {
         foreach ($environments as $env) {
             $select = $DB->sql_compare_text('wwwroot') . ' = ' . $DB->sql_compare_text(':wwwroot');
             $params = ['wwwroot' => $env->matchpattern];
-            $record = $DB->get_record_select('cleaner_env_matrix', $select, $params);
+            $record = $DB->get_record_select('cleaner_environment_matrix', $select, $params);
 
             $data = new stdClass();
             $data->environment = $env->showtext;
             $data->wwwroot = $env->matchpattern;
 
             if (empty($record)) {
-                $DB->insert_record('cleaner_env_matrix', $data);
+                $DB->insert_record('cleaner_environment_matrix', $data);
             } else {
                 $data->id = $record->id;
-                $DB->update_record('cleaner_env_matrix', $data);
+                $DB->update_record('cleaner_environment_matrix', $data);
             }
         }
 
@@ -217,7 +217,7 @@ class matrix {
             $params['envid'] = $environment->id;
         }
 
-        $records = $DB->get_records('cleaner_env_matrix_data', $params);
+        $records = $DB->get_records('cleaner_environment_matrixd', $params);
 
         foreach ($records as $record) {
             $data[$record->config][$record->envid] = $record;
