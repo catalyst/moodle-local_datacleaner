@@ -61,6 +61,14 @@ class matrix {
     /**
      * Search the database for the item specified.
      *
+     * The order of search terms is important.
+     *
+     * Word 1: Searches {config} name
+     * Word 2: Searches {config_plugins} plugin.
+     *
+     * If one word is specified it will search for both {config} name and {config_plugins} name.
+     * If both words are specified it will search for both {config} name and {config_plugins} name, plugin.
+     *
      * @param string $search
      * @param array $configitems
      * @return array
@@ -171,6 +179,13 @@ class matrix {
         return true;
     }
 
+    /**
+     * Returns a filtered list of environments that has been configured in Environment bar.
+     *
+     * When when environments have been removed in the Environment bar config, do not display them here.
+     *
+     * @return array|bool
+     */
     public static function filter_envbar_environments() {
         global $DB;
 

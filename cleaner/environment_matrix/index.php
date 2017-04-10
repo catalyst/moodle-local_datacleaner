@@ -123,6 +123,7 @@ if ($matrix->is_cancelled()) {
     }
 }
 
+// After data has been posted, we obtain the list of new values and variables.
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
