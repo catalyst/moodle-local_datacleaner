@@ -91,15 +91,21 @@ class matrix {
 
         $records = $DB->get_records_select('config', $select, $params, 'name', 'id, name', 0 , self::MAX_LIMIT + 1);
 
+        // We're iterating over the core plugins that have been found.
         foreach ($records as $record) {
-            if (!array_key_exists($record->name, $configitems['core'])) {
-                $record->plugin = 'core';
+            $record->plugin = 'core';
 
-                // If the plugin is empty then will only append core results.
-                if (empty($plugin)) {
-                    $result[] = $record;
-                }
+            // We do not have any existing config items for core, just add them to the result list.
+            if (!array_key_exists('core', $configitems)) {
+                $result[] = $record;
+                continue;
             }
+
+            // The record has not been configured, lets add it to the search items list.
+            if (!array_key_exists($record->name, $configitems['core'])) {
+                $result[] = $record;
+            }
+
         }
 
         // If plugin has been set, we will modify the SQL query to include it.
