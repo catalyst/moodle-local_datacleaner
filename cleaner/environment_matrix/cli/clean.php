@@ -52,7 +52,7 @@ Options:
      --reset    This will clear the configured items for other environments.
 
 Example:
-\$sudo -u www-data /usr/bin/php local/datacleaner/environment_matrix/cli/clean.php --run
+\$sudo -u www-data /usr/bin/php local/datacleaner/cleaner/environment_matrix/cli/clean.php --run
 ";
 
 if (!$options['run']) {
