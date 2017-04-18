@@ -249,4 +249,19 @@ class matrix {
 
         return $data;
     }
+
+    /**
+     * During the cleaning process we will purge other configured environments.
+     *
+     * @param $environment
+     */
+    public static function purge_data_except_environment($environment) {
+        global $DB;
+
+        $select = "envid != $environment";
+
+        $params = ['envid' => $environment];
+
+        $DB->delete_records_select('cleaner_environment_matrixd', $select, $params);
+    }
 }

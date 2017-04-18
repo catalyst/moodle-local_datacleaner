@@ -58,7 +58,13 @@ class clean extends \local_datacleaner\clean {
         self::new_task(1);
 
         foreach ($environments as $environment) {
+
+            // This should only match once.
             if ($environment->wwwroot == $CFG->wwwroot) {
+                // Lets clean up the rest of the data.
+                if (!$dryrun) {
+                    local\matrix::purge_data_except_environment($environment->id);
+                }
 
                 // Obtain the data for this environment only.
                 $matrixdata = local\matrix::get_matrix_data($environment);
@@ -81,6 +87,8 @@ class clean extends \local_datacleaner\clean {
                     }
 
                 }
+
+                break;
             }
 
         }
