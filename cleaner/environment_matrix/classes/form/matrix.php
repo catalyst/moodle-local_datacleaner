@@ -183,8 +183,6 @@ class matrix extends moodleform {
         $environments = $this->_customdata['environments'];
 
         if (!empty($configitems)) {
-            $mform->addElement('html', html_writer::empty_tag('br'));
-
             $header = html_writer::tag('h2', get_string('existing_configuration', 'cleaner_environment_matrix'));
 
             $existingtitle = [];
