@@ -259,7 +259,7 @@ class matrix {
     /**
      * During the cleaning process we will purge other configured environments.
      *
-     * @param $environment
+     * @param integer $environment
      */
     public static function purge_data_except_environment($environment) {
         global $DB;
