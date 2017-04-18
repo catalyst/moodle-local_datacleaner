@@ -50,6 +50,7 @@ class clean extends \local_datacleaner\clean {
 
         $dryrun = (bool)self::$options['dryrun'];
         $verbose = (bool)self::$options['verbose'];
+        $reset = (bool)self::$options['reset'];
 
         self::debugmemory();
 
@@ -62,8 +63,13 @@ class clean extends \local_datacleaner\clean {
             // This should only match once.
             if ($environment->wwwroot == $CFG->wwwroot) {
                 // Lets clean up the rest of the data.
-                if (!$dryrun) {
-                    local\matrix::purge_data_except_environment($environment->id);
+                if ($reset) {
+                    mtrace("Purging other environments data.");
+
+                    if (!$dryrun) {
+                        local\matrix::purge_data_except_environment($environment->id);
+                    }
+
                 }
 
                 // Obtain the data for this environment only.
