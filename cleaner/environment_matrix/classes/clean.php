@@ -64,17 +64,20 @@ class clean extends \local_datacleaner\clean {
                 $matrixdata = local\matrix::get_matrix_data($environment);
 
                 // Process settings.
-                foreach ($matrixdata as $name => $env) {
-                    $config = $env[$environment->id];
+                foreach ($matrixdata as $plugin => $items) {
+                    foreach ($items as $name => $env) {
+                        $config = $env[$environment->id];
 
-                    $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
+                        $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
 
-                    if ($verbose) {
-                        mtrace("Executing: set_config('$config->config', ********)");
-                    }
+                        if ($verbose) {
+                            mtrace("Executing: set_config('$config->config', ********)");
+                        }
 
-                    if (!$dryrun) {
-                        set_config($config->config, $config->value, $config->plugin);
+                        if (!$dryrun) {
+                            set_config($config->config, $config->value, $config->plugin);
+                        }
+
                     }
 
                 }

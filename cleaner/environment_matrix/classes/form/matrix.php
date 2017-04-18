@@ -197,22 +197,25 @@ class matrix extends moodleform {
         }
 
         // Display the configured items associated to each config type.
-        foreach ($configitems as $configname => $items) {
-            $plugin = array_values($items)[0]->plugin;
-            $group = [];
-            $cbkey = "selected[$plugin][$configname]";
-            $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
-            $mform->setDefault($cbkey, 1);
+        foreach ($configitems as $plugin => $confignames) {
+            foreach ($confignames as $configname => $items) {
+                $plugin = array_values($items)[0]->plugin;
+                $group = [];
+                $cbkey = "selected[$plugin][$configname]";
+                $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
+                $mform->setDefault($cbkey, 1);
 
-            foreach ($environments as $eid => $env) {
-                $key = "config[$plugin][$configname][$eid]";
-                $group[] = &$mform->createElement('text', $key, '');
-                $mform->setType($key, PARAM_TEXT);
-                $value = empty($items[$eid]->value) ? '' : $items[$eid]->value;
-                $mform->setDefault($key, $value);
+                foreach ($environments as $eid => $env) {
+                    $key = "config[$plugin][$configname][$eid]";
+                    $group[] = &$mform->createElement('text', $key, '');
+                    $mform->setType($key, PARAM_TEXT);
+                    $value = empty($items[$eid]->value) ? '' : $items[$eid]->value;
+                    $mform->setDefault($key, $value);
+                }
+
+                $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
             }
 
-            $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
         }
     }
 

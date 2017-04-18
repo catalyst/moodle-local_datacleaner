@@ -92,7 +92,7 @@ class matrix {
         $records = $DB->get_records_select('config', $select, $params, 'name', 'id, name', 0 , self::MAX_LIMIT + 1);
 
         foreach ($records as $record) {
-            if (!array_key_exists($record->name, $configitems)) {
+            if (!array_key_exists($record->name, $configitems['core'])) {
                 $record->plugin = 'core';
 
                 // If the plugin is empty then will only append core results.
@@ -115,7 +115,15 @@ class matrix {
         $records = $DB->get_records_select('config_plugins', $select, $params, 'name', 'id, plugin, name', 0 , self::MAX_LIMIT + 1);
 
         foreach ($records as $record) {
-            if (!array_key_exists($record->name, $configitems)) {
+            // Search the $configtiems array for a reference to the plugin.
+            // If it does not exist then we should add the search results to the return value.
+            if (!array_key_exists($record->plugin, $configitems)) {
+                $result[] = $record;
+                continue;
+            }
+
+            // Search the $configitems[$record->plugin] for a reference to the config name.
+            if (!array_key_exists($record->name, $configitems[$record->plugin])) {
                 // If the plugin was specified as a search query, prepend the results to the list as we have a limited set.
                 if (!empty($plugin)) {
                     array_unshift($result, $record);
@@ -123,6 +131,7 @@ class matrix {
                     $result[] = $record;
                 }
             }
+
         }
 
         return $result;
@@ -195,7 +204,7 @@ class matrix {
 
         $environments = \local_envbar\local\envbarlib::get_records();
 
-        $records = $DB->get_records('cleaner_env_matrix');
+        $records = $DB->get_records('cleaner_environment_matrix');
 
         $display = [];
 
@@ -235,7 +244,7 @@ class matrix {
         $records = $DB->get_records('cleaner_environment_matrixd', $params);
 
         foreach ($records as $record) {
-            $data[$record->config][$record->envid] = $record;
+            $data[$record->plugin][$record->config][$record->envid] = $record;
         }
 
         return $data;
