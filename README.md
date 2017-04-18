@@ -147,7 +147,7 @@ Also this will allow you to configure following Moodle settings:
 
 #### Environment matrix:
 
-**Notice**: A dependency on local_envbar is required for populating the available environments that can be configured.
+**Notice**: A soft dependency on local_envbar is required for populating the available environments that can be configured.
 
 This facilitates searching values in the {config} and {config_plugins} tables to allow setting those values. Useful for scrubbing API keys to prevent them calling home on a development environment. 
 
