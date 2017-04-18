@@ -140,13 +140,12 @@ class matrix extends moodleform {
         $environments = $this->_customdata['environments'];
 
         if (!empty($searchitems)) {
+            $header = html_writer::tag('h2', get_string('search_results', 'cleaner_environment_matrix'));
             $searchtitle = [];
             $searchtitle[] = &$mform->createElement('checkbox', 'searchtitle_cb', 'name', '', ['class' => 'cb_header']);
-            $searchtitle[] = &$mform->createElement('static', 'stitle', 'stitle', get_string('search_results', 'cleaner_environment_matrix'));
+            $searchtitle[] = &$mform->createElement('static', 'stitle', 'stitle', $header);
             $mform->addGroup($searchtitle, 'searchtitle', '' , ' ', false);
 
-            // Basic separator between search and the defined list.
-            $mform->addElement('html', html_writer::empty_tag('hr'));
             // Add an environment header group.
             $mform->addGroup($environmentheader, 'group_header1', '', ' ', false);
         }
@@ -186,13 +185,13 @@ class matrix extends moodleform {
         if (!empty($configitems)) {
             $mform->addElement('html', html_writer::empty_tag('br'));
 
+            $header = html_writer::tag('h2', get_string('existing_configuration', 'cleaner_environment_matrix'));
+
             $existingtitle = [];
             $existingtitle[] = &$mform->createElement('checkbox', 'existing_cb', 'name', '', ['class' => 'cb_header']);
-            $existingtitle[] = &$mform->createElement('static', 'etitle', 'etitle', get_string('existing_configuration', 'cleaner_environment_matrix'));
+            $existingtitle[] = &$mform->createElement('static', 'etitle', 'etitle', $header);
             $mform->addGroup($existingtitle, 'existingtitle', '' , ' ', false);
 
-            // Basic separator between search and the defined list.
-            $mform->addElement('html', html_writer::empty_tag('hr'));
             // Add an environment header group.
             $mform->addGroup($environmentheader, 'group_header2', '', ' ', false);
         }
