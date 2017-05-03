@@ -123,7 +123,7 @@ class clean extends \local_datacleaner\clean {
                         }
                     }
 
-                    // Clean oof wysiwyg columns that have a pair 'format' column.
+                    // Clean all wysiwyg columns that have a pair 'format' column.
                     if (self::$config->cleanwysiwyg) {
                         foreach ($columns as $column) {
                             if (preg_match('/(.*)format$/', $column->name, $matches)) {
