@@ -116,10 +116,19 @@ class clean extends \local_datacleaner\clean {
 
                     }
 
-                    // Clean all columns of type 'text' or 'varchar'.
+                    // Clean all columns of text type.
                     if (self::$config->cleantext) {
-                        if ($column->type === "text" || $column->type === "varchar") {
-                            $replacing[$table][$column->name] = $column;
+                        $textcolumns = [
+                            'text',
+                            'mediumtext',
+                            'longtext',
+                            'varchar'
+                        ];
+
+                        foreach ($textcolumns as $textcolumn) {
+                            if ($column->type === $textcolumn) {
+                                $replacing[$table][$column->name] = $column;
+                            }
                         }
                     }
 
