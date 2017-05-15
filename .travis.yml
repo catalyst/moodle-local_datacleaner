@@ -13,6 +13,9 @@ cache:
   directories:
     - $HOME/.composer/cache
 
+addons:
+  postgresql: "9.3"
+
 php:
  - 5.5
  - 7.0
@@ -24,7 +27,9 @@ env:
   - DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
   - DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
   - DB=pgsql MOODLE_BRANCH=master
   - DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE
@@ -33,7 +38,9 @@ env:
   - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
   - DB=mysqli MOODLE_BRANCH=master
+  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
 
 
 matrix:
@@ -41,14 +48,20 @@ matrix:
     - php: 7.1
       env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
     - php: 7.1
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
+    - php: 7.1
       env: DB=pgsql MOODLE_BRANCH=master
     - php: 7.1
       env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
     - php: 7.1
       env: DB=mysqli MOODLE_BRANCH=master
   exclude:
     - php: 5.5
       env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
+    - php: 5.5
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
     - php: 5.5
       env: DB=mysqli MOODLE_BRANCH=master
     - php: 7.0
@@ -61,6 +74,8 @@ matrix:
       env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
     - php: 5.5
       env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
+    - php: 5.5
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
     - php: 5.5
       env: DB=pgsql MOODLE_BRANCH=master
     - php: 7.0
