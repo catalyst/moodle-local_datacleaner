@@ -97,10 +97,10 @@ foreach ($plugins as $plugin) {
     $class = '';
     if ($plugin->enabled()) {
         $visible = '<a href="index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
-            '<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" alt="'.$strdisable.'" /></a>';
+            $OUTPUT->pix_icon('t/hide', $strdisable).'</a>';
     } else {
         $visible = '<a href="index.php?show='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strenable.'">'.
-            '<img src="'.$OUTPUT->pix_url('t/show') . '" class="iconsmall" alt="'.$strenable.'" /></a>';
+            $OUTPUT->pix_icon('t/show', $strenable, 'moodle', ['class' => 'dimmed_text']).'</a>';
         $class = 'dimmed_text';
     }
 
