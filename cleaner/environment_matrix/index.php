@@ -83,6 +83,11 @@ if ($matrix->is_cancelled()) {
             if ($ticked == '1') {
                 foreach ($envs as $envid => $value) {
 
+                    // Do not save the production envid data to the system.
+                    if ($envid == '-1') {
+                        continue;
+                    }
+
                     $entry = [
                         'plugin' => $plugin,
                         'config' => $name,

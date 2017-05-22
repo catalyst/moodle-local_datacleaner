@@ -26,9 +26,11 @@
 
 namespace cleaner_environment_matrix\local;
 
+use local_envbar\local\envbarlib;
 use stdClass;
 
 require_once(__DIR__ . '/../../../../../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
@@ -148,16 +150,29 @@ class matrix {
      * @return array
      */
     public static function get_environments() {
+        global $CFG;
 
         self::populate_envbar_environments();
 
         $records = self::filter_envbar_environments();
 
-        if (!empty($records)) {
-            return $records;
+        $data = [];
+
+        $prod = new stdClass();
+        $prod->id = -1;
+        $prod->environment = 'Production';
+        $prod->wwwroot = envbarlib::getprodwwwroot();
+
+        // If we are on the production system, apply the production environment to assist with setting config data.
+        if ($prod->wwwroot == $CFG->wwwroot) {
+            $data = ['-1' => $prod];
         }
 
-        return [];
+        if (!empty($records)) {
+            return $data + $records;
+        }
+
+        return $data;
     }
 
     /**
@@ -237,7 +252,7 @@ class matrix {
      * @return array
      */
     public static function get_matrix_data($environment = null) {
-        global $DB;
+        global $CFG, $DB;
 
         $data = [];
 
@@ -250,6 +265,16 @@ class matrix {
         $records = $DB->get_records('cleaner_environment_matrixd', $params);
 
         foreach ($records as $record) {
+            if (envbarlib::getprodwwwroot() === $CFG->wwwroot) {
+
+                $prodrecord = clone $record;
+                $prodrecord->value = get_config($record->plugin, $record->config);
+                $prodrecord->envid = '-1';
+                $prodrecord->id = '-1';
+
+                $data[$record->plugin][$record->config]['-1'] = $prodrecord;
+            }
+
             $data[$record->plugin][$record->config][$record->envid] = $record;
         }
 

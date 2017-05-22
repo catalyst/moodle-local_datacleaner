@@ -158,8 +158,18 @@ class matrix extends moodleform {
             $mform->setDefault($cbkey, 0);
 
             foreach ($environments as $eid => $env) {
+                $params = [];
+
                 $key = "config[$plugin][$configname][$eid]";
-                $group[] = &$mform->createElement('text', $key, '');
+
+                // Environment ID -1 is the production system obtained from envbar.
+                if ($eid == '-1') {
+                    $params = ['disabled' => 1];
+                    $value = empty($item->value) ? '' : $item->value;
+                    $mform->setDefault($key, $value);
+                }
+
+                $group[] = &$mform->createElement('text', $key, '', $params);
                 $mform->setType($key, PARAM_TEXT);
             }
 
@@ -200,11 +210,19 @@ class matrix extends moodleform {
                 $mform->setDefault($cbkey, 1);
 
                 foreach ($environments as $eid => $env) {
+                    $params = [];
+
                     $key = "config[$plugin][$configname][$eid]";
-                    $group[] = &$mform->createElement('text', $key, '');
-                    $mform->setType($key, PARAM_TEXT);
+
                     $value = empty($items[$eid]->value) ? '' : $items[$eid]->value;
+
+                    if ($eid == '-1') {
+                        $params = ['disabled' => 1];
+                    }
+
+                    $group[] = &$mform->createElement('text', $key, '', $params);
                     $mform->setDefault($key, $value);
+                    $mform->setType($key, PARAM_TEXT);
                 }
 
                 $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
