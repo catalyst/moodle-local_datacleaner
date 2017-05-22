@@ -45,9 +45,6 @@ if (!defined('MOODLE_INTERNAL')) {
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class matrix {
-    /** @var int The maximum number of config items to return when searching. */
-    const MAX_LIMIT = 5;
-
     /**
      * Checks to see if environment bar is installed and exists.
      * @return bool

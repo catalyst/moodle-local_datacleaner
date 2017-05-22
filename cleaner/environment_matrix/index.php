@@ -35,23 +35,16 @@ $PAGE->add_body_class('cleaner_environment_matrix');
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
-$overflow = false;
 
 $search = optional_param('search', null, PARAM_TEXT);
 if (!empty($search)) {
     $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
-
-    if (count($searchitems) > \cleaner_environment_matrix\local\matrix::MAX_LIMIT) {
-        array_pop($searchitems);
-        $overflow = true;
-    }
 }
 
 $customdata = [
     'searchitems' => $searchitems,
     'configitems' => $configitems,
     'environments' => $environments,
-    'overflow' => $overflow,
 ];
 
 $post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
@@ -132,23 +125,16 @@ if ($matrix->is_cancelled()) {
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
-$overflow = false;
 
 $search = optional_param('search', null, PARAM_TEXT);
 if (!empty($search)) {
     $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
-
-    if (count($searchitems) > \cleaner_environment_matrix\local\matrix::MAX_LIMIT) {
-        array_pop($searchitems);
-        $overflow = true;
-    }
 }
 
 $customdata = [
     'searchitems' => $searchitems,
     'configitems' => $configitems,
     'environments' => $environments,
-    'overflow' => $overflow,
 ];
 
 $post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
