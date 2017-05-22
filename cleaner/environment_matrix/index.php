@@ -30,7 +30,9 @@ require_once($CFG->libdir . '/adminlib.php');
 admin_externalpage_setup('cleaner_environment_matrix');
 
 $PAGE->requires->css('/local/datacleaner/cleaner/environment_matrix/styles.css');
+$PAGE->requires->js_call_amd('cleaner_environment_matrix/matrix', 'init');
 $PAGE->add_body_class('cleaner_environment_matrix');
+
 
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
