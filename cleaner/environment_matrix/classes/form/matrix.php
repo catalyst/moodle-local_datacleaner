@@ -50,6 +50,10 @@ class matrix extends moodleform {
      */
     public function definition() {
 
+        // Adding additional classes.
+        $attrs = $this->_form->getAttributes();
+        $this->_form->setAttributes(['class' => 'mform no-overflow'] + $attrs);
+
         // A text field to seach for config and plugin items.
         $this->render_search_field();
 
@@ -95,7 +99,7 @@ class matrix extends moodleform {
             $root = $env->wwwroot;
 
             $key = "environments[$eid]";
-            $environmentheader[] = &$mform->createElement('text', $key, '', ['class' => 'cb_header']);
+            $environmentheader[] = &$mform->createElement('text', $key, '', ['class' => 'cb_header', 'disabled']);
             $mform->setType($key, PARAM_TEXT);
             $mform->setDefault($key, "$site ($root)");
         }
