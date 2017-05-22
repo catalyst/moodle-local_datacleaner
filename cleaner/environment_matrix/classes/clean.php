@@ -83,7 +83,7 @@ class clean extends \local_datacleaner\clean {
                         $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
 
                         if ($verbose) {
-                            mtrace("Executing: set_config('$config->config', ********)");
+                            mtrace("set_config('{$config->config}', '{$config->value})'");
                         }
 
                         if (!$dryrun) {
