@@ -80,67 +80,42 @@ class matrix {
 
         $result = [];
 
-        $query = explode(' ', $search);
-        if (count($query) == 2) {
-            $name = $query[0];
-            $plugin = $query[1];
-        } else {
-            $name = $search;
-        }
+        $adminroot = admin_get_root();
+        $findings = $adminroot->search($search);
 
-        $select = $DB->sql_like('name', ':name', false);
-        $params = ['name' => '%' . $name . '%'];
+        foreach ($findings as $found) {
+            $page     = $found->page;
+            $settings = $found->settings;
 
-        $records = $DB->get_records_select('config', $select, $params, 'name', 'id, name', 0 , self::MAX_LIMIT + 1);
+            foreach ($settings as $setting) {
+                $record = new stdClass();
 
-        // We're iterating over the core plugins that have been found.
-        foreach ($records as $record) {
-            $record->plugin = 'core';
+                $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
 
-            // We do not have any existing config items for core, just add them to the result list.
-            if (!array_key_exists('core', $configitems)) {
-                $result[] = $record;
-                continue;
-            }
+                $record->value = get_config($record->plugin, $setting->name);
 
-            // The record has not been configured, lets add it to the search items list.
-            if (!array_key_exists($record->name, $configitems['core'])) {
-                $result[] = $record;
-            }
+                $record->name = $setting->name;
 
-        }
-
-        // If plugin has been set, we will modify the SQL query to include it.
-        if (!empty($plugin)) {
-            $select .= ' AND '. $DB->sql_like('plugin', ':plugin', false);
-            $params['plugin'] = '%' . $plugin . '%';
-        } else {
-            // Search for the plugin name or value instead.
-            $select .= ' OR '. $DB->sql_like('plugin', ':name2', false);
-            $params['name2'] = '%' . $name . '%';
-        }
-
-        $records = $DB->get_records_select('config_plugins', $select, $params, 'name', 'id, plugin, name', 0 , self::MAX_LIMIT + 1);
-
-        foreach ($records as $record) {
-            // Search the $configtiems array for a reference to the plugin.
-            // If it does not exist then we should add the search results to the return value.
-            if (!array_key_exists($record->plugin, $configitems)) {
-                $result[] = $record;
-                continue;
-            }
-
-            // Search the $configitems[$record->plugin] for a reference to the config name.
-            if (!array_key_exists($record->name, $configitems[$record->plugin])) {
-                // If the plugin was specified as a search query, prepend the results to the list as we have a limited set.
-                if (!empty($plugin)) {
-                    array_unshift($result, $record);
+                // Have we passed an array of config items, does the plugin type exist in that array?
+                if (array_key_exists($record->plugin, $configitems)) {
+                    // Does the config name exists in the type array?
+                    if (!array_key_exists($record->name, $configitems[$record->plugin])) {
+                        // It's not there, lets just add it.
+                        $result[] = $record;
+                    }
                 } else {
+                    // We haven't seen this type of plugin before so we know that we can just add this config value.
                     $result[] = $record;
                 }
+
             }
 
         }
+
+        // Sort the results by config name.
+        usort($result, function($a, $b) {
+            return $a->name > $b->name;
+        });
 
         return $result;
     }
