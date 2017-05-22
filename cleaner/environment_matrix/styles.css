@@ -1,3 +1,13 @@
+.cleaner_environment_matrix .cb_header:nth-of-type(1) {
+    margin-left: 26px;
+    visibility: visible;
+}
+
 .cleaner_environment_matrix .cb_header {
-    visibility: hidden;
+    visibility: visible;
+}
+
+.cleaner_environment_matrix .mform {
+    /* margin-right: 0; */
+    /* overflow-x: auto; */
 }

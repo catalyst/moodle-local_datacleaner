@@ -90,13 +90,12 @@ class matrix extends moodleform {
 
         // Construct environment header group. This will be used multiple times. Once for search and configured items.
         $environmentheader = [];
-        $environmentheader[] = &$mform->createElement('checkbox', 'cb_header', 'name', '', ['class' => 'cb_header']);
         foreach ($environments as $eid => $env) {
             $site = $env->environment;
             $root = $env->wwwroot;
 
             $key = "environments[$eid]";
-            $environmentheader[] = &$mform->createElement('text', $key, '', ['disabled']);
+            $environmentheader[] = &$mform->createElement('text', $key, '', ['class' => 'cb_header']);
             $mform->setType($key, PARAM_TEXT);
             $mform->setDefault($key, "$site ($root)");
         }
@@ -121,8 +120,7 @@ class matrix extends moodleform {
         // Add the search element group.
         $searchstring = get_string('button_search', 'cleaner_environment_matrix');
         $searchgroup = [];
-        $searchgroup[] = &$mform->createElement('checkbox', 'search_cb', 'name', '', ['class' => 'cb_header']);
-        $searchgroup[] = &$mform->createElement('text', 'search', '', null);
+        $searchgroup[] = &$mform->createElement('text', 'search', '', ['class' => 'cb_header']);
         $searchgroup[] = &$mform->createElement('submit', 'searchbutton', $searchstring, null);
         $mform->setType('search', PARAM_TEXT);
         $mform->addGroup($searchgroup, 'searchgroup', '' , ' ', false);
@@ -140,9 +138,8 @@ class matrix extends moodleform {
         $environments = $this->_customdata['environments'];
 
         if (!empty($searchitems)) {
-            $header = html_writer::tag('h2', get_string('search_results', 'cleaner_environment_matrix'));
+            $header = html_writer::tag('h2', get_string('search_results', 'cleaner_environment_matrix'), ['class' => 'cb_header']);
             $searchtitle = [];
-            $searchtitle[] = &$mform->createElement('checkbox', 'searchtitle_cb', 'name', '', ['class' => 'cb_header']);
             $searchtitle[] = &$mform->createElement('static', 'stitle', 'stitle', $header);
             $mform->addGroup($searchtitle, 'searchtitle', '' , ' ', false);
 
@@ -183,10 +180,9 @@ class matrix extends moodleform {
         $environments = $this->_customdata['environments'];
 
         if (!empty($configitems)) {
-            $header = html_writer::tag('h2', get_string('existing_configuration', 'cleaner_environment_matrix'));
+            $header = html_writer::tag('h2', get_string('existing_configuration', 'cleaner_environment_matrix'), ['class' => 'cb_header']);
 
             $existingtitle = [];
-            $existingtitle[] = &$mform->createElement('checkbox', 'existing_cb', 'name', '', ['class' => 'cb_header']);
             $existingtitle[] = &$mform->createElement('static', 'etitle', 'etitle', $header);
             $mform->addGroup($existingtitle, 'existingtitle', '' , ' ', false);
 
@@ -224,8 +220,7 @@ class matrix extends moodleform {
         $mform = $this->_form;
 
         $buttonarray = array();
-        $buttonarray[] = &$mform->createElement('checkbox', 'submit_cb', 'name', '', ['class' => 'cb_header']);
-        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'));
+        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
         $buttonarray[] = &$mform->createElement('cancel');
         $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
         $mform->closeHeaderBefore('buttonar');
