@@ -27,4 +27,4 @@ $plugin->release   = '2.3.2';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
 $plugin->component = 'cleaner_replace_urls';
-$plugin->sortorder = 100;
+$plugin->sortorder = 210;

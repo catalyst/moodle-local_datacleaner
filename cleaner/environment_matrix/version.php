@@ -33,4 +33,4 @@ $plugin->release   = 2017030600;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
 $plugin->component = 'cleaner_environment_matrix';
-$plugin->sortorder = 8;
+$plugin->sortorder = 200;
