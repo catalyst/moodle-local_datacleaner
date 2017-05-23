@@ -27,4 +27,5 @@
 $string['button_search'] = 'Search';
 $string['existing_configuration'] = 'Existing configuration';
 $string['pluginname'] = 'Environment matrix';
+$string['search_placeholder'] = 'Search for a named configuration item.';
 $string['search_results'] = 'Search results';

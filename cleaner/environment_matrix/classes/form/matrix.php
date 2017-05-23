@@ -121,10 +121,16 @@ class matrix extends moodleform {
     private function render_search_field() {
         $mform = $this->_form;
 
+        $params = [
+            'class' => 'cb_header search_input',
+            'placeholder' => get_string('search_placeholder', 'cleaner_environment_matrix'),
+            'size' => 40,
+        ];
+
         // Add the search element group.
         $searchstring = get_string('button_search', 'cleaner_environment_matrix');
         $searchgroup = [];
-        $searchgroup[] = &$mform->createElement('text', 'search', '', ['class' => 'cb_header']);
+        $searchgroup[] = &$mform->createElement('text', 'search', '', $params);
         $searchgroup[] = &$mform->createElement('submit', 'searchbutton', $searchstring, null);
         $mform->setType('search', PARAM_TEXT);
         $mform->addGroup($searchgroup, 'searchgroup', '' , ' ', false);
