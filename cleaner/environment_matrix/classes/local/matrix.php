@@ -60,21 +60,13 @@ class matrix {
     /**
      * Search the database for the item specified.
      *
-     * The order of search terms is important.
-     *
-     * Word 1: Searches {config} name
-     * Word 2: Searches {config_plugins} plugin.
-     *
-     * If one word is specified it will search for both {config} name and {config_plugins} name.
-     * If both words are specified it will search for both {config} name and {config_plugins} name, plugin.
+     * This uses the admin search feature to obtain the list of configurable items.
      *
      * @param string $search
      * @param array $configitems
      * @return array
      */
     public static function search($search, $configitems = []) {
-        global $DB;
-
         $result = [];
 
         $adminroot = admin_get_root();
@@ -140,6 +132,7 @@ class matrix {
             $data = ['-1' => $prod];
         }
 
+        // The Production environment will be the first element of this array.
         if (!empty($records)) {
             return $data + $records;
         }

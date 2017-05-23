@@ -109,14 +109,6 @@ class matrix extends moodleform {
 
     /**
      * Search field.
-     *
-     * The order of search terms is important.
-     *
-     * Word 1: Searches {config} name
-     * Word 2: Searches {config_plugins} plugin.
-     *
-     * If one word is specified it will search for both {config} name and {config_plugins} name.
-     * If both words are specified it will search for both {config} name and {config_plugins} name, plugin.
      */
     private function render_search_field() {
         $mform = $this->_form;
@@ -149,6 +141,7 @@ class matrix extends moodleform {
 
         if (!empty($searchitems)) {
             $header = html_writer::tag('h2', get_string('search_results', 'cleaner_environment_matrix'), ['class' => 'cb_header']);
+
             $searchtitle = [];
             $searchtitle[] = &$mform->createElement('static', 'stitle', 'stitle', $header);
             $mform->addGroup($searchtitle, 'searchtitle', '' , ' ', false);
