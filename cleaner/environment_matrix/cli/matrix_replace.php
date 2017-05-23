@@ -48,7 +48,7 @@ $help = "Standalone Environment matrix cleaner.
 Options:
  -h, --help     Print out this help
      --run      Actually run the clean process
-     --verbose  Be noisey about what is being done or would be done
+     --verbose  Be noisy about what is being done or would be done
      --reset    This will clear the configured items for other environments.
 
 Example:

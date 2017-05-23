@@ -54,7 +54,7 @@ class matrix extends moodleform {
         $attrs = $this->_form->getAttributes();
         $this->_form->setAttributes(['class' => 'mform no-overflow'] + $attrs);
 
-        // A text field to seach for config and plugin items.
+        // A text field to seach for configuration items.
         $this->render_search_field();
 
         // Create the header to be used multiple times.

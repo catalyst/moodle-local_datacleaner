@@ -149,7 +149,17 @@ Also this will allow you to configure following Moodle settings:
 
 **Notice**: A soft dependency on local_envbar is required for populating the available environments that can be configured.
 
-This facilitates searching values in the {config} and {config_plugins} tables to allow setting those values. Useful for scrubbing API keys to prevent them calling home on a development environment. 
+This facilitates searching values in the {config} and {config_plugins} tables to allow setting those values. Useful for scrubbing API keys to prevent them calling home on a development environment.
+
+A CLI script exists to run the Environment matrix cleaner as a standalone operation.
+
+```sh
+sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/environment_matrix/cli/matrix_replace.php --run
+```
+
+An additional CLI flag has been implemented. --reset.
+
+This flag will purge all other saved environment configuration so that the new instance only has one set of environment data.
 
 ## Running
 
