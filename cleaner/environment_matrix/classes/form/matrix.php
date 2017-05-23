@@ -161,20 +161,34 @@ class matrix extends moodleform {
             $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
             $mform->setDefault($cbkey, 0);
 
+            // Default element type.
+            $elementtype = 'text';
+
             foreach ($environments as $eid => $env) {
+                $key = "config[$plugin][$configname][$eid]";
+
+                $value = empty($item->value) ? '' : $item->value;
+
                 $params = [];
 
-                $key = "config[$plugin][$configname][$eid]";
+                // Determine if the saved value has a newline, display a text area instead.
+                if (strstr($value, PHP_EOL)) {
+                    $elementtype = 'textarea';
+                }
+
+                // Used in other iterations to extend the row count.
+                if ($elementtype == 'textarea') {
+                    $params = ['rows' => 6];
+                }
 
                 // Environment ID -1 is the production system obtained from envbar.
                 if ($eid == '-1') {
-                    $params = ['disabled' => 1];
-                    $value = empty($item->value) ? '' : $item->value;
                     $mform->setDefault($key, $value);
+                    $params = $params + ['disabled' => 1];
                 }
 
-                $group[] = &$mform->createElement('text', $key, '', $params);
-                $mform->setType($key, PARAM_TEXT);
+                $group[] = &$mform->createElement($elementtype, $key, '', $params);
+                $mform->setType($key, PARAM_RAW);
             }
 
             $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
@@ -213,20 +227,34 @@ class matrix extends moodleform {
                 $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
                 $mform->setDefault($cbkey, 1);
 
-                foreach ($environments as $eid => $env) {
-                    $params = [];
+                // Default element type.
+                $elementtype = 'text';
 
+                foreach ($environments as $eid => $env) {
                     $key = "config[$plugin][$configname][$eid]";
 
                     $value = empty($items[$eid]->value) ? '' : $items[$eid]->value;
 
-                    if ($eid == '-1') {
-                        $params = ['disabled' => 1];
+                    $params = [];
+
+                    // Determine if the saved value has a newline, display a text area instead.
+                    if (strstr($value, PHP_EOL)) {
+                        $elementtype = 'textarea';
                     }
 
-                    $group[] = &$mform->createElement('text', $key, '', $params);
+                    // Used in other iterations to extend the row count.
+                    if ($elementtype == 'textarea') {
+                        $params = ['rows' => 6];
+                    }
+
+                    // For the production environment, disable the field.
+                    if ($eid == '-1') {
+                        $params = $params + ['disabled' => 1];
+                    }
+
+                    $group[] = &$mform->createElement($elementtype, $key, '', $params);
                     $mform->setDefault($key, $value);
-                    $mform->setType($key, PARAM_TEXT);
+                    $mform->setType($key, PARAM_RAW);
                 }
 
                 $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
