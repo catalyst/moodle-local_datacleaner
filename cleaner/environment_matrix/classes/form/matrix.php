@@ -159,7 +159,7 @@ class matrix extends moodleform {
 
             $group = [];
             $cbkey = "selected[$plugin][$configname]";
-            $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
+            $group[] = &$mform->createElement('advcheckbox', $cbkey, '', '', '', [0, 1]);
             $mform->setDefault($cbkey, 0);
 
             // Default element type.
@@ -230,7 +230,7 @@ class matrix extends moodleform {
                 $plugin = array_values($items)[0]->plugin;
                 $group = [];
                 $cbkey = "selected[$plugin][$configname]";
-                $group[] = &$mform->createElement('advcheckbox', $cbkey, 'name', '', '', [0, 1]);
+                $group[] = &$mform->createElement('advcheckbox', $cbkey, '', '', '', [0, 1]);
                 $mform->setDefault($cbkey, 1);
 
                 // Default element type.
