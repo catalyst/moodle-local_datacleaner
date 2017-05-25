@@ -4,8 +4,8 @@ define(['jquery'], function($) {
             $("input[type=text], textarea").each(function() {
                 var input = $(this);
                 input.keypress(function() {
-                    var cb = $(this).closest('.fgroup').find('input[type="checkbox"]');
-                    cb.attr('checked', true);
+                    var cb = $(this).closest('.fgroup, .row').find('input[type="checkbox"]');
+                    cb.prop('checked', 1);
                 });
             });
         }
