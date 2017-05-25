@@ -268,10 +268,16 @@ class matrix extends moodleform {
     private function render_submit_buttons() {
         $mform = $this->_form;
 
-        $buttonarray = array();
-        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
-        $buttonarray[] = &$mform->createElement('cancel');
-        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
-        $mform->closeHeaderBefore('buttonar');
+        $searchitems = $this->_customdata['searchitems'];
+        $configitems = $this->_customdata['configitems'];
+
+        if (!empty($configitems) && !empty($searchitems)) {
+            $buttonarray = array();
+            $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
+            $buttonarray[] = &$mform->createElement('cancel');
+            $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+            $mform->closeHeaderBefore('buttonar');
+        }
+
     }
 }
