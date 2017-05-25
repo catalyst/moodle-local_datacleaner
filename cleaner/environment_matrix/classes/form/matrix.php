@@ -134,6 +134,8 @@ class matrix extends moodleform {
      * @param array $environmentheader
      */
     private function render_search_results($environmentheader) {
+        global $CFG;
+
         $mform = $this->_form;
 
         $searchitems = $this->_customdata['searchitems'];
@@ -184,6 +186,11 @@ class matrix extends moodleform {
                 if ($eid == '-1') {
                     $mform->setDefault($key, $value);
                     $params = $params + ['disabled' => 1];
+                }
+
+                // For the current environment, populate the contents for searched items.
+                if ($env->wwwroot == $CFG->wwwroot) {
+                    $mform->setDefault($key, $value);
                 }
 
                 $group[] = &$mform->createElement($elementtype, $key, '', $params);
