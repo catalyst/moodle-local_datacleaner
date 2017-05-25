@@ -278,7 +278,7 @@ class matrix extends moodleform {
         $searchitems = $this->_customdata['searchitems'];
         $configitems = $this->_customdata['configitems'];
 
-        if (!empty($configitems) && !empty($searchitems)) {
+        if (!empty($configitems) || !empty($searchitems)) {
             $buttonarray = array();
             $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
             $buttonarray[] = &$mform->createElement('cancel');
