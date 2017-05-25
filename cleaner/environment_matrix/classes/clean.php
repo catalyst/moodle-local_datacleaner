@@ -80,6 +80,7 @@ class clean extends \local_datacleaner\clean {
                     foreach ($items as $name => $env) {
                         $config = $env[$environment->id];
 
+                        // set_config requires a null 'plugin' value when updating core configuration values.
                         $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
 
                         if ($verbose) {

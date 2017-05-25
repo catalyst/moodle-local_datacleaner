@@ -70,6 +70,8 @@ if ($matrix->is_cancelled()) {
             $envs = [];
             if (!empty($config[$plugin])) {
                 if (!empty($config[$plugin][$name])) {
+
+                    // This stores the configuration values for posted environments data.
                     $envs = $config[$plugin][$name];
                 }
             }
