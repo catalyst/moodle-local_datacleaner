@@ -5,3 +5,7 @@
 .cleaner_environment_matrix .mform .fitem .felement {
     white-space: nowrap;
 }
+
+.cleaner_environment_matrix .hiddencb {
+    visibility: hidden;
+}

@@ -94,12 +94,14 @@ class matrix extends moodleform {
 
         // Construct environment header group. This will be used multiple times. Once for search and configured items.
         $environmentheader = [];
+        $environmentheader[] = &$mform->createElement('advcheckbox', '', '', '', ['class' => 'hiddencb'], [0, 1]);
+
         foreach ($environments as $eid => $env) {
             $site = $env->environment;
             $root = $env->wwwroot;
 
             $key = "environments[$eid]";
-            $environmentheader[] = &$mform->createElement('text', $key, '', ['class' => 'cb_header', 'disabled']);
+            $environmentheader[] = &$mform->createElement('text', $key, '', ['disabled']);
             $mform->setType($key, PARAM_TEXT);
             $mform->setDefault($key, "$site ($root)");
         }
