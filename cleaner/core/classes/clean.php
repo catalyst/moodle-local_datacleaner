@@ -48,6 +48,8 @@ class clean extends \local_datacleaner\clean {
         foreach ($tables as $table) {
             switch ($table) {
                 case 'events_queue':
+                case 'events_queue_handlers':
+                case 'events_handlers':
                 case 'task_adhoc':
                 case 'message':
                 case 'message_popup':
@@ -55,6 +57,7 @@ class clean extends \local_datacleaner\clean {
                 case 'message_working':
                 case 'tool_monitor':
                     $tablelist[] = $table;
+                    break;
                 default:
                     if (substr($table, 0, 5) == 'back_' ||
                         substr($table, 0, 6) == 'stats_' ||

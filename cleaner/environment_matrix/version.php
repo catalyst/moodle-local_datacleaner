@@ -15,16 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_replace
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * Version details.
+ *
+ * @package    cleaner_environment_matrix
+ * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
+ * @copyright  2017 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2015072200;
-$plugin->release   = '2.3.2';
+if (!defined('MOODLE_INTERNAL')) {
+    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
+}
+
+$plugin->version   = 2017030600;
+$plugin->release   = 2017030600;
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
-$plugin->component = 'cleaner_replace_urls';
-$plugin->sortorder = 210;
+$plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
+$plugin->component = 'cleaner_environment_matrix';
+$plugin->sortorder = 200;

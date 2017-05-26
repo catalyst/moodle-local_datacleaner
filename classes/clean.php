@@ -122,7 +122,7 @@ abstract class clean {
             self::$tasks[$taskname] = time();
         }
 
-        printf("\r %-20s %4d%% (%d/%d)    $timeleft  ", $taskname, $perc, $itemno, $total);
+        printf("\r %-20s %4d%% (%d/%d)    $timeleft  \n", $taskname, $perc, $itemno, $total);
 
         if ($itemno == $total) {
             // No more output for this step; move to a new line.

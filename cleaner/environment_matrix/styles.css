@@ -1,0 +1,11 @@
+.cleaner_environment_matrix .mform .cb_header:nth-of-type(1) {
+    margin-left: 26px;
+}
+
+.cleaner_environment_matrix .mform .fitem .felement {
+    white-space: nowrap;
+}
+
+.cleaner_environment_matrix .hiddencb {
+    visibility: hidden;
+}

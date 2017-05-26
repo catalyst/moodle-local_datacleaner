@@ -32,8 +32,11 @@ list($options, $unrecognized) = cli_get_params(
         'help' => false,
         'force' => false,
         'run' => false,
+        'run-pre-wash' => false,
+        'run-post-wash' => false,
         'dryrun' => false,
         'verbose' => false,
+        'reset' => false,
     ),
     array('h' => 'help')
 );
@@ -48,17 +51,24 @@ $help = "Perform a datawash.
 To configure this plugin goto $CFG->wwwroot/local/datacleaner/
 
 Options:
- -h, --help     Print out this help
-     --run      Actually run the clean process
-     --dryrun   Print an overview of what would run
-     --force    Skip all prod detection safety checks
-     --verbose  Be noisey about what is being done or would be done
+ -h, --help           Print out this help
+     --run            Run the full datawashing process
+     --run-pre-wash   Run the washing process for the pre-restore step
+     --run-post-wash  Run the washing process for the post-restore step
+     --dryrun         Print an overview of what would run
+     --force          Skip all prod detection safety checks
+     --verbose        Be noisy about what is being done or would be done
+
+Environment matrix options
+     --reset          This will clear the configured items for other environments
 
 Example:
 \$sudo -u www-data /usr/bin/php local/datacleaner/cli/clean.php --run
 ";
 
 if (!$options['run'] &&
+    !$options['run-pre-wash'] &&
+    !$options['run-post-wash'] &&
     !$options['dryrun']) {
     echo $help;
     die;
@@ -95,6 +105,24 @@ foreach ($plugins as $plugin) {
     // Get the class that does the work.
     $classname = 'cleaner_' . $plugin->name . '\clean';
 
+    // Pre washing detection.
+    // Skip subplugins that have a sort order that is greater or equal to 200.
+    if ($options['run-pre-wash']) {
+        if ($plugin->sortorder >= 200) {
+            echo "NOTICE: Pre washing only. Skipping {$plugin->name} ({$plugin->sortorder}) cleaner.\n";
+            continue;
+        }
+    }
+
+    // Post washing detection.
+    // Skip subplugins that have a sort order that is less than 200.
+    if ($options['run-post-wash']) {
+        if ($plugin->sortorder < 200) {
+            echo "NOTICE: Post washing only. Skipping {$plugin->name} ({$plugin->sortorder}) cleaner.\n";
+            continue;
+        }
+    }
+
     echo "== Running {$plugin->name} cleaner ==\n";
     if (!class_exists($classname)) {
         echo "ERROR: Unable to locate local/datacleaner/cleaner/{$plugin->name}/classes/clean.php class. Skipping.\n";
@@ -102,6 +130,7 @@ foreach ($plugins as $plugin) {
     }
 
     $class = new $classname($options);
+
     if (is_null($cascade) && $class->needs_cascade_delete()) {
         $cascade = new \local_datacleaner\schema_add_cascade_delete($options);
 
