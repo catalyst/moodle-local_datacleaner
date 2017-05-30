@@ -77,6 +77,12 @@ class matrix {
             $settings = $found->settings;
 
             foreach ($settings as $setting) {
+
+                // Prevent heading types from populating the list. There is nothing to configure.
+                if ($setting instanceof admin_setting_heading) {
+                    continue;
+                }
+
                 $record = new stdClass();
 
                 $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
