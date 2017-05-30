@@ -33,6 +33,14 @@ $PAGE->requires->css('/local/datacleaner/cleaner/environment_matrix/styles.css')
 $PAGE->requires->js_call_amd('cleaner_environment_matrix/matrix', 'init');
 $PAGE->add_body_class('cleaner_environment_matrix');
 
+// Check to see if the environment bar exists.
+if (!class_exists('\local_envbar\local\envbarlib')) {
+    echo $OUTPUT->header();
+    echo html_writer::tag('h2', get_string('missingenvbar', 'cleaner_environment_matrix'));
+    echo $OUTPUT->footer();
+    exit;
+}
+
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];

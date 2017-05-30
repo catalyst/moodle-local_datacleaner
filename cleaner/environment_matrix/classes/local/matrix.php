@@ -29,7 +29,6 @@ namespace cleaner_environment_matrix\local;
 use admin_setting_confightmleditor;
 use admin_setting_configtextarea;
 use admin_setting_heading;
-use local_envbar\local\envbarlib;
 use stdClass;
 
 require_once(__DIR__ . '/../../../../../../config.php');
@@ -137,7 +136,7 @@ class matrix {
         $prod = new stdClass();
         $prod->id = -1;
         $prod->environment = 'Production';
-        $prod->wwwroot = envbarlib::getprodwwwroot();
+        $prod->wwwroot = \local_envbar\local\envbarlib::getprodwwwroot();
 
         // If we are on the production system, apply the production environment to assist with setting config data.
         if ($prod->wwwroot == $CFG->wwwroot) {
