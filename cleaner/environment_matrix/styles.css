@@ -12,6 +12,7 @@
 
 .cleaner_environment_matrix .mform .fitem .felement textarea {
     width: initial;
+    resize: both;
 }
 
 .cleaner_environment_matrix .hiddencb {

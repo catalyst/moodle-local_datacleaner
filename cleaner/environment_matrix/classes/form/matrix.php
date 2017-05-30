@@ -119,7 +119,7 @@ class matrix extends moodleform {
         $params = [
             'class' => 'cb_header search_input',
             'placeholder' => get_string('search_placeholder', 'cleaner_environment_matrix'),
-            'size' => 40,
+            'size' => 30,
         ];
 
         // Add the search element group.
