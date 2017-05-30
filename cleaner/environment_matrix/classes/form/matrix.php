@@ -28,6 +28,7 @@ namespace cleaner_environment_matrix\form;
 
 use html_writer;
 use moodleform;
+use stdClass;
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
@@ -155,51 +156,56 @@ class matrix extends moodleform {
         }
 
         // Display the configured items associated to each environment.
-        foreach ($searchitems as $item) {
-            $configname = $item->name;
-            $plugin = $item->plugin;
+        foreach ($searchitems as $plugin => $items) {
+            foreach ($items as $configname => $item) {
 
-            $group = [];
-            $cbkey = "selected[$plugin][$configname]";
-            $group[] = &$mform->createElement('advcheckbox', $cbkey, '', '', '', [0, 1]);
-            $mform->setDefault($cbkey, 0);
-
-            // Default element type.
-            $elementtype = 'text';
-
-            foreach ($environments as $eid => $env) {
-                $key = "config[$plugin][$configname][$eid]";
-
-                $value = empty($item->value) ? '' : $item->value;
-
-                $params = [];
-
-                // Determine if the saved value has a newline, display a text area instead.
-                if (strstr($value, PHP_EOL)) {
-                    $elementtype = 'textarea';
+                // This item exists in the saved config items array, do not display it here.
+                if (!$item->display) {
+                    continue;
                 }
 
-                // Used in other iterations to extend the row count.
-                if ($elementtype == 'textarea') {
-                    $params = ['rows' => 6];
+                $configname = $item->name;
+                $plugin = $item->plugin;
+
+                $group = [];
+                $cbkey = "selected[$plugin][$configname]";
+                $group[] = &$mform->createElement('advcheckbox', $cbkey, '', '', '', [0, 1]);
+                $mform->setDefault($cbkey, 0);
+
+                foreach ($environments as $eid => $env) {
+                    $key = "config[$plugin][$configname][$eid]";
+
+                    $value = empty($item->value) ? '' : $item->value;
+
+                    $params = [];
+
+                    if ($item->textarea == true) {
+                        $elementtype = 'textarea';
+                        $params = ['rows' => 6];
+                    } else {
+                        // Default element type.
+                        $elementtype = 'text';
+                    }
+
+                    // Environment ID -1 is the production system obtained from envbar.
+                    if ($eid == '-1') {
+                        $mform->setDefault($key, $value);
+                        $params = $params + ['disabled' => 1];
+                    }
+
+                    // For the current environment, populate the contents for searched items.
+                    if ($env->wwwroot == $CFG->wwwroot) {
+                        $mform->setDefault($key, $value);
+                    }
+
+                    $group[] = &$mform->createElement($elementtype, $key, '', $params);
+                    $mform->setType($key, PARAM_RAW);
                 }
 
-                // Environment ID -1 is the production system obtained from envbar.
-                if ($eid == '-1') {
-                    $mform->setDefault($key, $value);
-                    $params = $params + ['disabled' => 1];
-                }
+                $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
 
-                // For the current environment, populate the contents for searched items.
-                if ($env->wwwroot == $CFG->wwwroot) {
-                    $mform->setDefault($key, $value);
-                }
-
-                $group[] = &$mform->createElement($elementtype, $key, '', $params);
-                $mform->setType($key, PARAM_RAW);
             }
 
-            $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
         }
 
     }
@@ -235,24 +241,28 @@ class matrix extends moodleform {
                 $group[] = &$mform->createElement('advcheckbox', $cbkey, '', '', '', [0, 1]);
                 $mform->setDefault($cbkey, 1);
 
-                // Default element type.
-                $elementtype = 'text';
-
                 foreach ($environments as $eid => $env) {
+
+                    // Check to see if the item exists in the list of environments.
+                    if (array_key_exists($eid, $items)) {
+                        $item = $items[$eid];
+                    } else {
+                        // The list of environments may have changed, create a default empty item.
+                        $item = new stdClass();
+                    }
+
                     $key = "config[$plugin][$configname][$eid]";
 
-                    $value = empty($items[$eid]->value) ? '' : $items[$eid]->value;
+                    $value = empty($item->value) ? '' : $item->value;
 
                     $params = [];
 
-                    // Determine if the saved value has a newline, display a text area instead.
-                    if (strstr($value, PHP_EOL)) {
+                    if (!empty($item->textarea) && $item->textarea == true) {
                         $elementtype = 'textarea';
-                    }
-
-                    // Used in other iterations to extend the row count.
-                    if ($elementtype == 'textarea') {
                         $params = ['rows' => 6];
+                    } else {
+                        // Default element type.
+                        $elementtype = 'text';
                     }
 
                     // For the production environment, disable the field.

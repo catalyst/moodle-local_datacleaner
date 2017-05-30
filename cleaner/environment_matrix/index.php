@@ -33,7 +33,6 @@ $PAGE->requires->css('/local/datacleaner/cleaner/environment_matrix/styles.css')
 $PAGE->requires->js_call_amd('cleaner_environment_matrix/matrix', 'init');
 $PAGE->add_body_class('cleaner_environment_matrix');
 
-
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
@@ -91,6 +90,13 @@ if ($matrix->is_cancelled()) {
                         'envid' => $envid,
                         'value' => $value,
                     ];
+
+                    // Sometimes the element is listed in the search items, lets update the textarea data for this.
+                    if (array_key_exists($plugin, $searchitems)) {
+                        if (array_key_exists($name, $searchitems[$plugin])) {
+                            $entry['textarea'] = $searchitems[$plugin][$name]->textarea;
+                        }
+                    }
 
                     $record = $DB->get_record_select('cleaner_environment_matrixd', $select, $entry);
 

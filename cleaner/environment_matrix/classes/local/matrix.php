@@ -26,6 +26,9 @@
 
 namespace cleaner_environment_matrix\local;
 
+use admin_setting_confightmleditor;
+use admin_setting_configtextarea;
+use admin_setting_heading;
 use local_envbar\local\envbarlib;
 use stdClass;
 
@@ -73,7 +76,6 @@ class matrix {
         $findings = $adminroot->search($search);
 
         foreach ($findings as $found) {
-            $page     = $found->page;
             $settings = $found->settings;
 
             foreach ($settings as $setting) {
@@ -91,26 +93,30 @@ class matrix {
 
                 $record->name = $setting->name;
 
+                $record->textarea = false;
+
+                $record->display = true;
+
+                // Identify that this is a text area, during search.
+                if ($setting instanceof admin_setting_configtextarea ||
+                    $setting instanceof admin_setting_confightmleditor) {
+                    $record->textarea = true;
+                }
+
                 // Have we passed an array of config items, does the plugin type exist in that array?
                 if (array_key_exists($record->plugin, $configitems)) {
-                    // Does the config name exists in the type array?
-                    if (!array_key_exists($record->name, $configitems[$record->plugin])) {
-                        // It's not there, lets just add it.
-                        $result[] = $record;
+                    // Does the config name exist in the type array?
+                    if (array_key_exists($record->name, $configitems[$record->plugin])) {
+                        // Setting a flag to indicate that we should not show this in the list of found items.
+                        $record->display = false;
                     }
-                } else {
-                    // We haven't seen this type of plugin before so we know that we can just add this config value.
-                    $result[] = $record;
                 }
+
+                $result[$record->plugin][$record->name] = $record;
 
             }
 
         }
-
-        // Sort the results by config name.
-        usort($result, function($a, $b) {
-            return $a->name > $b->name;
-        });
 
         return $result;
     }
@@ -238,6 +244,7 @@ class matrix {
         foreach ($records as $record) {
             if (envbarlib::getprodwwwroot() === $CFG->wwwroot) {
 
+                // Create a copy of the record that will be displayed in the first column.
                 $prodrecord = clone $record;
                 $prodrecord->value = get_config($record->plugin, $record->config);
                 $prodrecord->envid = '-1';
