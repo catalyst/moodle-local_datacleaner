@@ -6,6 +6,14 @@
     white-space: nowrap;
 }
 
+.cleaner_environment_matrix .mform .fitem .felement input {
+    width: initial;
+}
+
+.cleaner_environment_matrix .mform .fitem .felement textarea {
+    width: initial;
+}
+
 .cleaner_environment_matrix .hiddencb {
     visibility: hidden;
 }
