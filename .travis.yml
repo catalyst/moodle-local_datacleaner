@@ -12,6 +12,7 @@ sudo: false
 cache:
   directories:
     - $HOME/.composer/cache
+    - $HOME/.npm
 
 addons:
   postgresql: "9.3"
@@ -28,42 +29,41 @@ env:
   - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
-  - DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
-  - DB=pgsql MOODLE_BRANCH=master
+  - DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE V2=true
+  - DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE V2=true
+  - DB=pgsql MOODLE_BRANCH=master V2=true
   - DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_28_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
-  - DB=mysqli MOODLE_BRANCH=master
   - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
-
+  - DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE V2=true
+  - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE V2=true
+  - DB=mysqli MOODLE_BRANCH=master V2=true
 
 matrix:
   include:
     - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE V2=true
     - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE V2=true
     - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=master
+      env: DB=pgsql MOODLE_BRANCH=master V2=true
     - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE V2=true
     - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE V2=true
     - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=master
+      env: DB=mysqli MOODLE_BRANCH=master V2=true
   exclude:
     - php: 5.5
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE V2=true
     - php: 5.5
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE V2=true
     - php: 5.5
-      env: DB=mysqli MOODLE_BRANCH=master
+      env: DB=mysqli MOODLE_BRANCH=master V2=true
     - php: 7.0
       env: DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
     - php: 7.0
@@ -73,11 +73,11 @@ matrix:
     - php: 7.0
       env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
     - php: 5.5
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE V2=true
     - php: 5.5
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE V2=true
     - php: 5.5
-      env: DB=pgsql MOODLE_BRANCH=master
+      env: DB=pgsql MOODLE_BRANCH=master V2=true
     - php: 7.0
       env: DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE
     - php: 7.0
@@ -87,12 +87,16 @@ matrix:
     - php: 7.0
       env: DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
 
-
 before_install:
   - phpenv config-rm xdebug.ini
+  - nvm install node
   - cd ../..
   - composer selfupdate
-  - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci dev-master
+  - if [ "$V2" = true ]; then
+      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
+    else
+      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
+    fi
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
@@ -103,9 +107,15 @@ script:
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
-  - moodle-plugin-ci csslint
-  - moodle-plugin-ci shifter
-  - moodle-plugin-ci jshint
+  - moodle-plugin-ci validate
+  - if [ "$V2" = true ]; then
+      moodle-plugin-ci savepoints || travis_terminate 1;
+      moodle-plugin-ci mustache || travis_terminate 1;
+      moodle-plugin-ci grunt || travis_terminate 1;
+    else
+      moodle-plugin-ci csslint || travis_terminate 1;
+      moodle-plugin-ci jshint || travis_terminate 1;
+      moodle-plugin-ci shifter || travis_terminate 1;
+    fi
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
-
