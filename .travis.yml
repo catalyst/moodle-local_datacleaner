@@ -91,7 +91,7 @@ before_install:
   - phpenv config-rm xdebug.ini
   - cd ../..
   - if [ "$CI_PLUGIN" = 2 ]; then
-      nvm install node
+      nvm install node;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     else
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
