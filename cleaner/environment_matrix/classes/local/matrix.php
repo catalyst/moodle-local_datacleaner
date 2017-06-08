@@ -26,7 +26,9 @@
 
 namespace cleaner_environment_matrix\local;
 
-use local_envbar\local\envbarlib;
+use admin_setting_confightmleditor;
+use admin_setting_configtextarea;
+use admin_setting_heading;
 use stdClass;
 
 require_once(__DIR__ . '/../../../../../../config.php');
@@ -73,10 +75,15 @@ class matrix {
         $findings = $adminroot->search($search);
 
         foreach ($findings as $found) {
-            $page     = $found->page;
             $settings = $found->settings;
 
             foreach ($settings as $setting) {
+
+                // Prevent heading types from populating the list. There is nothing to configure.
+                if ($setting instanceof admin_setting_heading) {
+                    continue;
+                }
+
                 $record = new stdClass();
 
                 $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
@@ -85,26 +92,30 @@ class matrix {
 
                 $record->name = $setting->name;
 
+                $record->textarea = false;
+
+                $record->display = true;
+
+                // Identify that this is a text area, during search.
+                if ($setting instanceof admin_setting_configtextarea ||
+                    $setting instanceof admin_setting_confightmleditor) {
+                    $record->textarea = true;
+                }
+
                 // Have we passed an array of config items, does the plugin type exist in that array?
                 if (array_key_exists($record->plugin, $configitems)) {
-                    // Does the config name exists in the type array?
-                    if (!array_key_exists($record->name, $configitems[$record->plugin])) {
-                        // It's not there, lets just add it.
-                        $result[] = $record;
+                    // Does the config name exist in the type array?
+                    if (array_key_exists($record->name, $configitems[$record->plugin])) {
+                        // Setting a flag to indicate that we should not show this in the list of found items.
+                        $record->display = false;
                     }
-                } else {
-                    // We haven't seen this type of plugin before so we know that we can just add this config value.
-                    $result[] = $record;
                 }
+
+                $result[$record->plugin][$record->name] = $record;
 
             }
 
         }
-
-        // Sort the results by config name.
-        usort($result, function($a, $b) {
-            return $a->name > $b->name;
-        });
 
         return $result;
     }
@@ -125,7 +136,7 @@ class matrix {
         $prod = new stdClass();
         $prod->id = -1;
         $prod->environment = 'Production';
-        $prod->wwwroot = envbarlib::getprodwwwroot();
+        $prod->wwwroot = \local_envbar\local\envbarlib::getprodwwwroot();
 
         // If we are on the production system, apply the production environment to assist with setting config data.
         if ($prod->wwwroot == $CFG->wwwroot) {
@@ -232,6 +243,7 @@ class matrix {
         foreach ($records as $record) {
             if (envbarlib::getprodwwwroot() === $CFG->wwwroot) {
 
+                // Create a copy of the record that will be displayed in the first column.
                 $prodrecord = clone $record;
                 $prodrecord->value = get_config($record->plugin, $record->config);
                 $prodrecord->envid = '-1';

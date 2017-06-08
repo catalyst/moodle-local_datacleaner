@@ -21,6 +21,7 @@
         <FIELD NAME="plugin" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="config" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="value" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="textarea" TYPE="int" LENGTH="10" SEQUENCE="false" DEFAULT="0"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for cleaner_env_matrix_data"/>

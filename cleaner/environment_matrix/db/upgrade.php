@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Upgrade script for clener_environment_matrix
  *
  * @package    cleaner_environment_matrix
  * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
@@ -28,9 +28,29 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
-$plugin->version   = 2017053000;
-$plugin->release   = 2017053000;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
-$plugin->component = 'cleaner_environment_matrix';
-$plugin->sortorder = 200;
+/**
+ * @param int $oldversion the version we are upgrading from
+ * @return bool result
+ */
+function xmldb_cleaner_environment_matrix_upgrade($oldversion) {
+    global $DB;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2017053000) {
+
+        // Define field textarea to be added to cleaner_environment_matrixd.
+        $table = new xmldb_table('cleaner_environment_matrixd');
+        $field = new xmldb_field('textarea', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'value');
+
+        // Conditionally launch add field textarea.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Environment_matrix savepoint reached.
+        upgrade_plugin_savepoint(true, 2017053000, 'cleaner', 'environment_matrix');
+    }
+
+    return true;
+}
