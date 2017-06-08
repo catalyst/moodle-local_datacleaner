@@ -88,7 +88,7 @@ matrix:
       env: DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
 
 before_install:
-  - phpenv config-rm xdebug.in
+  - phpenv config-rm xdebug.ini
   - cd ../..
   - if [ "$CI_PLUGIN" = 2 ]; then
       nvm install node
