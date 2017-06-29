@@ -241,7 +241,7 @@ class matrix {
         $records = $DB->get_records('cleaner_environment_matrixd', $params);
 
         foreach ($records as $record) {
-            if (envbarlib::getprodwwwroot() === $CFG->wwwroot) {
+            if (\local_envbar\local\envbarlib::getprodwwwroot() === $CFG->wwwroot) {
 
                 // Create a copy of the record that will be displayed in the first column.
                 $prodrecord = clone $record;
