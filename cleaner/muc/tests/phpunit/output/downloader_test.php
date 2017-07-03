@@ -88,8 +88,11 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
     }
 
     public function test_it_provides_download_html5_tag() {
+        global $CFG;
+        $CFG->httpswwwroot = $CFG->wwwroot = 'https://moodle.test/subdir';
+
         $html = $this->get_page();
-        $filename = 'www.example.com-muc-config.php';
+        $filename = rawurlencode($CFG->wwwroot);
         $expected = 'download="' . $filename . '"';
         self::assertContains($expected, $html);
     }
@@ -126,7 +129,7 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         global $CFG;
 
         $CFG->wwwroot = 'http://thesite.url.to-use';
-        $expected = 'thesite.url.to-use-muc-config.php';
+        $expected = rawurlencode($CFG->wwwroot);
         $actual = downloader::get_filename();
         self::assertSame($expected, $actual);
     }

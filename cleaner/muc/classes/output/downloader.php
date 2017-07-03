@@ -99,8 +99,6 @@ class downloader {
 
     public static function get_filename() {
         global $CFG;
-        $url = new moodle_url($CFG->wwwroot);
-        $host = $url->get_host();
-        return "{$host}-muc-config.php";
+        return rawurlencode($CFG->wwwroot);
     }
 }
