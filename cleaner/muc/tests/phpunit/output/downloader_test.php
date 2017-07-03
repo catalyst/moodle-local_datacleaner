@@ -24,13 +24,12 @@
 
 use cleaner_muc\envbar_adapter;
 use cleaner_muc\output\downloader;
-use local_envbar\local\envbarlib;
 
 defined('MOODLE_INTERNAL') || die();
 require_once(__DIR__ . '/../envbar_adapter_test.php');
 
 class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testcase {
-    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/downloader.php?download=muc';
+    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/downloader.php?download=muc&amp;sesskey=';
 
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
@@ -43,8 +42,12 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
     protected function setUp() {
         parent::setUp();
         $this->resetAfterTest(true);
+        self::setAdminUser();
         local_cleanurls_cleaner_muc_envbar_adapter_test::create_envbar_data();
     }
+
+    /** @var downloader */
+    private $downloader = null;
 
     public function test_it_outputs_header_and_footer() {
         $html = $this->get_page();
@@ -71,11 +74,62 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         self::assertContains('Sorry, downloading the MUC Config file is not allowed in production environment.', $html);
     }
 
+    public function test_it_downloads_the_config_file() {
+        global $CFG;
+
+        $_GET['download'] = 'muc';
+        $_GET['sesskey'] = sesskey();
+        $actual = $this->get_page();
+
+        $mucfile = "{$CFG->dataroot}/muc/config.php";
+        $expected = file_get_contents($mucfile);
+
+        self::assertSame($expected, $actual);
+    }
+
+    public function test_it_provides_download_html5_tag() {
+        $html = $this->get_page();
+        $filename = 'muc-config.php';
+        $expected = 'download="' . $filename . '"';
+        self::assertContains($expected, $html);
+    }
+
+    public function test_it_requires_sesskey_to_download_file() {
+        $_GET['download'] = 'muc';
+        $this->expectException(moodle_exception::class);
+        $this->expectExceptionMessage('sesskey');
+        $this->get_page();
+    }
+
+    public function test_it_does_not_allow_download_in_production_environment() {
+        local_cleanurls_cleaner_muc_envbar_adapter_test::mock_production_site();
+        $_GET['download'] = 'muc';
+        $_GET['sesskey'] = sesskey();
+        $this->expectException(moodle_exception::class);
+        $this->expectExceptionMessage('production environment');
+        $this->get_page();
+    }
+
+    public function test_it_does_not_allow_download_if_not_admin() {
+        // It should already be blocked by downloader page, but add one more layer of check.
+
+        self::setUser($this->getDataGenerator()->create_user());
+
+        $_GET['download'] = 'muc';
+        $_GET['sesskey'] = sesskey();
+        $this->expectException(moodle_exception::class);
+        $this->expectExceptionMessage('Only admins can download MUC configuration');
+        $this->get_page();
+    }
+
     private function get_page() {
         ob_start();
-        downloader::output();
-        $html = ob_get_contents();
-        ob_end_clean();
+        try {
+            $this->downloader = downloader::output();
+            $html = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
         return $html;
     }
 }

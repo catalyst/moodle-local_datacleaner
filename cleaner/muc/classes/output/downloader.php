@@ -25,6 +25,7 @@
 namespace cleaner_muc\output;
 
 use cleaner_muc\envbar_adapter;
+use moodle_exception;
 use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
@@ -43,7 +44,15 @@ class downloader {
         global $PAGE;
         $PAGE->set_url('/local/datacleaner/cleaner/muc/downloader.php');
         $downloader = new downloader();
-        echo $downloader->render_page();
+
+        $download = ('muc' == optional_param('download', '', PARAM_ALPHA));
+        if ($download) {
+            $downloader->download();
+        } else {
+            echo $downloader->render_page();
+        }
+
+        return $downloader;
     }
 
     private function render_page() {
@@ -60,11 +69,30 @@ class downloader {
         if (envbar_adapter::is_production()) {
             return '<i>' . get_string('downloader_in_production', 'cleaner_muc') . '</i>';
         } else {
-            return '<a href="' .
-                   (new moodle_url('/local/datacleaner/cleaner/muc/downloader.php', ['download' => 'muc'])) .
-                   '">' .
+            $url = new moodle_url('/local/datacleaner/cleaner/muc/downloader.php', [
+                'download' => 'muc',
+                'sesskey'  => sesskey(),
+            ]);
+            return '<a download="muc-config.php" href="' . $url . '">' .
                    get_string('downloader_link', 'cleaner_muc') .
                    '</a>';
         }
+    }
+
+    private function download() {
+        global $CFG;
+
+        if (!is_siteadmin()) {
+            throw new moodle_exception('Only admins can download MUC configuration.');
+        }
+
+        if (envbar_adapter::is_production()) {
+            throw new moodle_exception('Cannot download MUC config in production environment.');
+        }
+
+        require_sesskey();
+
+        $mucfile = "{$CFG->dataroot}/muc/config.php";
+        readfile($mucfile);
     }
 }
