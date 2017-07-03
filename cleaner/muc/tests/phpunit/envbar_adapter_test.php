@@ -35,6 +35,25 @@ class  local_cleanurls_cleaner_muc_envbar_adapter_test extends advanced_testcase
         class_exists(envbarlib::class);
     }
 
+    public static function create_envbar_data() {
+        envbarlib::setprodwwwroot('http://production.example');
+
+        $entries = [
+            ['colourbg' => '#880000', 'colourtext' => '#ff0000', 'matchpattern' => 'red', 'showtext' => 'R', 'lastrefresh' => 0],
+            ['colourbg' => '#008800', 'colourtext' => '#00ff00', 'matchpattern' => 'green', 'showtext' => 'G', 'lastrefresh' => 0],
+            ['colourbg' => '#000088', 'colourtext' => '#0000ff', 'matchpattern' => 'blue', 'showtext' => 'B', 'lastrefresh' => 0],
+        ];
+        foreach ($entries as $entry) {
+            envbarlib::update_envbar((object)$entry);
+        }
+    }
+
+    public static function mock_production_site() {
+        global $CFG;
+        $CFG->wwwroot = 'http://production.example';
+        $CFG->httpswwwroot = 'https://production.example';
+    }
+
     protected function setUp() {
         parent::setUp();
         $this->resetAfterTest(true);
@@ -56,23 +75,5 @@ class  local_cleanurls_cleaner_muc_envbar_adapter_test extends advanced_testcase
 
     public function test_it_know_we_are_not_production_site() {
         self::assertFalse(envbar_adapter::is_production());
-    }
-
-    private function create_envbar_data() {
-        envbarlib::setprodwwwroot('http://production.example');
-
-        $entries = [
-            ['colourbg' => '#880000', 'colourtext' => '#ff0000', 'matchpattern' => 'red', 'showtext' => 'R', 'lastrefresh' => 0],
-            ['colourbg' => '#008800', 'colourtext' => '#00ff00', 'matchpattern' => 'green', 'showtext' => 'G', 'lastrefresh' => 0],
-            ['colourbg' => '#000088', 'colourtext' => '#0000ff', 'matchpattern' => 'blue', 'showtext' => 'B', 'lastrefresh' => 0],
-        ];
-        foreach ($entries as $entry) {
-            envbarlib::update_envbar((object)$entry);
-        }
-    }
-
-    private static function mock_production_site() {
-        global $CFG;
-        $CFG->wwwroot = 'http://production.example';
     }
 }

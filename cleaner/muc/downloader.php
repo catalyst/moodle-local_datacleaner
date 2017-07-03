@@ -21,8 +21,6 @@
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @var $CFG      stdClass
- * @var $PAGE     moodle_page
- * @var $OUTPUT   core_renderer
  */
 
 require_once(__DIR__ . '/../../../../config.php');
@@ -30,6 +28,4 @@ require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('cleaner_muc_downloader');
 
-echo $OUTPUT->header();
-
-echo $OUTPUT->footer();
+\cleaner_muc\output\downloader::output();

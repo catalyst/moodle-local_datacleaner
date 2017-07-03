@@ -25,5 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['downloader_link'] = 'Download MUC Config file.';
+$string['downloader_in_production'] = 'Sorry, downloading the MUC Config file is not allowed in production environment.';
 $string['pluginname'] = 'Clean MUC';
 $string['setting_downloader'] = 'MUC Config Downloader';

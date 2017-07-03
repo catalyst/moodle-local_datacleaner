@@ -16,41 +16,55 @@
 
 /**
  * @package     cleaner_muc
- * @subpackage  local_datacleaner
+ * @subpackage  local_cleanurls
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace cleaner_muc;
+namespace cleaner_muc\output;
 
-use local_envbar\local\envbarlib;
+use cleaner_muc\envbar_adapter;
+use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class envbar_adapter
+ * Class downloader
  *
  * @package     cleaner_muc
- * @subpackage  local_datacleaner
+ * @subpackage  local_cleanurls
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class envbar_adapter {
-    public static function get_environments() {
-        $environments = [];
-        $data = envbarlib::get_records();
-        foreach ($data as $entry) {
-            $environments[] = (array)$entry;
-        }
-        return $environments;
+class downloader {
+    public static function output() {
+        global $PAGE;
+        $PAGE->set_url('/local/datacleaner/cleaner/muc/downloader.php');
+        $downloader = new downloader();
+        echo $downloader->render_page();
     }
 
-    public static function is_production() {
-        global $CFG;
-        $envbar = envbarlib::getprodwwwroot();
-        $config = $CFG->wwwroot;
-        return ($envbar === $config);
+    private function render_page() {
+        global $PAGE;
+        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+
+        return $renderer->header() .
+               $renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
+               $this->render_download_link() .
+               $renderer->footer();
+    }
+
+    private function render_download_link() {
+        if (envbar_adapter::is_production()) {
+            return '<i>' . get_string('downloader_in_production', 'cleaner_muc') . '</i>';
+        } else {
+            return '<a href="' .
+                   (new moodle_url('/local/datacleaner/cleaner/muc/downloader.php', ['download' => 'muc'])) .
+                   '">' .
+                   get_string('downloader_link', 'cleaner_muc') .
+                   '</a>';
+        }
     }
 }
