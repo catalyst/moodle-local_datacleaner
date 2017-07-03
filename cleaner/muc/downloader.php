@@ -20,13 +20,16 @@
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @var $plugin stdClass
+ * @var $CFG      stdClass
+ * @var $PAGE     moodle_page
+ * @var $OUTPUT   core_renderer
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
 
-$plugin->version = 2017070302;
-$plugin->requires = 2013111800;
-$plugin->component = 'cleaner_muc';
-$plugin->sortorder = 220;
-$plugin->dependencies = ['local_envbar' => 2017062800];
+admin_externalpage_setup('cleaner_muc_downloader');
+
+echo $OUTPUT->header();
+
+echo $OUTPUT->footer();

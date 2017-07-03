@@ -26,3 +26,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Clean MUC';
+$string['setting_downloader'] = 'MUC Config Downloader';
