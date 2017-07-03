@@ -16,17 +16,30 @@
 
 /**
  * @package     cleaner_muc
- * @subpackage  local_datacleaner
+ * @subpackage  local_cleanurls
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @var $plugin stdClass
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017070301;
-$plugin->requires = 2013111800;
-$plugin->component = 'cleaner_muc';
-$plugin->sortorder = 220;
-$plugin->dependencies = ['local_envbar' => 2017062800];
+class  local_cleanurls_cleaner_muc_version_test extends advanced_testcase {
+    public function test_it_has_order_220() {
+        $plugin = $this->get_version_definition();
+        self::assertSame(220, $plugin->sortorder);
+    }
+
+    public function test_it_requires_envbar() {
+        $plugin = $this->get_version_definition();
+        self::assertArrayHasKey('local_envbar', $plugin->dependencies);
+    }
+
+    /**
+     * @return mixed
+     */
+    private function get_version_definition() {
+        $plugins = core_plugin_manager::instance()->get_present_plugins('cleaner');
+        return $plugins['muc'];
+    }
+}
