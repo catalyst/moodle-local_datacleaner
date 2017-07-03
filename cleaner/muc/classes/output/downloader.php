@@ -73,7 +73,8 @@ class downloader {
                 'download' => 'muc',
                 'sesskey'  => sesskey(),
             ]);
-            return '<a download="muc-config.php" href="' . $url . '">' .
+            $filename = self::get_filename();
+            return '<a download="' . $filename . '" href="' . $url . '">' .
                    get_string('downloader_link', 'cleaner_muc') .
                    '</a>';
         }
@@ -94,5 +95,12 @@ class downloader {
 
         $mucfile = "{$CFG->dataroot}/muc/config.php";
         readfile($mucfile);
+    }
+
+    public static function get_filename() {
+        global $CFG;
+        $url = new moodle_url($CFG->wwwroot);
+        $host = $url->get_host();
+        return "{$host}-muc-config.php";
     }
 }

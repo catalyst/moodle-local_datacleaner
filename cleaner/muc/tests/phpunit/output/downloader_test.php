@@ -89,7 +89,7 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
 
     public function test_it_provides_download_html5_tag() {
         $html = $this->get_page();
-        $filename = 'muc-config.php';
+        $filename = 'www.example.com-muc-config.php';
         $expected = 'download="' . $filename . '"';
         self::assertContains($expected, $html);
     }
@@ -120,6 +120,15 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         $this->expectException(moodle_exception::class);
         $this->expectExceptionMessage('Only admins can download MUC configuration');
         $this->get_page();
+    }
+
+    public function test_it_generates_the_correct_filename() {
+        global $CFG;
+
+        $CFG->wwwroot = 'http://thesite.url.to-use';
+        $expected = 'thesite.url.to-use-muc-config.php';
+        $actual = downloader::get_filename();
+        self::assertSame($expected, $actual);
     }
 
     private function get_page() {
