@@ -63,12 +63,25 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
     public function test_it_downloads_the_config_file() {
         global $CFG;
 
+        $mucfile = "{$CFG->dataroot}/muc/config.php";
+        $create = !file_exists($mucfile);
+        if ($create) {
+            $dirname = dirname($mucfile);
+            if (!is_dir($dirname)) {
+                mkdir($dirname);
+            }
+            file_put_contents($mucfile, '<?php // Test MUC File');
+        }
+
+        $expected = file_get_contents($mucfile);
+
         $_GET['download'] = 'muc';
         $_GET['sesskey'] = sesskey();
         $actual = $this->get_page();
 
-        $mucfile = "{$CFG->dataroot}/muc/config.php";
-        $expected = file_get_contents($mucfile);
+        if ($create) {
+            unlink($mucfile);
+        }
 
         self::assertSame($expected, $actual);
     }
