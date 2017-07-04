@@ -23,16 +23,16 @@
  */
 
 use cleaner_muc\dml\muc_config_db;
-use cleaner_muc\uploader;
+use cleaner_muc\form\upload_form;
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcase {
+class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
-        class_exists(uploader::class);
+        class_exists(upload_form::class);
     }
 
     private static function mock_submit($files) {
@@ -54,9 +54,9 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
         }
 
         $_POST = [
-            'sesskey'                   => sesskey(),
-            'mucfiles'                  => $itemid,
-            '_qf__cleaner_muc_uploader' => '1',
+            'sesskey'                           => sesskey(),
+            'mucfiles'                          => $itemid,
+            '_qf__cleaner_muc_form_upload_form' => '1',
         ];
     }
 
@@ -67,12 +67,12 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
     }
 
     public function test_it_exists() {
-        self::assertInstanceOf(uploader::class, new uploader());
+        self::assertInstanceOf(upload_form::class, new upload_form());
     }
 
     public function test_it_detects_form_not_submitted() {
-        $uploader = new uploader();
-        self::assertFalse($uploader->process_submit());
+        $upload = new upload_form();
+        self::assertFalse($upload->process_submit());
     }
 
     public function test_it_requires_muc_files() {
@@ -89,8 +89,8 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
             'test2.muc' => 'Mock2',
         ];
         self::mock_submit($expected);
-        $uploader = new uploader();
-        $data = $uploader->get_data();
+        $upload = new upload_form();
+        $data = $upload->get_data();
         self::assertSame($expected, $data->files);
     }
 
@@ -107,7 +107,7 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
         self::mock_submit($mock);
 
         self::assertSame(sesskey(), $_POST['sesskey'], 'Invalid sesskey.');
-        self::assertSame('1', $_POST['_qf__cleaner_muc_uploader'], 'Invalid submitted flag.');
+        self::assertSame('1', $_POST['_qf__cleaner_muc_form_upload_form'], 'Invalid submitted flag.');
 
         $fs = get_file_storage();
         $files = $fs->get_area_files(
@@ -133,8 +133,8 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
         ];
         self::mock_submit($mock);
 
-        $uploader = new uploader();
-        $saved = $uploader->process_submit();
+        $upload = new upload_form();
+        $saved = $upload->process_submit();
         self::assertTrue($saved);
 
         $expected = [

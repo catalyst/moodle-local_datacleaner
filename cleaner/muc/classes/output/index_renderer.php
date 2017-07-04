@@ -24,8 +24,8 @@
 
 namespace cleaner_muc\output;
 
+use cleaner_muc\form\upload_form;
 use cleaner_muc\index_controller;
-use cleaner_muc\uploader;
 use core_renderer;
 use moodle_url;
 
@@ -61,7 +61,7 @@ class index_renderer {
 
         // TODO fix uploader
         return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
-               (new uploader())->render();
+               (new upload_form())->render();
     }
 
     private function render_download_section() {

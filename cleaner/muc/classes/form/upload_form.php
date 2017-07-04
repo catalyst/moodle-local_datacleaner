@@ -22,7 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace cleaner_muc;
+namespace cleaner_muc\form;
 
 use cleaner_muc\dml\muc_config_db;
 use context_user;
@@ -42,7 +42,7 @@ require_once("{$CFG->libdir}/formslib.php");
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class uploader extends moodleform {
+class upload_form extends moodleform {
     public function process_submit() {
         $data = $this->get_data();
         if ($data) {

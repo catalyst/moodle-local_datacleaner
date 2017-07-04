@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\form\upload_form;
 use cleaner_muc\output\index_renderer;
 use moodle_exception;
 
@@ -38,14 +39,14 @@ defined('MOODLE_INTERNAL') || die();
  */
 class index_controller {
     /** @var index_controller */
-    private $uploader;
+    private $uploadform;
 
-    /** @var uploader */
+    /** @var upload_form */
     private $downloader;
 
     public function __construct() {
         $this->downloader = new index_controller();
-        $this->uploader = new uploader();
+        $this->uploadform = new upload_form();
     }
 
     public static function execute() {
@@ -55,7 +56,7 @@ class index_controller {
         $index = new index_renderer();
 
         // TODO process submit should be in controller.
-        if ((new uploader())->process_submit()) {
+        if ((new upload_form())->process_submit()) {
             // End script here (redirect) -- cannot be unit-tested.
             redirect($myurl);
         }
