@@ -24,8 +24,8 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\output\index_renderer;
 use moodle_exception;
-use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -37,6 +37,33 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class index_controller {
+    /** @var index_controller */
+    private $uploader;
+
+    /** @var uploader */
+    private $downloader;
+
+    public function __construct() {
+        $this->downloader = new index_controller();
+        $this->uploader = new uploader();
+    }
+
+    public static function execute() {
+        global $PAGE;
+
+        $myurl = '/local/datacleaner/cleaner/muc/index.php';
+        $index = new index_renderer();
+
+        // TODO process submit should be in controller.
+        if ((new uploader())->process_submit()) {
+            // End script here (redirect) -- cannot be unit-tested.
+            redirect($myurl);
+        }
+
+        $PAGE->set_url($myurl);
+        echo $index->render_index_page();
+    }
+
     public static function download() {
         global $CFG;
 

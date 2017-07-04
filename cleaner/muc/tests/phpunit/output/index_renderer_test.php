@@ -23,7 +23,6 @@
  */
 
 use cleaner_muc\index_controller;
-use cleaner_muc\output\index_renderer;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -72,7 +71,7 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
     private function get_page() {
         ob_start();
         try {
-            index_renderer::output();
+            index_controller::execute();
             $html = ob_get_contents();
         } finally {
             ob_end_clean();

@@ -39,36 +39,12 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class index_renderer {
-    public static function output() {
-        global $PAGE;
-
-        $myurl = '/local/datacleaner/cleaner/muc/index.php';
-        $index = new index_renderer();
-
-        if ($index->uploader->process_submit()) {
-            // End script here (redirect) -- cannot be unit-tested.
-            redirect($myurl);
-        }
-
-        $PAGE->set_url($myurl);
-        echo $index->render_index_page();
-    }
-
-    /** @var index_controller */
-    private $uploader;
-
-    /** @var uploader */
-    private $downloader;
-
     /** @var core_renderer */
     private $renderer;
 
     public function __construct() {
         global $PAGE;
         $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
-
-        $this->downloader = new index_controller();
-        $this->uploader = new uploader();
     }
 
     public function render_index_page() {
@@ -83,8 +59,9 @@ class index_renderer {
         global $PAGE;
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
+        // TODO fix uploader
         return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
-               $this->uploader->render();
+               (new uploader())->render();
     }
 
     private function render_download_section() {
