@@ -37,7 +37,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class index_controller {
+class controller {
     const MY_URL = '/local/datacleaner/cleaner/muc/index.php';
 
     /** @var upload_form */

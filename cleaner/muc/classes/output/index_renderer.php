@@ -25,7 +25,7 @@
 namespace cleaner_muc\output;
 
 use cleaner_muc\form\upload_form;
-use cleaner_muc\index_controller;
+use cleaner_muc\controller;
 use core_renderer;
 use moodle_url;
 
@@ -74,7 +74,7 @@ class index_renderer {
 
     private function render_download_link() {
         $url = new moodle_url('/local/datacleaner/cleaner/muc/download.php', ['sesskey' => sesskey()]);
-        $filename = index_controller::get_download_filename();
+        $filename = controller::get_download_filename();
         return '<a download="' . $filename . '" href="' . $url . '">' .
                get_string('downloader_link', 'cleaner_muc') .
                '</a>';

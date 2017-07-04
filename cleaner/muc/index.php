@@ -23,11 +23,11 @@
  * @var $CFG      stdClass
  */
 
-use cleaner_muc\index_controller;
+use cleaner_muc\controller;
 
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('cleaner_muc_downloader');
 
-(new index_controller())->execute();
+(new controller())->execute();
