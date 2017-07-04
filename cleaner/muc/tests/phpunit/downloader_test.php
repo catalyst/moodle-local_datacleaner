@@ -27,8 +27,6 @@ use cleaner_muc\downloader;
 defined('MOODLE_INTERNAL') || die();
 
 class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testcase {
-    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/download.php?sesskey=';
-
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
@@ -40,20 +38,6 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();
-    }
-
-    public function test_it_does_not_output_header_and_footer() {
-        $html = $this->get_download_section();
-
-        self::assertNotContains('<html', $html);
-        self::assertNotContains('</html', $html);
-    }
-
-    public function test_it_outputs_the_download_section() {
-        $html = $this->get_download_section();
-
-        self::assertContains('<h2>MUC Config Downloader</h2>', $html);
-        self::assertContains(self::DOWNLOAD_LINK, $html);
     }
 
     public function test_it_downloads_the_config_file() {
@@ -79,16 +63,6 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         }
 
         self::assertSame($expected, $actual);
-    }
-
-    public function test_it_provides_download_html5_tag() {
-        global $CFG;
-        $CFG->httpswwwroot = $CFG->wwwroot = 'https://moodle.test/subdir';
-
-        $html = $this->get_download_section();
-        $filename = downloader::get_filename();
-        $expected = 'download="' . $filename . '"';
-        self::assertContains($expected, $html);
     }
 
     public function test_it_requires_sesskey_to_download_file() {

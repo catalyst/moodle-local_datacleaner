@@ -24,6 +24,9 @@
 
 namespace cleaner_muc;
 
+use core_renderer;
+use moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -57,19 +60,46 @@ class index {
     /** @var uploader */
     private $downloader;
 
+    /** @var core_renderer */
+    private $renderer;
+
     public function __construct() {
+        global $PAGE;
+        $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+
         $this->downloader = new downloader();
         $this->uploader = new uploader();
     }
 
     public function render_index_page() {
+        return $this->renderer->header() .
+               $this->render_upload_section() .
+               '<br /><br />' .
+               $this->render_download_section() .
+               $this->renderer->footer();
+    }
+
+    private function render_upload_section() {
         global $PAGE;
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
-        return $renderer->header() .
-               $this->uploader->render_upload_section() .
-               '<br /><br />' .
-               $this->downloader->render_download_section() .
-               $renderer->footer();
+        return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
+               $this->uploader->render();
+    }
+
+    private function render_download_section() {
+        global $PAGE;
+        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+
+        return $renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
+               $this->render_download_link();
+    }
+
+    private function render_download_link() {
+        $url = new moodle_url('/local/datacleaner/cleaner/muc/download.php', ['sesskey' => sesskey()]);
+        $filename = downloader::get_filename();
+        return '<a download="' . $filename . '" href="' . $url . '">' .
+               get_string('downloader_link', 'cleaner_muc') .
+               '</a>';
     }
 }

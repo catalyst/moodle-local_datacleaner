@@ -52,22 +52,6 @@ class downloader {
         readfile($mucfile);
     }
 
-    public function render_download_section() {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
-
-        return $renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
-               $this->render_download_link();
-    }
-
-    private function render_download_link() {
-        $url = new moodle_url('/local/datacleaner/cleaner/muc/download.php', ['sesskey' => sesskey()]);
-        $filename = self::get_filename();
-        return '<a download="' . $filename . '" href="' . $url . '">' .
-               get_string('downloader_link', 'cleaner_muc') .
-               '</a>';
-    }
-
     public static function get_filename() {
         global $CFG;
         return rawurlencode($CFG->wwwroot) . '.muc';

@@ -56,14 +56,6 @@ class uploader extends moodleform {
         return false;
     }
 
-    public function render_upload_section() {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
-
-        return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
-               $this->render();
-    }
-
     protected function definition() {
         $this->_form->addElement(
             'filemanager',

@@ -22,6 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use cleaner_muc\downloader;
 use cleaner_muc\envbar_adapter;
 use cleaner_muc\index;
 
@@ -42,17 +43,32 @@ class  local_cleanurls_cleaner_muc_output_index_test extends advanced_testcase {
         self::assertContains('</html', $html);
     }
 
-    public function test_it_outputs_the_download_section() {
-        $html = $this->get_page();
-
-        self::assertContains('<h2>MUC Config Downloader</h2>', $html);
-    }
-
     public function test_it_outputs_the_upload_section() {
         $html = $this->get_page();
 
         self::assertContains('<h2>MUC Config Uploader</h2>', $html);
+        self::assertContains('<form', $html);
+        self::assertContains('MUC Config Files', $html);
+        self::assertContains('<input type="submit"', $html);
     }
+
+    public function test_it_outputs_the_download_section() {
+        $html = $this->get_page();
+
+        self::assertContains('<h2>MUC Config Downloader</h2>', $html);
+        self::assertContains('/local/datacleaner/cleaner/muc/download.php?sesskey=', $html);
+    }
+
+    public function test_it_provides_download_html5_tag() {
+        global $CFG;
+        $CFG->httpswwwroot = $CFG->wwwroot = 'https://moodle.test/subdir';
+
+        $html = $this->get_page();
+        $filename = downloader::get_filename();
+        $expected = 'download="' . $filename . '"';
+        self::assertContains($expected, $html);
+    }
+
 
     private function get_page() {
         ob_start();
