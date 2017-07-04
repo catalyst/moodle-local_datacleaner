@@ -22,21 +22,27 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace cleaner_muc\output;
-
-use moodle_exception;
-use moodle_url;
+use cleaner_muc\uploader;
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * Class downloader
- *
- * @package     cleaner_muc
- * @subpackage  local_cleanurls
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class uploader {
+class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcase {
+    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/downloader.php?sesskey=';
+
+    public static function setUpBeforeClass() {
+        parent::setUpBeforeClass();
+
+        // Trigger classloaders.
+        class_exists(uploader::class);
+    }
+
+    protected function setUp() {
+        parent::setUp();
+        $this->resetAfterTest(true);
+        self::setAdminUser();
+    }
+
+    public function test_it_exists() {
+        self::assertInstanceOf(uploader::class, new uploader());
+    }
 }

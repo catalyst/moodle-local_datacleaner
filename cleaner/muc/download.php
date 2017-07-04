@@ -25,4 +25,4 @@
 
 require_once(__DIR__ . '/../../../../config.php');
 
-\cleaner_muc\output\downloader::download();
+cleaner_muc\downloader::download();

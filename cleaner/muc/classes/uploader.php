@@ -22,35 +22,18 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use cleaner_muc\envbar_adapter;
-use cleaner_muc\output\downloader;
-use cleaner_muc\output\index;
+namespace cleaner_muc;
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_output_index_test extends advanced_testcase {
-    public function test_it_outputs_header_and_footer() {
-        $html = $this->get_page();
-
-        self::assertNotEmpty($html);
-        self::assertContains('<html', $html);
-        self::assertContains('</html', $html);
-    }
-
-    public function test_it_outputs_the_download_section() {
-        $html = $this->get_page();
-
-        self::assertContains('<h2>MUC Config Downloader</h2>', $html);
-    }
-
-    private function get_page() {
-        ob_start();
-        try {
-            index::output();
-            $html = ob_get_contents();
-        } finally {
-            ob_end_clean();
-        }
-        return $html;
-    }
+/**
+ * Class downloader
+ *
+ * @package     cleaner_muc
+ * @subpackage  local_cleanurls
+ * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
+ * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class uploader {
 }

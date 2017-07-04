@@ -22,27 +22,34 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use cleaner_muc\output\uploader;
+use cleaner_muc\envbar_adapter;
+use cleaner_muc\index;
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcase {
-    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/downloader.php?sesskey=';
+class  local_cleanurls_cleaner_muc_output_index_test extends advanced_testcase {
+    public function test_it_outputs_header_and_footer() {
+        $html = $this->get_page();
 
-    public static function setUpBeforeClass() {
-        parent::setUpBeforeClass();
-
-        // Trigger classloaders.
-        class_exists(uploader::class);
+        self::assertNotEmpty($html);
+        self::assertContains('<html', $html);
+        self::assertContains('</html', $html);
     }
 
-    protected function setUp() {
-        parent::setUp();
-        $this->resetAfterTest(true);
-        self::setAdminUser();
+    public function test_it_outputs_the_download_section() {
+        $html = $this->get_page();
+
+        self::assertContains('<h2>MUC Config Downloader</h2>', $html);
     }
 
-    public function test_it_exists() {
-        self::assertInstanceOf(uploader::class, new uploader());
+    private function get_page() {
+        ob_start();
+        try {
+            index::output();
+            $html = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+        return $html;
     }
 }
