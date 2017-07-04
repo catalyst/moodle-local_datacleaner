@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017070400;
+$plugin->version = 2017070401;
 $plugin->requires = 2013111800;
 $plugin->component = 'cleaner_muc';
 $plugin->sortorder = 220;
