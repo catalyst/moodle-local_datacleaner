@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use context_user;
 use moodleform;
 
 defined('MOODLE_INTERNAL') || die();
@@ -65,5 +66,34 @@ class uploader extends moodleform {
             null,
             ['subdirs' => false]
         );
+
+        $this->add_action_buttons();
+    }
+
+    public function get_data() {
+        global $USER;
+
+        $data = parent::get_data();
+        if (is_null($data)) {
+            return null;
+        }
+
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(
+            context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            $data->mucfiles
+        );
+
+        $data->files = [];
+        foreach ($files as $file) {
+            if ($file->get_filename() === '.') {
+                continue;
+            }
+            $data->files[$file->get_filename()] = $file->get_content();
+        }
+
+        return $data;
     }
 }
