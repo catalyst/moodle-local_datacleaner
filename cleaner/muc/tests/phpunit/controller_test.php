@@ -62,20 +62,24 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
         $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
     }
 
+    /**
+     * @expectedException \moodle_exception
+     * @expectedExceptionMessage sesskey
+     */
     public function test_it_requires_sesskey_to_download_file() {
-        $this->expectException(moodle_exception::class);
-        $this->expectExceptionMessage('sesskey');
         $this->get_download_file();
     }
 
+    /**
+     * @expectedException \moodle_exception
+     * @expectedExceptionMessage Only admins can download MUC configuration
+     */
     public function test_it_does_not_allow_download_if_not_admin() {
         // It should already be blocked by downloader page, but add one more layer of check.
 
         self::setUser($this->getDataGenerator()->create_user());
 
         $_GET['sesskey'] = sesskey();
-        $this->expectException(moodle_exception::class);
-        $this->expectExceptionMessage('Only admins can download MUC configuration');
         $this->get_download_file();
     }
 
