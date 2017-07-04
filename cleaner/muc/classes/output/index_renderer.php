@@ -22,8 +22,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace cleaner_muc;
+namespace cleaner_muc\output;
 
+use cleaner_muc\downloader;
+use cleaner_muc\uploader;
 use core_renderer;
 use moodle_url;
 
@@ -38,12 +40,12 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class index {
+class index_renderer {
     public static function output() {
         global $PAGE;
 
         $myurl = '/local/datacleaner/cleaner/muc/index.php';
-        $index = new index();
+        $index = new index_renderer();
 
         if ($index->uploader->process_submit()) {
             // End script here (redirect) -- cannot be unit-tested.

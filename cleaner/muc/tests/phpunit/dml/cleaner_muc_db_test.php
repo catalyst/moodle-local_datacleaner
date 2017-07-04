@@ -23,7 +23,6 @@
  */
 
 use cleaner_muc\dml\muc_config_db;
-use cleaner_muc\envbar_adapter;
 
 defined('MOODLE_INTERNAL') || die();
 

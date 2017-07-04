@@ -23,12 +23,11 @@
  */
 
 use cleaner_muc\downloader;
-use cleaner_muc\envbar_adapter;
-use cleaner_muc\index;
+use cleaner_muc\output\index_renderer;
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_output_index_test extends advanced_testcase {
+class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase {
     protected function setUp() {
         parent::setUp();
         $this->resetAfterTest(true);
@@ -73,7 +72,7 @@ class  local_cleanurls_cleaner_muc_output_index_test extends advanced_testcase {
     private function get_page() {
         ob_start();
         try {
-            index::output();
+            index_renderer::output();
             $html = ob_get_contents();
         } finally {
             ob_end_clean();
