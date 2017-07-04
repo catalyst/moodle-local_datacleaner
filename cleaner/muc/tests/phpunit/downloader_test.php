@@ -27,7 +27,7 @@ use cleaner_muc\downloader;
 defined('MOODLE_INTERNAL') || die();
 
 class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testcase {
-    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/downloader.php?sesskey=';
+    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/download.php?sesskey=';
 
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
@@ -86,7 +86,7 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         $CFG->httpswwwroot = $CFG->wwwroot = 'https://moodle.test/subdir';
 
         $html = $this->get_download_section();
-        $filename = rawurlencode($CFG->wwwroot);
+        $filename = downloader::get_filename();
         $expected = 'download="' . $filename . '"';
         self::assertContains($expected, $html);
     }
@@ -112,7 +112,7 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         global $CFG;
 
         $CFG->wwwroot = 'http://thesite.url.to-use';
-        $expected = rawurlencode($CFG->wwwroot);
+        $expected = rawurlencode($CFG->wwwroot) . '.muc';
         $actual = downloader::get_filename();
         self::assertSame($expected, $actual);
     }

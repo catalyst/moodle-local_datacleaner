@@ -61,7 +61,7 @@ class downloader {
     }
 
     private function render_download_link() {
-        $url = new moodle_url('/local/datacleaner/cleaner/muc/downloader.php', ['sesskey' => sesskey()]);
+        $url = new moodle_url('/local/datacleaner/cleaner/muc/download.php', ['sesskey' => sesskey()]);
         $filename = self::get_filename();
         return '<a download="' . $filename . '" href="' . $url . '">' .
                get_string('downloader_link', 'cleaner_muc') .
@@ -70,6 +70,6 @@ class downloader {
 
     public static function get_filename() {
         global $CFG;
-        return rawurlencode($CFG->wwwroot);
+        return rawurlencode($CFG->wwwroot) . '.muc';
     }
 }
