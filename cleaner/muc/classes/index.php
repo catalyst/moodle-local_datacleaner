@@ -49,8 +49,11 @@ class index {
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
         $downloader = new downloader();
+        $uploader = new uploader();
 
         return $renderer->header() .
+               $uploader->render_upload_section() .
+               '<br /><br />' .
                $downloader->render_download_section() .
                $renderer->footer();
     }

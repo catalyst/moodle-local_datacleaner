@@ -49,7 +49,7 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         self::assertNotContains('</html', $html);
     }
 
-    public function test_it_outputs_the_download_link() {
+    public function test_it_outputs_the_download_section() {
         $html = $this->get_download_section();
 
         self::assertContains('<h2>MUC Config Downloader</h2>', $html);

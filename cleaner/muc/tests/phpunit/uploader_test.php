@@ -27,8 +27,6 @@ use cleaner_muc\uploader;
 defined('MOODLE_INTERNAL') || die();
 
 class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcase {
-    const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/downloader.php?sesskey=';
-
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
@@ -44,5 +42,16 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
 
     public function test_it_exists() {
         self::assertInstanceOf(uploader::class, new uploader());
+    }
+
+    public function test_it_outputs_the_upload_section() {
+        $html = $this->get_upload_section();
+
+        self::assertContains('<h2>MUC Config Uploader</h2>', $html);
+    }
+
+    private function get_upload_section() {
+        $uploader = new uploader();
+        return $uploader->render_upload_section();
     }
 }

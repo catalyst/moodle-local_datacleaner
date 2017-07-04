@@ -36,4 +36,11 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class uploader {
+    public function render_upload_section() {
+        global $PAGE;
+        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+
+        return $renderer->heading(get_string('setting_uploader', 'cleaner_muc'));
+
+    }
 }

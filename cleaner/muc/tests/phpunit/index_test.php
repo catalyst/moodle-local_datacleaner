@@ -42,6 +42,12 @@ class  local_cleanurls_cleaner_muc_output_index_test extends advanced_testcase {
         self::assertContains('<h2>MUC Config Downloader</h2>', $html);
     }
 
+    public function test_it_outputs_the_upload_section() {
+        $html = $this->get_page();
+
+        self::assertContains('<h2>MUC Config Uploader</h2>', $html);
+    }
+
     private function get_page() {
         ob_start();
         try {

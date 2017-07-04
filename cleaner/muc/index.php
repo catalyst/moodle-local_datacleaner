@@ -28,4 +28,4 @@ require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('cleaner_muc_downloader');
 
-cleaner_muc\downloader::output();
+cleaner_muc\index::output();
