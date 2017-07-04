@@ -30,11 +30,6 @@ class  local_cleanurls_cleaner_muc_version_test extends advanced_testcase {
         self::assertSame(220, $plugin->sortorder);
     }
 
-    public function test_it_requires_envbar() {
-        $plugin = $this->get_version_definition();
-        self::assertArrayHasKey('local_envbar', $plugin->dependencies);
-    }
-
     /**
      * @return mixed
      */

@@ -22,11 +22,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use cleaner_muc\envbar_adapter;
 use cleaner_muc\output\downloader;
 
 defined('MOODLE_INTERNAL') || die();
-require_once(__DIR__ . '/../envbar_adapter_test.php');
 
 class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testcase {
     const DOWNLOAD_LINK = '/local/datacleaner/cleaner/muc/downloader.php?download=muc&amp;sesskey=';
@@ -35,7 +33,6 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
-        class_exists(envbar_adapter::class);
         class_exists(downloader::class);
     }
 
@@ -43,7 +40,6 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();
-        local_cleanurls_cleaner_muc_envbar_adapter_test::create_envbar_data();
     }
 
     /** @var downloader */
@@ -62,16 +58,6 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
 
         self::assertContains('<h2>MUC Config Downloader</h2>', $html);
         self::assertContains(self::DOWNLOAD_LINK, $html);
-    }
-
-    public function test_it_outputs_a_warning_message_if_production() {
-        local_cleanurls_cleaner_muc_envbar_adapter_test::mock_production_site();
-
-        $html = $this->get_page();
-
-        self::assertContains('<h2>MUC Config Downloader</h2>', $html);
-        self::assertNotContains(self::DOWNLOAD_LINK, $html);
-        self::assertContains('Sorry, downloading the MUC Config file is not allowed in production environment.', $html);
     }
 
     public function test_it_downloads_the_config_file() {
@@ -101,15 +87,6 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
         $_GET['download'] = 'muc';
         $this->expectException(moodle_exception::class);
         $this->expectExceptionMessage('sesskey');
-        $this->get_page();
-    }
-
-    public function test_it_does_not_allow_download_in_production_environment() {
-        local_cleanurls_cleaner_muc_envbar_adapter_test::mock_production_site();
-        $_GET['download'] = 'muc';
-        $_GET['sesskey'] = sesskey();
-        $this->expectException(moodle_exception::class);
-        $this->expectExceptionMessage('production environment');
         $this->get_page();
     }
 

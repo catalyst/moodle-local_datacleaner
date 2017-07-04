@@ -24,7 +24,6 @@
 
 namespace cleaner_muc\output;
 
-use cleaner_muc\envbar_adapter;
 use moodle_exception;
 use moodle_url;
 
@@ -66,18 +65,14 @@ class downloader {
     }
 
     private function render_download_link() {
-        if (envbar_adapter::is_production()) {
-            return '<i>' . get_string('downloader_in_production', 'cleaner_muc') . '</i>';
-        } else {
-            $url = new moodle_url('/local/datacleaner/cleaner/muc/downloader.php', [
-                'download' => 'muc',
-                'sesskey'  => sesskey(),
-            ]);
-            $filename = self::get_filename();
-            return '<a download="' . $filename . '" href="' . $url . '">' .
-                   get_string('downloader_link', 'cleaner_muc') .
-                   '</a>';
-        }
+        $url = new moodle_url('/local/datacleaner/cleaner/muc/downloader.php', [
+            'download' => 'muc',
+            'sesskey'  => sesskey(),
+        ]);
+        $filename = self::get_filename();
+        return '<a download="' . $filename . '" href="' . $url . '">' .
+               get_string('downloader_link', 'cleaner_muc') .
+               '</a>';
     }
 
     private function download() {
@@ -85,10 +80,6 @@ class downloader {
 
         if (!is_siteadmin()) {
             throw new moodle_exception('Only admins can download MUC configuration.');
-        }
-
-        if (envbar_adapter::is_production()) {
-            throw new moodle_exception('Cannot download MUC config in production environment.');
         }
 
         require_sesskey();
