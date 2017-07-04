@@ -38,10 +38,16 @@ defined('MOODLE_INTERNAL') || die();
 class index {
     public static function output() {
         global $PAGE;
-        $PAGE->set_url('/local/datacleaner/cleaner/muc/index.php');
 
+        $myurl = '/local/datacleaner/cleaner/muc/index.php';
         $index = new index();
-        $index->uploader->process_submit(); // May end script here (redirect).
+
+        if ($index->uploader->process_submit()) {
+            // End script here (redirect) -- cannot be unit-tested.
+            redirect($myurl);
+        }
+
+        $PAGE->set_url($myurl);
         echo $index->render_index_page();
     }
 

@@ -22,6 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\uploader;
 
 defined('MOODLE_INTERNAL') || die();
@@ -137,5 +138,28 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
 
         $expected = array_merge(['.' => ''], $mock);
         self::assertSame($expected, $actual, 'Invalid files.');
+    }
+
+    public function test_it_saves_the_configuration() {
+        $mock = [
+            'http%3A%2F%2Fmoodle.test.muc'             => 'Mock Moodle',
+            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => 'Mock SubMoodle',
+        ];
+        self::mock_submit($mock);
+
+        $uploader = new uploader();
+        $saved = $uploader->process_submit();
+        self::assertTrue($saved);
+
+        $expected = [
+            'http://moodle.test'           => 'Mock Moodle',
+            'http://moodle.test/submoodle' => 'Mock SubMoodle',
+        ];
+        $actual = muc_config_db::get_all();
+        self::assertSame($expected, $actual);
+    }
+
+    public function test_it_updates_the_configuration() {
+        $this->markTestSkipped('Test/Feature not yet implemented.');
     }
 }

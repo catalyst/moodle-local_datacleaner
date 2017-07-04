@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\dml\muc_config_db;
 use context_user;
 use moodleform;
 
@@ -45,6 +46,11 @@ class uploader extends moodleform {
     public function process_submit() {
         $data = $this->get_data();
         if ($data) {
+            foreach ($data->files as $wwwroot => $config) {
+                $wwwroot = preg_replace('#\.muc$#', '', $wwwroot); // Remove .muc suffix.
+                $wwwroot = rawurldecode($wwwroot);
+                muc_config_db::save($wwwroot, $config);
+            }
             return true;
         }
         return false;
