@@ -24,9 +24,6 @@
 
 namespace cleaner_muc\output;
 
-use moodle_exception;
-use moodle_url;
-
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -38,38 +35,23 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class downloader {
-    public static function download() {
-        global $CFG;
+class index {
+    public static function output() {
+        global $PAGE;
+        $PAGE->set_url('/local/datacleaner/cleaner/muc/index.php');
+        $index = new index();
 
-        if (!is_siteadmin()) {
-            throw new moodle_exception('Only admins can download MUC configuration.');
-        }
-
-        require_sesskey();
-
-        $mucfile = "{$CFG->dataroot}/muc/config.php";
-        readfile($mucfile);
+        echo $index->render_index_page();
     }
 
-    public function render_download_section() {
+    public function render_index_page() {
         global $PAGE;
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
-        return $renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
-               $this->render_download_link();
-    }
+        $downloader = new downloader();
 
-    private function render_download_link() {
-        $url = new moodle_url('/local/datacleaner/cleaner/muc/downloader.php', ['sesskey' => sesskey()]);
-        $filename = self::get_filename();
-        return '<a download="' . $filename . '" href="' . $url . '">' .
-               get_string('downloader_link', 'cleaner_muc') .
-               '</a>';
-    }
-
-    public static function get_filename() {
-        global $CFG;
-        return rawurlencode($CFG->wwwroot);
+        return $renderer->header() .
+               $downloader->render_download_section() .
+               $renderer->footer();
     }
 }
