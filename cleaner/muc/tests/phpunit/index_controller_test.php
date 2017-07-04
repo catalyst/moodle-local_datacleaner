@@ -22,16 +22,16 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use cleaner_muc\downloader;
+use cleaner_muc\index_controller;
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testcase {
+class  local_cleanurls_cleaner_muc_index_controller_test extends advanced_testcase {
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
-        class_exists(downloader::class);
+        class_exists(index_controller::class);
     }
 
     protected function setUp() {
@@ -87,19 +87,19 @@ class  local_cleanurls_cleaner_muc_output_downloader_test extends advanced_testc
 
         $CFG->wwwroot = 'http://thesite.url.to-use';
         $expected = rawurlencode($CFG->wwwroot) . '.muc';
-        $actual = downloader::get_filename();
+        $actual = index_controller::get_download_filename();
         self::assertSame($expected, $actual);
     }
 
     private function get_download_section() {
-        $downloader = new downloader();
+        $downloader = new index_controller();
         return $downloader->render_download_section();
     }
 
     private function get_download_file() {
         ob_start();
         try {
-            downloader::download();
+            index_controller::download();
             $html = ob_get_contents();
         } finally {
             ob_end_clean();

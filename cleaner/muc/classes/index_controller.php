@@ -30,15 +30,13 @@ use moodle_url;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class downloader
- *
  * @package     cleaner_muc
  * @subpackage  local_cleanurls
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class downloader {
+class index_controller {
     public static function download() {
         global $CFG;
 
@@ -52,7 +50,7 @@ class downloader {
         readfile($mucfile);
     }
 
-    public static function get_filename() {
+    public static function get_download_filename() {
         global $CFG;
         return rawurlencode($CFG->wwwroot) . '.muc';
     }

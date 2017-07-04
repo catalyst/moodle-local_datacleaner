@@ -22,7 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use cleaner_muc\downloader;
+use cleaner_muc\index_controller;
 use cleaner_muc\output\index_renderer;
 
 defined('MOODLE_INTERNAL') || die();
@@ -63,7 +63,7 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
         $CFG->httpswwwroot = $CFG->wwwroot = 'https://moodle.test/subdir';
 
         $html = $this->get_page();
-        $filename = downloader::get_filename();
+        $filename = index_controller::get_download_filename();
         $expected = 'download="' . $filename . '"';
         self::assertContains($expected, $html);
     }

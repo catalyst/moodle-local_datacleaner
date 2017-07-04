@@ -24,7 +24,7 @@
 
 namespace cleaner_muc\output;
 
-use cleaner_muc\downloader;
+use cleaner_muc\index_controller;
 use cleaner_muc\uploader;
 use core_renderer;
 use moodle_url;
@@ -32,8 +32,6 @@ use moodle_url;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class downloader
- *
  * @package     cleaner_muc
  * @subpackage  local_cleanurls
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
@@ -56,7 +54,7 @@ class index_renderer {
         echo $index->render_index_page();
     }
 
-    /** @var downloader */
+    /** @var index_controller */
     private $uploader;
 
     /** @var uploader */
@@ -69,7 +67,7 @@ class index_renderer {
         global $PAGE;
         $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
-        $this->downloader = new downloader();
+        $this->downloader = new index_controller();
         $this->uploader = new uploader();
     }
 
@@ -99,7 +97,7 @@ class index_renderer {
 
     private function render_download_link() {
         $url = new moodle_url('/local/datacleaner/cleaner/muc/download.php', ['sesskey' => sesskey()]);
-        $filename = downloader::get_filename();
+        $filename = index_controller::get_download_filename();
         return '<a download="' . $filename . '" href="' . $url . '">' .
                get_string('downloader_link', 'cleaner_muc') .
                '</a>';
