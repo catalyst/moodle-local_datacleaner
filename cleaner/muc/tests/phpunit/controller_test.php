@@ -91,15 +91,10 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
         self::assertSame($expected, $actual);
     }
 
-    private function get_download_section() {
-        $downloader = new controller();
-        return $downloader->render_download_section();
-    }
-
     private function get_download_file() {
         ob_start();
         try {
-            controller::download();
+            (new controller())->download();
             $html = ob_get_contents();
         } finally {
             ob_end_clean();

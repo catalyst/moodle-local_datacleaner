@@ -25,4 +25,4 @@
 
 require_once(__DIR__ . '/../../../../config.php');
 
-cleaner_muc\controller::download();
+(new cleaner_muc\controller)->download();
