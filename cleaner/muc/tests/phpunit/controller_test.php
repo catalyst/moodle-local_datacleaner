@@ -53,16 +53,13 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
             file_put_contents($mucfile, '<?php // Test MUC File');
         }
 
-        $expected = file_get_contents($mucfile);
-
         $_GET['sesskey'] = sesskey();
         $actual = $this->get_download_file();
 
-        if ($create) {
-            unlink($mucfile);
-        }
+        $expected = file_get_contents($mucfile);
 
         self::assertSame($expected, $actual);
+        $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
     }
 
     public function test_it_requires_sesskey_to_download_file() {
