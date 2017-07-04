@@ -38,31 +38,13 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class index_controller {
-    /** @var index_controller */
-    private $uploadform;
+    const MY_URL = '/local/datacleaner/cleaner/muc/index.php';
 
     /** @var upload_form */
-    private $downloader;
+    private $uploadform;
 
     public function __construct() {
-        $this->downloader = new index_controller();
         $this->uploadform = new upload_form();
-    }
-
-    public static function execute() {
-        global $PAGE;
-
-        $myurl = '/local/datacleaner/cleaner/muc/index.php';
-        $index = new index_renderer();
-
-        // TODO process submit should be in controller.
-        if ((new upload_form())->process_submit()) {
-            // End script here (redirect) -- cannot be unit-tested.
-            redirect($myurl);
-        }
-
-        $PAGE->set_url($myurl);
-        echo $index->render_index_page();
     }
 
     public static function download() {
@@ -76,6 +58,19 @@ class index_controller {
 
         $mucfile = "{$CFG->dataroot}/muc/config.php";
         readfile($mucfile);
+    }
+
+    public function execute() {
+        global $PAGE;
+
+        $renderer = new index_renderer();
+
+        if ($this->uploadform->process_submit()) {
+            redirect(self::MY_URL);
+        }
+
+        $PAGE->set_url(self::MY_URL);
+        echo $renderer->render_index_page($this->uploadform);
     }
 
     public static function get_download_filename() {

@@ -47,21 +47,21 @@ class index_renderer {
         $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
     }
 
-    public function render_index_page() {
+    public function render_index_page(upload_form $uploadform) {
         return $this->renderer->header() .
-               $this->render_upload_section() .
+               $this->render_upload_section($uploadform) .
                '<br /><br />' .
                $this->render_download_section() .
                $this->renderer->footer();
     }
 
-    private function render_upload_section() {
+    private function render_upload_section(upload_form $form) {
         global $PAGE;
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
         // TODO fix uploader
         return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
-               (new upload_form())->render();
+               $form->render();
     }
 
     private function render_download_section() {

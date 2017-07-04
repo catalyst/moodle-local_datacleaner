@@ -30,4 +30,4 @@ require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('cleaner_muc_downloader');
 
-index_controller::execute();
+(new index_controller())->execute();
