@@ -48,6 +48,13 @@ class  local_cleanurls_cleaner_muc_output_uploader_test extends advanced_testcas
         $html = $this->get_upload_section();
 
         self::assertContains('<h2>MUC Config Uploader</h2>', $html);
+        self::assertContains('<form', $html);
+        self::assertContains('MUC Config Files', $html);
+    }
+
+    public function test_it_detects_form_not_submitted() {
+        $uploader = new uploader();
+        self::assertFalse($uploader->process_submit());
     }
 
     private function get_upload_section() {

@@ -28,6 +28,12 @@ use cleaner_muc\index;
 defined('MOODLE_INTERNAL') || die();
 
 class  local_cleanurls_cleaner_muc_output_index_test extends advanced_testcase {
+    protected function setUp() {
+        parent::setUp();
+        $this->resetAfterTest(true);
+        self::setAdminUser();
+    }
+
     public function test_it_outputs_header_and_footer() {
         $html = $this->get_page();
 

@@ -24,7 +24,12 @@
 
 namespace cleaner_muc;
 
+use moodleform;
+
 defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once("{$CFG->libdir}/formslib.php");
 
 /**
  * Class downloader
@@ -35,12 +40,30 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class uploader {
+class uploader extends moodleform {
+    public function process_submit() {
+        $data = $this->get_data();
+        if ($data) {
+            return true;
+        }
+        return false;
+    }
+
     public function render_upload_section() {
         global $PAGE;
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
-        return $renderer->heading(get_string('setting_uploader', 'cleaner_muc'));
+        return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
+               $this->render();
+    }
 
+    protected function definition() {
+        $this->_form->addElement(
+            'filemanager',
+            'mucfiles',
+            get_string('setting_uploader_files', 'cleaner_muc'),
+            null,
+            ['subdirs' => false]
+        );
     }
 }

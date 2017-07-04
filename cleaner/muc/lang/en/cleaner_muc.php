@@ -30,3 +30,4 @@ $string['downloader_in_production'] = 'Sorry, downloading the MUC Config file is
 $string['pluginname'] = 'Clean MUC';
 $string['setting_downloader'] = 'MUC Config Downloader';
 $string['setting_uploader'] = 'MUC Config Uploader';
+$string['setting_uploader_files'] = 'MUC Config Files';

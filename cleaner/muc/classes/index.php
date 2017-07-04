@@ -39,22 +39,31 @@ class index {
     public static function output() {
         global $PAGE;
         $PAGE->set_url('/local/datacleaner/cleaner/muc/index.php');
-        $index = new index();
 
+        $index = new index();
+        $index->uploader->process_submit(); // May end script here (redirect).
         echo $index->render_index_page();
+    }
+
+    /** @var downloader */
+    private $uploader;
+
+    /** @var uploader */
+    private $downloader;
+
+    public function __construct() {
+        $this->downloader = new downloader();
+        $this->uploader = new uploader();
     }
 
     public function render_index_page() {
         global $PAGE;
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
-        $downloader = new downloader();
-        $uploader = new uploader();
-
         return $renderer->header() .
-               $uploader->render_upload_section() .
+               $this->uploader->render_upload_section() .
                '<br /><br />' .
-               $downloader->render_download_section() .
+               $this->downloader->render_download_section() .
                $renderer->footer();
     }
 }
