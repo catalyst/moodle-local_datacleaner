@@ -82,7 +82,7 @@ class upload_form extends moodleform {
         return $data;
     }
 
-    function validation($data, $files) {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         $filesdata = $this->prepare_files_data($data);
 

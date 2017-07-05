@@ -105,22 +105,6 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
         self::assertSame($expected, $data->files);
     }
 
-    public function test_it_does_not_process_cancelled_form() {
-        $mock = [
-            'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
-            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => '<?php // Mock SubMoodle',
-        ];
-        self::mock_submit($mock);
-        $_POST['cancel'] = 'Cancel';
-
-        $upload = new upload_form();
-        $saved = $upload->process_submit();
-        self::assertFalse($saved);
-
-        $actual = muc_config_db::get_all();
-        self::assertSame([], $actual);
-    }
-
     public function test_it_mocks_submitted_file() {
         global $USER;
         $mock = [
