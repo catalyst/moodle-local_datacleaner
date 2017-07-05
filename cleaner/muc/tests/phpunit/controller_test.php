@@ -23,6 +23,7 @@
  */
 
 use cleaner_muc\controller;
+use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -59,6 +60,14 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
+     * @expectedExceptionMessage sesskey
+     */
+    public function test_it_requires_sesskey_to_delete_config() {
+        $this->markTestSkipped('Test/Feature not yet implemented.');
+    }
+
+    /**
+     * @expectedException \moodle_exception
      * @expectedExceptionMessage Only admins can download MUC configuration
      */
     public function test_it_does_not_allow_download_current_config_if_not_admin() {
@@ -87,5 +96,26 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
     public function test_it_throws_an_exception_for_invalid_action() {
         $_GET = ['action' => 'somethinginvalid', 'sesskey' => sesskey()];
         (new controller())->index();
+    }
+
+    public function test_it_deletes_environment_config() {
+        $wwwroot = 'http://www.moodle.test/sub';
+        muc_config_db::save($wwwroot, 'New Config');
+
+        $_GET = [
+            'action'      => 'delete',
+            'environment' => rawurlencode($wwwroot),
+            'sesskey'     => sesskey(),
+        ];
+
+        try {
+            (new controller())->index();
+            self::fail('Should throw exception (redirect).');
+        } catch (moodle_exception $exception) {
+            self::assertSame('Unsupported redirect detected, script execution terminated', $exception->getMessage());
+        }
+
+        $found = muc_config_db::get($wwwroot);
+        self::assertNull($found);
     }
 }

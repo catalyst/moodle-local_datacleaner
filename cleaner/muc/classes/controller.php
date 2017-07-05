@@ -48,6 +48,12 @@ class controller {
         return rawurlencode($wwwroot) . '.muc';
     }
 
+    private static function get_action_environment() {
+        $environment = required_param('environment', PARAM_RAW);
+        $environment = rawurldecode($environment);
+        return $environment;
+    }
+
     public function __construct() {
         $this->uploadform = new upload_form();
     }
@@ -87,7 +93,9 @@ class controller {
             case 'current':
                 return $this->action_current();
             case 'download':
-                return $this->action_download();
+                return $this->action_download(self::get_action_environment());
+            case 'delete':
+                return $this->action_delete(self::get_action_environment());
             default:
                 return false;
         }
@@ -107,9 +115,7 @@ class controller {
         return true;
     }
 
-    private function action_download() {
-        $environment = required_param('environment', PARAM_RAW);
-        $environment = rawurldecode($environment);
+    private function action_download($environment) {
         $config = muc_config_db::get($environment);
 
         if (is_null($config)) {
@@ -121,6 +127,14 @@ class controller {
         }
 
         echo $config;
+
+        return true;
+    }
+
+    private function action_delete($environment) {
+        muc_config_db::delete($environment);
+
+        redirect(self::MY_URL);
 
         return true;
     }

@@ -118,7 +118,7 @@ class configurations_table extends flexible_table {
         }
 
         return html_writer::link(
-            new moodle_url($this->baseurl, ['action' => 'delete', 'environment' => $wwwroot]),
+            new moodle_url($this->baseurl, ['action' => 'delete', 'environment' => $wwwroot, 'sesskey' => sesskey()]),
             $OUTPUT->pix_icon('t/delete', get_string('delete'))
         );
     }
