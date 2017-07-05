@@ -25,6 +25,7 @@
 namespace cleaner_muc\output;
 
 use cleaner_muc\controller;
+use cleaner_muc\muc_config;
 use flexible_table;
 use html_writer;
 use moodle_url;
@@ -50,26 +51,38 @@ class configurations_table extends flexible_table {
         $this->define_baseurl($PAGE->url);
         $this->set_attribute('class', 'generaltable admintable');
 
-        $this->define_columns(['wwwroot', 'actions']);
+        $this->define_columns(['wwwroot', 'uploadtime', 'actions']);
 
         $this->define_headers([
                                   get_string('table_header_wwwroot', 'cleaner_muc'),
+                                  get_string('table_header_uploaded', 'cleaner_muc'),
                                   get_string('actions'),
                               ]);
 
         $this->setup();
     }
 
-    public function get_html(array $wwwroots) {
+    /**
+     * @param muc_config[] $configs
+     * @return string
+     */
+    public function get_html(array $configs) {
         global $CFG;
 
         ob_start();
 
         $current = get_string('table_current_configuration', 'cleaner_muc', $CFG->wwwroot);
-        $this->add_data([$current, $this->create_data_buttons(null)]);
+        $this->add_data([$current, '', $this->create_data_buttons(null)]);
 
-        foreach ($wwwroots as $wwwroot) {
-            $this->add_data([$wwwroot, $this->create_data_buttons($wwwroot)]);
+        $now = time();
+        foreach ($configs as $config) {
+            $uploaded = format_time($now - $config->get_lastmodified());
+            $uploaded = get_string('table_header_uploaded_text', 'cleaner_muc', $uploaded);
+            $this->add_data([
+                                $config->get_wwwroot(),
+                                $uploaded,
+                                $this->create_data_buttons($config->get_wwwroot()),
+                            ]);
         }
         $this->finish_output();
 

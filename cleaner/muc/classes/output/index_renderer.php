@@ -25,6 +25,7 @@
 namespace cleaner_muc\output;
 
 use cleaner_muc\form\upload_form;
+use cleaner_muc\muc_config;
 use renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
@@ -37,6 +38,12 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class index_renderer extends renderer_base {
+    /**
+     * Outputs (not returns) the HTML for the basic index page.
+     *
+     * @param upload_form  $uploadform
+     * @param muc_config[] $configurations
+     */
     public static function output(upload_form $uploadform, array $configurations) {
         global $OUTPUT, $PAGE;
 

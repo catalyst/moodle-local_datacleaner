@@ -81,7 +81,7 @@ class controller {
 
         $PAGE->set_url(self::MY_URL);
 
-        $configurations = muc_config_db::get_environments();
+        $configurations = muc_config_db::get_all();
         index_renderer::output($this->uploadform, $configurations);
     }
 
