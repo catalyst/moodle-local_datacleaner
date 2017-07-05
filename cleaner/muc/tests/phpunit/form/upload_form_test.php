@@ -147,6 +147,26 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     }
 
     public function test_it_updates_the_configuration() {
-        $this->markTestSkipped('Test/Feature not yet implemented.');
+        $wwwroot = 'https://moodle2.test';
+        muc_config_db::save($wwwroot, 'Old Config');
+
+        $mock = [
+            'http%3A%2F%2Fmoodle.test.muc'             => 'Mock Moodle',
+            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => 'Mock SubMoodle',
+            rawurlencode($wwwroot)                     => 'New Config',
+        ];
+        self::mock_submit($mock);
+
+        $upload = new upload_form();
+        $saved = $upload->process_submit();
+        self::assertTrue($saved);
+
+        $expected = [
+            'http://moodle.test'           => 'Mock Moodle',
+            'http://moodle.test/submoodle' => 'Mock SubMoodle',
+            $wwwroot                       => 'New Config',
+        ];
+        $actual = muc_config_db::get_all();
+        self::assertSame($expected, $actual);
     }
 }

@@ -60,10 +60,6 @@ class local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase 
         self::assertContains('http://sometest.somewhere/everywhere', $html);
     }
 
-    public function test_it_outputs_message_if_no_configurations_exist() {
-        $this->markTestSkipped('Test/Feature not yet implemented.');
-    }
-
     public function test_it_outputs_the_upload_section() {
         $html = $this->get_page();
 

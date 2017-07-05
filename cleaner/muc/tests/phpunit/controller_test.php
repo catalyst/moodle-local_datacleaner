@@ -52,10 +52,41 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
+     * @expectedExceptionMessage Only admins can manage MUC configuration
+     */
+    public function test_it_does_not_allow_download_current_config_if_not_admin() {
+        self::setUser($this->getDataGenerator()->create_user());
+
+        $_GET = ['action' => 'current', 'sesskey' => sesskey()];
+        (new controller())->index();
+    }
+
+    /**
+     * @expectedException \moodle_exception
      * @expectedExceptionMessage sesskey
      */
     public function test_it_requires_sesskey_to_download_environment_config_file() {
-        $this->markTestSkipped('Test/Feature not yet implemented.');
+        muc_config_db::save('http://moodle.test/somewhere', 'My Config');
+
+        $_GET = ['action' => 'download', 'environment' => rawurlencode('http://moodle.test/somewhere')];
+        (new controller())->index();
+    }
+
+    /**
+     * @expectedException \moodle_exception
+     * @expectedExceptionMessage Only admins can manage MUC configuration
+     */
+    public function test_it_does_not_allow_download_environment_config_if_not_admin() {
+        muc_config_db::save('http://moodle.test/somewhere', 'My Config');
+
+        self::setUser($this->getDataGenerator()->create_user());
+
+        $_GET = [
+            'action'      => 'download',
+            'environment' => rawurlencode('http://moodle.test/somewhere'),
+            'sesskey'     => sesskey(),
+        ];
+        (new controller())->index();
     }
 
     /**
@@ -63,24 +94,34 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
      * @expectedExceptionMessage sesskey
      */
     public function test_it_requires_sesskey_to_delete_config() {
-        $this->markTestSkipped('Test/Feature not yet implemented.');
+        $wwwroot = 'http://www.moodle.test/sub';
+        muc_config_db::save($wwwroot, 'New Config');
+
+        $_GET = [
+            'action'      => 'delete',
+            'environment' => rawurlencode($wwwroot),
+        ];
+
+        (new controller())->index();
     }
 
     /**
      * @expectedException \moodle_exception
-     * @expectedExceptionMessage Only admins can download MUC configuration
+     * @expectedExceptionMessage Only admins can manage MUC configuration
      */
-    public function test_it_does_not_allow_download_current_config_if_not_admin() {
-        // It should already be blocked by downloader page, but add one more layer of check.
+    public function test_it_does_not_allow_delete_if_not_admin() {
+        $wwwroot = 'http://www.moodle.test/sub';
+        muc_config_db::save($wwwroot, 'New Config');
 
         self::setUser($this->getDataGenerator()->create_user());
 
-        $_GET = ['action' => 'current', 'sesskey' => sesskey()];
-        (new controller())->index();
-    }
+        $_GET = [
+            'action'      => 'delete',
+            'sesskey'     => sesskey(),
+            'environment' => rawurlencode($wwwroot),
+        ];
 
-    public function test_it_does_not_allow_download_environment_config_if_not_admin() {
-        $this->markTestSkipped('Test/Feature not yet implemented.');
+        (new controller())->index();
     }
 
     public function test_it_generates_the_correct_filename() {

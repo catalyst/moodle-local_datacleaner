@@ -84,7 +84,7 @@ class controller {
 
     private function perform_action($action) {
         if (!is_siteadmin()) {
-            throw new moodle_exception('Only admins can download MUC configuration.');
+            throw new moodle_exception('Only admins can manage MUC configuration.');
         }
 
         require_sesskey();
