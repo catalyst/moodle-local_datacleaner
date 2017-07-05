@@ -66,17 +66,6 @@ class muc_config {
         $this->wwwroot = (string)$wwwroot;
     }
 
-    /** @var int */
-    protected $timestamp;
-
-    public function get_timestamp() {
-        return $this->timestamp;
-    }
-
-    public function set_timestamp($timestamp) {
-        $this->timestamp = is_null($timestamp) ? null : (int)$timestamp;
-    }
-
     /** @var string */
     protected $configuration;
 

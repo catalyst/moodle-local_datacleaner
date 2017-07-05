@@ -39,7 +39,7 @@ require_once(__DIR__ . '/cleaner_muc_testcase.php');
  */
 class local_cleanurls_cleaner_muc_config_test extends local_datacleaner_cleaner_muc_testcase {
     public function test_it_has_the_required_fields() {
-        $expected = ['id', 'wwwroot', 'timestamp', 'configuration', 'lastmodified'];
+        $expected = ['id', 'wwwroot', 'configuration', 'lastmodified'];
         $reflection = new ReflectionClass(muc_config::class);
         $fields = $reflection->getProperties();
         $actual = [];
@@ -53,9 +53,8 @@ class local_cleanurls_cleaner_muc_config_test extends local_datacleaner_cleaner_
         $inputdata = [
             'id'            => 1,
             'wwwroot'       => 'http://moodle.test',
-            'timestamp'     => 3,
             'configuration' => '<?php // Config',
-            'lastmodified'  => 5,
+            'lastmodified'  => 2,
         ];
 
         foreach (['array', 'object'] as $type) {
@@ -65,9 +64,8 @@ class local_cleanurls_cleaner_muc_config_test extends local_datacleaner_cleaner_
             $type = "For type {$type}";
             self::assertSame(1, $config->get_id(), $type);
             self::assertSame('http://moodle.test', $config->get_wwwroot(), $type);
-            self::assertSame(3, $config->get_timestamp(), $type);
             self::assertSame('<?php // Config', $config->get_configuration(), $type);
-            self::assertSame(5, $config->get_lastmodified(), $type);
+            self::assertSame(2, $config->get_lastmodified(), $type);
         }
     }
 
@@ -75,25 +73,22 @@ class local_cleanurls_cleaner_muc_config_test extends local_datacleaner_cleaner_
         $data = [
             'id'            => 1,
             'wwwroot'       => 'http://moodle.test',
-            'timestamp'     => 3,
             'configuration' => '<?php // Config',
-            'lastmodified'  => 5,
+            'lastmodified'  => 2,
         ];
 
         $config = new muc_config($data);
         $newconfig = new muc_config($config);
         self::assertSame(1, $newconfig->get_id());
         self::assertSame('http://moodle.test', $newconfig->get_wwwroot());
-        self::assertSame(3, $newconfig->get_timestamp());
         self::assertSame('<?php // Config', $newconfig->get_configuration());
-        self::assertSame(5, $newconfig->get_lastmodified());
+        self::assertSame(2, $newconfig->get_lastmodified());
     }
 
     public function test_it_can_be_converted_back_from_array() {
         $expected = [
             'id'            => 1,
             'wwwroot'       => 'http://moodle.test',
-            'timestamp'     => 3,
             'configuration' => '<?php // Config',
             'lastmodified'  => 5,
         ];
@@ -106,7 +101,6 @@ class local_cleanurls_cleaner_muc_config_test extends local_datacleaner_cleaner_
         $expected = [
             'id'            => null,
             'wwwroot'       => '',
-            'timestamp'     => null,
             'configuration' => '',
             'lastmodified'  => null,
         ];
