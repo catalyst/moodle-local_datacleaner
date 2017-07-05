@@ -43,7 +43,7 @@ class muc_config_db {
 
         static::delete($wwwroot);
 
-        // The wwwwroot is base64 encoded to prevent being washed during cleanup.
+        // The wwwroot is base64 encoded to prevent being washed during cleanup.
         $wwwroot64 = base64_encode($wwwroot);
 
         $data = (object)[
