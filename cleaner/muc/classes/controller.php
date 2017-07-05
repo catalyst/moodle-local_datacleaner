@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
 use cleaner_muc\output\index_renderer;
 use moodle_exception;
@@ -62,7 +63,9 @@ class controller {
         }
 
         $PAGE->set_url(self::MY_URL);
-        echo $renderer->render_index_page($this->uploadform);
+
+        $configurations = muc_config_db::get_environments();
+        echo $renderer->render_index_page($this->uploadform, $configurations);
     }
 
     public function download() {

@@ -34,5 +34,5 @@ $settings = null;
 $ADMIN->add('datacleaner', new admin_externalpage(
     'cleaner_muc_downloader',
     get_string('setting_downloader', 'cleaner_muc'),
-    new moodle_url('/local/datacleaner/cleaner/muc/downloader.php')
+    new moodle_url('/local/datacleaner/cleaner/muc/index.php')
 ));

@@ -47,28 +47,30 @@ class index_renderer {
         $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
     }
 
-    public function render_index_page(upload_form $uploadform) {
+    public function render_index_page(upload_form $uploadform, array $configurations) {
         return $this->renderer->header() .
+               $this->render_configuration_list_section($configurations) .
+               '<br /><br />' .
                $this->render_upload_section($uploadform) .
                '<br /><br />' .
                $this->render_download_section() .
                $this->renderer->footer();
     }
 
-    private function render_upload_section(upload_form $form) {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+    private function render_configuration_list_section(array $configurations) {
+        $table = new configurations_table();
 
-        // TODO fix uploader
-        return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
+        return $this->renderer->heading(get_string('setting_configuration_list', 'cleaner_muc')) .
+               $table->get_html($configurations);
+    }
+
+    private function render_upload_section(upload_form $form) {
+        return $this->renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
                $form->render();
     }
 
     private function render_download_section() {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
-
-        return $renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
+        return $this->renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
                $this->render_download_link();
     }
 

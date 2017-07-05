@@ -23,6 +23,7 @@
  */
 
 use cleaner_muc\controller;
+use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,6 +40,21 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
         self::assertNotEmpty($html);
         self::assertContains('<html', $html);
         self::assertContains('</html', $html);
+    }
+
+    public function test_it_outputs_the_configuratoin_list_section() {
+        muc_config_db::save('http://sometest.somewhere/everywhere', 'Cool Dude!');
+        $html = $this->get_page();
+
+        self::assertContains('<h2>MUC Configurations</h2>', $html);
+        self::assertContains('id="local_cleanurls_cleaner_muc_configurations_table', $html);
+        self::assertContains('Environment', $html);
+        self::assertContains('Actions', $html);
+        self::assertContains('http://sometest.somewhere/everywhere', $html);
+    }
+
+    public function test_it_outputs_message_if_no_configurations_exist() {
+        $this->markTestSkipped('Test/Feature not yet implemented.');
     }
 
     public function test_it_outputs_the_upload_section() {
