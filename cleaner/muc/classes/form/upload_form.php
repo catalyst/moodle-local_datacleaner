@@ -26,7 +26,6 @@ namespace cleaner_muc\form;
 
 use cleaner_muc\dml\muc_config_db;
 use context_user;
-use moodle_url;
 use moodleform;
 
 defined('MOODLE_INTERNAL') || die();
@@ -69,7 +68,7 @@ class upload_form extends moodleform {
             ['subdirs' => false]
         );
 
-        $this->add_action_buttons();
+        $this->add_action_buttons(false);
     }
 
     public function get_data() {
