@@ -44,9 +44,8 @@ class controller {
     /** @var upload_form */
     private $uploadform;
 
-    public static function get_download_filename() {
-        global $CFG;
-        return rawurlencode($CFG->wwwroot) . '.muc';
+    public static function get_download_filename($wwwroot) {
+        return rawurlencode($wwwroot) . '.muc';
     }
 
     public function __construct() {
@@ -58,6 +57,15 @@ class controller {
 
         $renderer = new index_renderer();
 
+        $action = optional_param('action', '', PARAM_ALPHA);
+        if ($action) {
+            if ($this->perform_action($action)) {
+                return;
+            } else {
+                throw new moodle_exception('Invalid action: ' . $action);
+            }
+        }
+
         if ($this->uploadform->process_submit()) {
             redirect(self::MY_URL);
         }
@@ -68,16 +76,32 @@ class controller {
         echo $renderer->render_index_page($this->uploadform, $configurations);
     }
 
-    public function download() {
-        global $CFG;
-
+    private function perform_action($action) {
         if (!is_siteadmin()) {
             throw new moodle_exception('Only admins can download MUC configuration.');
         }
 
         require_sesskey();
 
+        switch ($action) {
+            case 'current':
+                return $this->action_current();
+            default:
+                return false;
+        }
+    }
+
+    private function action_current() {
+        global $CFG;
+
         $mucfile = "{$CFG->dataroot}/muc/config.php";
+
+        if (!headers_sent()) {
+            header('Content-Type: text/plain');
+        }
+
         readfile($mucfile);
+
+        return true;
     }
 }

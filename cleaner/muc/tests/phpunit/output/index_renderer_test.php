@@ -27,7 +27,7 @@ use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase {
+class local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase {
     protected function setUp() {
         parent::setUp();
         $this->resetAfterTest(true);
@@ -43,13 +43,20 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
     }
 
     public function test_it_outputs_the_configuratoin_list_section() {
-        muc_config_db::save('http://sometest.somewhere/everywhere', 'Cool Dude!');
+        global $CFG;
         $html = $this->get_page();
 
         self::assertContains('<h2>MUC Configurations</h2>', $html);
         self::assertContains('id="local_cleanurls_cleaner_muc_configurations_table', $html);
         self::assertContains('Environment', $html);
         self::assertContains('Actions', $html);
+        self::assertContains("<i>{$CFG->wwwroot}</i> (current configuration)", $html);
+    }
+
+    public function test_it_outputs_the_configuratoin_list_section_with_a_muc_config_entry() {
+        muc_config_db::save('http://sometest.somewhere/everywhere', 'Cool Dude!');
+        $html = $this->get_page();
+
         self::assertContains('http://sometest.somewhere/everywhere', $html);
     }
 
@@ -66,21 +73,33 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
         self::assertContains('type="submit"', $html);
     }
 
-    public function test_it_outputs_the_download_section() {
+    public function test_it_provides_download_html5_tag() {
         $html = $this->get_page();
-
-        self::assertContains('<h2>MUC Config Downloader</h2>', $html);
-        self::assertContains('/local/datacleaner/cleaner/muc/download.php?sesskey=', $html);
+        $expected = 'download="';
+        self::assertContains($expected, $html);
     }
 
-    public function test_it_provides_download_html5_tag() {
+    public function test_it_downloads_the_current_config_file() {
         global $CFG;
-        $CFG->httpswwwroot = $CFG->wwwroot = 'https://moodle.test/subdir';
 
-        $html = $this->get_page();
-        $filename = controller::get_download_filename();
-        $expected = 'download="' . $filename . '"';
-        self::assertContains($expected, $html);
+        $mucfile = "{$CFG->dataroot}/muc/config.php";
+        $create = !file_exists($mucfile);
+        if ($create) {
+            $dirname = dirname($mucfile);
+            if (!is_dir($dirname)) {
+                mkdir($dirname);
+            }
+            file_put_contents($mucfile, '<?php // Test MUC File');
+        }
+
+        $_GET['action'] = 'current';
+        $_GET['sesskey'] = sesskey();
+        $actual = self::get_page();
+
+        $expected = file_get_contents($mucfile);
+
+        self::assertSame($expected, $actual);
+        $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
     }
 
     private function get_page() {

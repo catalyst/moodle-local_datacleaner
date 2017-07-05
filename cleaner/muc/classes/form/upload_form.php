@@ -34,8 +34,6 @@ global $CFG;
 require_once("{$CFG->libdir}/formslib.php");
 
 /**
- * Class downloader
- *
  * @package     cleaner_muc
  * @subpackage  local_cleanurls
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>

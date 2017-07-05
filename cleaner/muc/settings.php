@@ -32,7 +32,7 @@ if (!$hassiteconfig) {
 $settings = null;
 
 $ADMIN->add('datacleaner', new admin_externalpage(
-    'cleaner_muc_downloader',
-    get_string('setting_downloader', 'cleaner_muc'),
+    'cleaner_muc',
+    get_string('pluginname', 'cleaner_muc'),
     new moodle_url('/local/datacleaner/cleaner/muc/index.php')
 ));

@@ -24,10 +24,8 @@
 
 namespace cleaner_muc\output;
 
-use cleaner_muc\controller;
 use cleaner_muc\form\upload_form;
 use core_renderer;
-use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -52,8 +50,6 @@ class index_renderer {
                $this->render_configuration_list_section($configurations) .
                '<br /><br />' .
                $this->render_upload_section($uploadform) .
-               '<br /><br />' .
-               $this->render_download_section() .
                $this->renderer->footer();
     }
 
@@ -67,18 +63,5 @@ class index_renderer {
     private function render_upload_section(upload_form $form) {
         return $this->renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
                $form->render();
-    }
-
-    private function render_download_section() {
-        return $this->renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
-               $this->render_download_link();
-    }
-
-    private function render_download_link() {
-        $url = new moodle_url('/local/datacleaner/cleaner/muc/download.php', ['sesskey' => sesskey()]);
-        $filename = controller::get_download_filename();
-        return '<a download="' . $filename . '" href="' . $url . '">' .
-               get_string('downloader_link', 'cleaner_muc') .
-               '</a>';
     }
 }

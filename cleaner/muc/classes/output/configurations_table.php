@@ -24,6 +24,7 @@
 
 namespace cleaner_muc\output;
 
+use cleaner_muc\controller;
 use flexible_table;
 use html_writer;
 use moodle_url;
@@ -60,7 +61,12 @@ class configurations_table extends flexible_table {
     }
 
     public function get_html(array $wwwroots) {
+        global $CFG;
+
         ob_start();
+
+        $current = get_string('table_current_configuration', 'cleaner_muc', $CFG->wwwroot);
+        $this->add_data([$current, $this->create_data_buttons(null)]);
 
         foreach ($wwwroots as $wwwroot) {
             $this->add_data([$wwwroot, $this->create_data_buttons($wwwroot)]);
@@ -74,23 +80,42 @@ class configurations_table extends flexible_table {
     }
 
     protected function create_data_buttons($wwwroot) {
-        $buttons = $this->create_button_download($wwwroot) .
+        $buttons = $this->create_buttons_viewdownload($wwwroot) .
                    $this->create_button_delete($wwwroot);
 
         return html_writer::tag('nobr', $buttons);
     }
 
-    protected function create_button_download($wwwroot) {
-        global $OUTPUT;
+    protected function create_buttons_viewdownload($wwwroot) {
+        global $CFG, $OUTPUT;
 
-        return html_writer::link(
-            new moodle_url($this->baseurl, ['action' => 'download', 'environment' => $wwwroot]),
-            $OUTPUT->pix_icon('t/down', get_string('download'))
-        );
+        $params = [
+            'sesskey'     => sesskey(),
+            'action'      => is_null($wwwroot) ? 'current' : 'download',
+            'environment' => is_null($wwwroot) ? '' : $wwwroot,
+        ];
+        $filename = controller::get_download_filename(is_null($wwwroot) ? $CFG->wwwroot : $wwwroot);
+
+        $buttons = '';
+        foreach (['view', 'download'] as $action) {
+            $icon = ($action == 'view') ? 'preview' : $action;
+
+            $buttons .= html_writer::link(
+                new moodle_url($this->baseurl, $params),
+                $OUTPUT->pix_icon("t/{$icon}", get_string($action)),
+                ($action == 'download') ? ['download' => $filename] : ['target' => '_blank']
+            );
+        }
+
+        return $buttons;
     }
 
     protected function create_button_delete($wwwroot) {
         global $OUTPUT;
+
+        if (is_null($wwwroot)) {
+            return '';
+        }
 
         return html_writer::link(
             new moodle_url($this->baseurl, ['action' => 'delete', 'environment' => $wwwroot]),

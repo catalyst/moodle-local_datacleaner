@@ -40,66 +40,52 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
         self::setAdminUser();
     }
 
-    public function test_it_downloads_the_config_file() {
-        global $CFG;
-
-        $mucfile = "{$CFG->dataroot}/muc/config.php";
-        $create = !file_exists($mucfile);
-        if ($create) {
-            $dirname = dirname($mucfile);
-            if (!is_dir($dirname)) {
-                mkdir($dirname);
-            }
-            file_put_contents($mucfile, '<?php // Test MUC File');
-        }
-
-        $_GET['sesskey'] = sesskey();
-        $actual = $this->get_download_file();
-
-        $expected = file_get_contents($mucfile);
-
-        self::assertSame($expected, $actual);
-        $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
+    /**
+     * @expectedException \moodle_exception
+     * @expectedExceptionMessage sesskey
+     */
+    public function test_it_requires_sesskey_to_download_current_config_file() {
+        $_GET = ['action' => 'current'];
+        (new controller())->index();
     }
 
     /**
      * @expectedException \moodle_exception
      * @expectedExceptionMessage sesskey
      */
-    public function test_it_requires_sesskey_to_download_file() {
-        $this->get_download_file();
+    public function test_it_requires_sesskey_to_download_environment_config_file() {
+        $this->markTestSkipped('Test/Feature not yet implemented.');
     }
 
     /**
      * @expectedException \moodle_exception
      * @expectedExceptionMessage Only admins can download MUC configuration
      */
-    public function test_it_does_not_allow_download_if_not_admin() {
+    public function test_it_does_not_allow_download_current_config_if_not_admin() {
         // It should already be blocked by downloader page, but add one more layer of check.
 
         self::setUser($this->getDataGenerator()->create_user());
 
-        $_GET['sesskey'] = sesskey();
-        $this->get_download_file();
+        $_GET = ['action' => 'current', 'sesskey' => sesskey()];
+        (new controller())->index();
+    }
+
+    public function test_it_does_not_allow_download_environment_config_if_not_admin() {
+        $this->markTestSkipped('Test/Feature not yet implemented.');
     }
 
     public function test_it_generates_the_correct_filename() {
-        global $CFG;
-
-        $CFG->wwwroot = 'http://thesite.url.to-use';
-        $expected = rawurlencode($CFG->wwwroot) . '.muc';
-        $actual = controller::get_download_filename();
+        $expected = rawurlencode('http://thesite.url.to-use') . '.muc';
+        $actual = controller::get_download_filename('http://thesite.url.to-use');
         self::assertSame($expected, $actual);
     }
 
-    private function get_download_file() {
-        ob_start();
-        try {
-            (new controller())->download();
-            $html = ob_get_contents();
-        } finally {
-            ob_end_clean();
-        }
-        return $html;
+    /**
+     * @expectedException \moodle_exception
+     * @expectedExceptionMessage Invalid action: somethinginvalid
+     */
+    public function test_it_throws_an_exception_for_invalid_action() {
+        $_GET = ['action' => 'somethinginvalid', 'sesskey' => sesskey()];
+        (new controller())->index();
     }
 }
