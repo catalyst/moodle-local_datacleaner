@@ -27,7 +27,7 @@ use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
 
-class local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase {
+class local_cleanurls_cleaner_muc_index_page_test extends advanced_testcase {
     protected function setUp() {
         parent::setUp();
         $this->resetAfterTest(true);

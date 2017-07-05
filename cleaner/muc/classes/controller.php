@@ -26,7 +26,7 @@ namespace cleaner_muc;
 
 use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
-use cleaner_muc\output\index_renderer;
+use cleaner_muc\output\index_page;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -61,7 +61,7 @@ class controller {
     public function index() {
         global $PAGE;
 
-        $renderer = new index_renderer();
+        $index = new index_page();
 
         $action = optional_param('action', '', PARAM_ALPHA);
         if ($action) {
@@ -79,7 +79,7 @@ class controller {
         $PAGE->set_url(self::MY_URL);
 
         $configurations = muc_config_db::get_environments();
-        echo $renderer->get_index($this->uploadform, $configurations);
+        echo $index->get_html($this->uploadform, $configurations);
     }
 
     private function perform_action($action) {
