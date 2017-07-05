@@ -47,9 +47,8 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
         self::assertContains('<h2>MUC Config Uploader</h2>', $html);
         self::assertContains('<form', $html);
         self::assertContains('MUC Config Files', $html);
-        self::assertContains('<input type="submit"', $html);
+        self::assertContains('type="submit"', $html);
     }
-
     public function test_it_outputs_the_download_section() {
         $html = $this->get_page();
 
