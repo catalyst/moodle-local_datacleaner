@@ -26,7 +26,7 @@ namespace cleaner_muc;
 
 use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
-use cleaner_muc\output\index_page;
+use cleaner_muc\output\index_renderer;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -66,8 +66,6 @@ class controller {
     public function index() {
         global $PAGE;
 
-        $index = new index_page();
-
         $action = optional_param('action', '', PARAM_ALPHA);
         if ($action) {
             if ($this->perform_action($action)) {
@@ -84,14 +82,10 @@ class controller {
         $PAGE->set_url(self::MY_URL);
 
         $configurations = muc_config_db::get_environments();
-        echo $index->get_html($this->uploadform, $configurations);
+        index_renderer::output($this->uploadform, $configurations);
     }
 
     private function perform_action($action) {
-        if (!is_siteadmin()) {
-            throw new moodle_exception('Only admins can manage MUC configuration.');
-        }
-
         require_sesskey();
 
         switch ($action) {

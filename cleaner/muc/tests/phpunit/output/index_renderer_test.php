@@ -29,9 +29,14 @@ defined('MOODLE_INTERNAL') || die();
 
 class local_cleanurls_cleaner_muc_index_page_test extends advanced_testcase {
     protected function setUp() {
+        global $PAGE, $OUTPUT;
+
         parent::setUp();
+
         $this->resetAfterTest(true);
         self::setAdminUser();
+
+        $OUTPUT = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
     }
 
     public function test_it_outputs_header_and_footer() {
