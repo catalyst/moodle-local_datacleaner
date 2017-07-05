@@ -80,7 +80,7 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
      * @expectedExceptionMessage sesskey
      */
     public function test_it_requires_sesskey_to_download_environment_config_file() {
-        muc_config_db::save('http://moodle.test/somewhere', 'My Config');
+        self::create_muc_config('http://moodle.test/somewhere', 'My Config');
 
         $_GET = ['action' => 'download', 'environment' => rawurlencode('http://moodle.test/somewhere')];
         (new controller())->index();
@@ -91,7 +91,7 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
      * @expectedExceptionMessage Access denied
      */
     public function test_it_does_not_allow_download_environment_config_if_not_admin() {
-        muc_config_db::save('http://moodle.test/somewhere', 'My Config');
+        self::create_muc_config('http://moodle.test/somewhere', 'My Config');
 
         self::setUser($this->getDataGenerator()->create_user());
 
@@ -109,7 +109,7 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
      */
     public function test_it_requires_sesskey_to_delete_config() {
         $wwwroot = 'http://www.moodle.test/sub';
-        muc_config_db::save($wwwroot, 'New Config');
+        self::create_muc_config($wwwroot, 'New Config');
 
         $_GET = [
             'action'      => 'delete',
@@ -125,7 +125,7 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
      */
     public function test_it_does_not_allow_delete_if_not_admin() {
         $wwwroot = 'http://www.moodle.test/sub';
-        muc_config_db::save($wwwroot, 'New Config');
+        self::create_muc_config($wwwroot, 'New Config');
 
         self::setUser($this->getDataGenerator()->create_user());
 
@@ -155,7 +155,7 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
 
     public function test_it_deletes_environment_config() {
         $wwwroot = 'http://www.moodle.test/sub';
-        muc_config_db::save($wwwroot, 'New Config');
+        self::create_muc_config($wwwroot, 'New Config');
 
         $_GET = [
             'action'      => 'delete',

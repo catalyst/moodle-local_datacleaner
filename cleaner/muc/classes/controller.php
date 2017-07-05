@@ -125,7 +125,7 @@ class controller {
             header('Content-Type: text/plain');
         }
 
-        echo $config;
+        echo $config->get_configuration();
 
         return true;
     }

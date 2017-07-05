@@ -52,10 +52,12 @@ class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
         class_exists(muc_config_event::class);
     }
 
-    protected static function create_test_config($data = []) {
+    protected static function create_muc_config($wwwroot = 'http://moodle.test',
+                                                $configuration = '<?php // Configuration',
+                                                $data = []) {
         $defaults = [
-            'wwwroot'       => 'http://moodle.test',
-            'configuration' => '<?php // Configuration',
+            'wwwroot'       => $wwwroot,
+            'configuration' => $configuration,
         ];
         $data = array_merge($defaults, $data);
 

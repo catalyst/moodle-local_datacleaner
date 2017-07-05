@@ -166,13 +166,18 @@ class local_cleanurls_cleaner_muc_upload_form_test extends local_datacleaner_cle
             'http://moodle.test'           => '<?php // Mock Moodle',
             'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
         ];
+
         $actual = muc_config_db::get_all();
+        foreach ($actual as $wwwroot => $config) {
+            $actual[$wwwroot] = $config->get_configuration();
+        }
+
         self::assertSame($expected, $actual);
     }
 
     public function test_it_updates_the_configuration() {
         $wwwroot = 'https://moodle2.test';
-        muc_config_db::save($wwwroot, '<?php // Old Config');
+        self::create_muc_config($wwwroot, '<?php // Old Config');
 
         $mock = [
             'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
@@ -190,7 +195,12 @@ class local_cleanurls_cleaner_muc_upload_form_test extends local_datacleaner_cle
             'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
             $wwwroot                       => '<?php // New Config',
         ];
+
         $actual = muc_config_db::get_all();
+        foreach ($actual as $wwwroot => $config) {
+            $actual[$wwwroot] = $config->get_configuration();
+        }
+
         self::assertSame($expected, $actual);
     }
 }

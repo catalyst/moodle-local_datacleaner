@@ -64,7 +64,7 @@ class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_
     }
 
     public function test_it_reads_one() {
-        $expected = self::create_test_config();
+        $expected = self::create_muc_config();
         $actual = muc_config_db::get_by_wwwroot($expected->get_wwwroot());
 
         self::assertSame($expected->to_array(), $actual->to_array());
@@ -83,7 +83,7 @@ class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            $config = self::create_test_config($wwwroot, $configuration);
+            $config = self::create_muc_config($wwwroot, $configuration);
             $expected[$wwwroot] = $config->to_array();
         }
 
@@ -106,7 +106,7 @@ class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            $expected[$wwwroot] = self::create_test_config($wwwroot, $configuration);
+            $expected[$wwwroot] = self::create_muc_config($wwwroot, $configuration);
         }
 
         $expected = array_keys($expected);
@@ -124,7 +124,7 @@ class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            $expected[$wwwroot] = self::create_test_config($wwwroot, $configuration);
+            $expected[$wwwroot] = self::create_muc_config($wwwroot, $configuration);
         }
 
         $actual = muc_config_db::get_environments();
@@ -142,7 +142,7 @@ class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            $expected[$wwwroot] = self::create_test_config($wwwroot, $configuration);
+            $expected[$wwwroot] = self::create_muc_config($wwwroot, $configuration);
         }
 
         $expected = array_keys($expected);
@@ -161,8 +161,8 @@ class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_
     }
 
     public function test_it_deletes() {
-        self::create_test_config('http://moodle.test');
-        self::create_test_config('http://moodle2.test');
+        self::create_muc_config('http://moodle.test');
+        self::create_muc_config('http://moodle2.test');
 
         muc_config_db::delete('http://moodle.test');
 

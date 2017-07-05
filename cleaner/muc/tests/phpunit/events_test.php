@@ -95,7 +95,7 @@ class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_
 
     public function test_muc_config_saved_is_triggered() {
         $sink = $this->redirectEvents();
-        muc_config_db::save('https://moodle.site', '<?php // PHP File');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File');
         $events = $sink->get_events();
         $sink->close();
 
@@ -104,7 +104,7 @@ class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_
     }
 
     public function test_muc_config_deleted_is_triggered() {
-        muc_config_db::save('https://moodle.site', '<?php // PHP File');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File');
 
         $sink = $this->redirectEvents();
         muc_config_db::delete('https://moodle.site');
@@ -116,10 +116,10 @@ class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_
     }
 
     public function test_muc_config_deleted_and_saved_are_triggered() {
-        muc_config_db::save('https://moodle.site', '<?php // PHP File');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File');
 
         $sink = $this->redirectEvents();
-        muc_config_db::save('https://moodle.site', '<?php // PHP File 2');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File 2');
         $events = $sink->get_events();
         $sink->close();
 
