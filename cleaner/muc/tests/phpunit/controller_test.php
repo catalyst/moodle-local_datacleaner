@@ -52,7 +52,7 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
-     * @expectedExceptionMessage Only admins can manage MUC configuration
+     * @expectedExceptionMessage Access denied
      */
     public function test_it_does_not_allow_download_current_config_if_not_admin() {
         self::setUser($this->getDataGenerator()->create_user());
@@ -74,7 +74,7 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
-     * @expectedExceptionMessage Only admins can manage MUC configuration
+     * @expectedExceptionMessage Access denied
      */
     public function test_it_does_not_allow_download_environment_config_if_not_admin() {
         muc_config_db::save('http://moodle.test/somewhere', 'My Config');
@@ -107,7 +107,7 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
-     * @expectedExceptionMessage Only admins can manage MUC configuration
+     * @expectedExceptionMessage Access denied
      */
     public function test_it_does_not_allow_delete_if_not_admin() {
         $wwwroot = 'http://www.moodle.test/sub';
