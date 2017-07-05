@@ -24,8 +24,8 @@
 
 namespace cleaner_muc\output;
 
-use cleaner_muc\form\upload_form;
 use cleaner_muc\controller;
+use cleaner_muc\form\upload_form;
 use core_renderer;
 use moodle_url;
 

@@ -49,6 +49,7 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
         self::assertContains('MUC Config Files', $html);
         self::assertContains('type="submit"', $html);
     }
+
     public function test_it_outputs_the_download_section() {
         $html = $this->get_page();
 
@@ -65,7 +66,6 @@ class  local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase
         $expected = 'download="' . $filename . '"';
         self::assertContains($expected, $html);
     }
-
 
     private function get_page() {
         ob_start();
