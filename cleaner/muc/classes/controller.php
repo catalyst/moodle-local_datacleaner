@@ -79,7 +79,7 @@ class controller {
         $PAGE->set_url(self::MY_URL);
 
         $configurations = muc_config_db::get_environments();
-        echo $renderer->render_index_page($this->uploadform, $configurations);
+        echo $renderer->get_index($this->uploadform, $configurations);
     }
 
     private function perform_action($action) {

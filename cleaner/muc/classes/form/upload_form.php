@@ -63,12 +63,12 @@ class upload_form extends moodleform {
         $this->_form->addElement(
             'filemanager',
             'mucfiles',
-            get_string('setting_uploader_files', 'cleaner_muc'),
+            '',
             null,
             ['subdirs' => false]
         );
 
-        $this->add_action_buttons(false);
+        $this->add_action_buttons(false, get_string('upload'));
     }
 
     public function get_data() {
