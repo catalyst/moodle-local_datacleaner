@@ -45,6 +45,11 @@ require_once($CFG->libdir . '/adminlib.php');
 class controller {
     const MY_URL = '/local/datacleaner/cleaner/muc/index.php';
 
+    public static function get_muc_file_location() {
+        global $CFG;
+        return "{$CFG->dataroot}/muc/config.php";
+    }
+
     /** @var upload_form */
     private $uploadform;
 
@@ -103,13 +108,11 @@ class controller {
     private function action_current() {
         global $CFG;
 
-        $mucfile = "{$CFG->dataroot}/muc/config.php";
-
         if (!headers_sent()) {
             header('Content-Type: text/plain');
         }
 
-        readfile($mucfile);
+        readfile(self::get_muc_file_location());
 
         return true;
     }

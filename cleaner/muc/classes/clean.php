@@ -22,49 +22,26 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use cleaner_muc\cleaner;
-use cleaner_muc\dml\muc_config_db;
-use cleaner_muc\event\muc_config_deleted;
-use cleaner_muc\event\muc_config_event;
-use cleaner_muc\event\muc_config_saved;
-use cleaner_muc\muc_config;
+namespace cleaner_muc;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Testcase.
- *
  * @package     cleaner_muc
  * @subpackage  local_cleanurls
  * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
-    public static function setUpBeforeClass() {
-        parent::setUpBeforeClass();
+class clean extends \local_datacleaner\clean {
+    /** @var string */
+    const TASK = 'MUC Config File Replacement';
 
-        // Trigger classloaders.
-        class_exists(cleaner::class);
-        class_exists(muc_config::class);
-        class_exists(muc_config_db::class);
-        class_exists(muc_config_saved::class);
-        class_exists(muc_config_deleted::class);
-        class_exists(muc_config_event::class);
-    }
+    public static function execute() {
+        $cleaner = new cleaner((bool)self::$options['dryrun'], (bool)self::$options['verbose']);
 
-    protected static function create_muc_config($wwwroot = 'http://moodle.test',
-                                                $configuration = '<?php // Configuration',
-                                                $data = []) {
-        $defaults = [
-            'wwwroot'       => $wwwroot,
-            'configuration' => $configuration,
-        ];
-        $data = array_merge($defaults, $data);
-
-        $config = new muc_config($data);
-        muc_config_db::save($config);
-        return $config;
+        self::new_task(1);
+        $cleaner->execute();
+        self::next_step();
     }
 }
