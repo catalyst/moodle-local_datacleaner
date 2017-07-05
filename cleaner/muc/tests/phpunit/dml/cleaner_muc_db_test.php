@@ -25,6 +25,7 @@
 use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../cleaner_muc_testcase.php');
 
 /**
  * Tests.
@@ -36,17 +37,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
-    public static function setUpBeforeClass() {
-        parent::setUpBeforeClass();
-
-        // Trigger classloaders.
-        class_exists(muc_config_db::class);
-        class_exists(\cleaner_muc\event\muc_config_saved::class);
-        class_exists(\cleaner_muc\event\muc_config_deleted::class);
-        class_exists(\cleaner_muc\event\muc_config_event::class);
-    }
-
+class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_testcase {
     protected function setUp() {
         parent::setUp();
         $this->resetAfterTest(true);

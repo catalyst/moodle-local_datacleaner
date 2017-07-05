@@ -22,11 +22,15 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use cleaner_muc\dml\muc_config_db;
+use cleaner_muc\event\muc_config_deleted;
+use cleaner_muc\event\muc_config_event;
+use cleaner_muc\event\muc_config_saved;
+
 defined('MOODLE_INTERNAL') || die();
-require_once(__DIR__ . '/cleaner_muc_testcase.php');
 
 /**
- * Tests.
+ * Testcase.
  *
  * @package     cleaner_muc
  * @subpackage  local_cleanurls
@@ -35,17 +39,14 @@ require_once(__DIR__ . '/cleaner_muc_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_cleanurls_cleaner_muc_version_test extends local_datacleaner_cleaner_muc_testcase {
-    public function test_it_has_order_220() {
-        $plugin = $this->get_version_definition();
-        self::assertSame(220, $plugin->sortorder);
-    }
+class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
+    public static function setUpBeforeClass() {
+        parent::setUpBeforeClass();
 
-    /**
-     * @return mixed
-     */
-    private function get_version_definition() {
-        $plugins = core_plugin_manager::instance()->get_present_plugins('cleaner');
-        return $plugins['muc'];
+        // Trigger classloaders.
+        class_exists(muc_config_db::class);
+        class_exists(muc_config_saved::class);
+        class_exists(muc_config_deleted::class);
+        class_exists(muc_config_event::class);
     }
 }

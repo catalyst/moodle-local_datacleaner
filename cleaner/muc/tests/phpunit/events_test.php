@@ -26,11 +26,11 @@ use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\event\muc_config_deleted;
 use cleaner_muc\event\muc_config_event;
 use cleaner_muc\event\muc_config_saved;
-use local_emoticons\event\feedback_created;
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/cleaner_muc_testcase.php');
 
-class local_cleanurls_cleaner_muc_events_test extends advanced_testcase {
+class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_muc_testcase {
     protected function setUp() {
         parent::setUp();
         self::setAdminUser();

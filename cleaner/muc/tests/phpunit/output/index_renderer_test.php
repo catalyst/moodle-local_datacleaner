@@ -26,6 +26,7 @@ use cleaner_muc\controller;
 use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../cleaner_muc_testcase.php');
 
 /**
  * Tests.
@@ -37,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_cleanurls_cleaner_muc_index_page_test extends advanced_testcase {
+class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_cleaner_muc_testcase {
     protected function setUp() {
         global $PAGE, $OUTPUT;
 
