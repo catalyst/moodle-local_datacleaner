@@ -36,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class index_renderer {
+class index_page {
     /** @var core_renderer */
     private $renderer;
 
@@ -45,7 +45,7 @@ class index_renderer {
         $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
     }
 
-    public function get_index(upload_form $uploadform, array $configurations) {
+    public function get_html(upload_form $uploadform, array $configurations) {
         $table = new configurations_table();
 
         return $this->renderer->header() .
