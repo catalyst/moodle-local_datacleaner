@@ -42,6 +42,9 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
 
         // Trigger classloaders.
         class_exists(muc_config_db::class);
+        class_exists(\cleaner_muc\event\muc_config_saved::class);
+        class_exists(\cleaner_muc\event\muc_config_deleted::class);
+        class_exists(\cleaner_muc\event\muc_config_event::class);
     }
 
     protected function setUp() {

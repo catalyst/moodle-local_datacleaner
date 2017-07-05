@@ -40,6 +40,11 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class muc_config_event extends base {
+    public static function get_data_level_key_name() {
+        global $CFG;
+        return ($CFG->branch <= 26) ? 'level' : 'edulevel';
+    }
+
     public static function fire($id, $environment) {
         $event = static::create(
             [
@@ -63,7 +68,7 @@ class muc_config_event extends base {
      * @return void
      */
     protected function init() {
-        $this->data['edulevel'] = self::LEVEL_OTHER;
+        $this->data[self::get_data_level_key_name()] = self::LEVEL_OTHER;
         $this->data['objecttable'] = muc_config_db::TABLE_NAME;
         $this->context = context_system::instance();
     }

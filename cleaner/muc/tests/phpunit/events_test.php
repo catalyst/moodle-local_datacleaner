@@ -62,7 +62,7 @@ class local_cleanurls_cleaner_muc_events_test extends advanced_testcase {
         $actual = [
             'contextid'   => $data['contextid'],
             'crud'        => $data['crud'],
-            'edulevel'    => $data['edulevel'],
+            'edulevel'    => $data[muc_config_event::get_data_level_key_name()],
             'objecttable' => $data['objecttable'],
             'other'       => $data['other'],
         ];
