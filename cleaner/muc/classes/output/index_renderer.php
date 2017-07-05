@@ -45,23 +45,14 @@ class index_renderer {
         $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
     }
 
-    public function render_index_page(upload_form $uploadform, array $configurations) {
-        return $this->renderer->header() .
-               $this->render_configuration_list_section($configurations) .
-               '<br /><br />' .
-               $this->render_upload_section($uploadform) .
-               $this->renderer->footer();
-    }
-
-    private function render_configuration_list_section(array $configurations) {
+    public function get_index(upload_form $uploadform, array $configurations) {
         $table = new configurations_table();
 
-        return $this->renderer->heading(get_string('setting_configuration_list', 'cleaner_muc')) .
-               $table->get_html($configurations);
-    }
-
-    private function render_upload_section(upload_form $form) {
-        return $this->renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
-               $form->render();
+        return $this->renderer->header() .
+               $this->renderer->heading(get_string('heading_configurations', 'cleaner_muc')) .
+               $table->get_html($configurations) .
+               '<br /><br />' .
+               $uploadform->render() .
+               $this->renderer->footer();
     }
 }
