@@ -31,6 +31,10 @@ use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+
+require_once($CFG->libdir . '/adminlib.php');
+
 /**
  * @package     cleaner_muc
  * @subpackage  local_cleanurls
@@ -55,6 +59,7 @@ class controller {
     }
 
     public function __construct() {
+        admin_externalpage_setup('cleaner_muc');
         $this->uploadform = new upload_form();
     }
 
