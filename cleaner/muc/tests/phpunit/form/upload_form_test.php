@@ -77,17 +77,27 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     }
 
     public function test_it_requires_muc_files() {
-        $this->markTestSkipped('Test not implemented.');
+        self::mock_submit(['site.notmuc' => '<?php // Not Muc']);
+        $upload = new upload_form();
+
+        self::assertNull($upload->get_data());
+
+        self::assertSame(['mucfiles' => 'Not a .MUC file: site.notmuc'], $upload->get_errors());
     }
 
-    public function test_it_validates_muc_files() {
-        $this->markTestSkipped('Test not implemented.');
+    public function test_it_requires_a_php_file() {
+        self::mock_submit(['site.muc' => 'Not a PHP. <?php echo "now I am PHP";']);
+        $upload = new upload_form();
+
+        self::assertNull($upload->get_data());
+
+        self::assertSame(['mucfiles' => 'Not starting with "<?php ": site.muc'], $upload->get_errors());
     }
 
     public function test_it_gets_data_with_files() {
         $expected = [
-            'test1.muc' => 'Mock1',
-            'test2.muc' => 'Mock2',
+            'test1.muc' => '<?php // Mock1',
+            'test2.muc' => '<?php // Mock2',
         ];
         self::mock_submit($expected);
         $upload = new upload_form();
@@ -96,7 +106,19 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     }
 
     public function test_it_does_not_process_cancelled_form() {
-        $this->markTestSkipped('Test not implemented.');
+        $mock = [
+            'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
+            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => '<?php // Mock SubMoodle',
+        ];
+        self::mock_submit($mock);
+        $_POST['cancel'] = 'Cancel';
+
+        $upload = new upload_form();
+        $saved = $upload->process_submit();
+        self::assertFalse($saved);
+
+        $actual = muc_config_db::get_all();
+        self::assertSame([], $actual);
     }
 
     public function test_it_mocks_submitted_file() {
@@ -129,8 +151,8 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
 
     public function test_it_saves_the_configuration() {
         $mock = [
-            'http%3A%2F%2Fmoodle.test.muc'             => 'Mock Moodle',
-            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => 'Mock SubMoodle',
+            'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
+            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => '<?php // Mock SubMoodle',
         ];
         self::mock_submit($mock);
 
@@ -139,8 +161,8 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
         self::assertTrue($saved);
 
         $expected = [
-            'http://moodle.test'           => 'Mock Moodle',
-            'http://moodle.test/submoodle' => 'Mock SubMoodle',
+            'http://moodle.test'           => '<?php // Mock Moodle',
+            'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
         ];
         $actual = muc_config_db::get_all();
         self::assertSame($expected, $actual);
@@ -148,12 +170,12 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
 
     public function test_it_updates_the_configuration() {
         $wwwroot = 'https://moodle2.test';
-        muc_config_db::save($wwwroot, 'Old Config');
+        muc_config_db::save($wwwroot, '<?php // Old Config');
 
         $mock = [
-            'http%3A%2F%2Fmoodle.test.muc'             => 'Mock Moodle',
-            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => 'Mock SubMoodle',
-            rawurlencode($wwwroot)                     => 'New Config',
+            'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
+            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => '<?php // Mock SubMoodle',
+            rawurlencode($wwwroot) . '.muc'            => '<?php // New Config',
         ];
         self::mock_submit($mock);
 
@@ -162,9 +184,9 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
         self::assertTrue($saved);
 
         $expected = [
-            'http://moodle.test'           => 'Mock Moodle',
-            'http://moodle.test/submoodle' => 'Mock SubMoodle',
-            $wwwroot                       => 'New Config',
+            'http://moodle.test'           => '<?php // Mock Moodle',
+            'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
+            $wwwroot                       => '<?php // New Config',
         ];
         $actual = muc_config_db::get_all();
         self::assertSame($expected, $actual);

@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['error_upload_invalid_muc_extension'] = 'Not a .MUC file: {$a}';
+$string['error_upload_invalid_php'] = 'Not starting with "<?php ": {$a}';
 $string['pluginname'] = 'Clean MUC';
 $string['setting_configuration_list'] = 'MUC Configurations';
 $string['setting_uploader'] = 'MUC Config Uploader';
