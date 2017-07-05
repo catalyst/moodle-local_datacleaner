@@ -49,6 +49,9 @@ class local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();
+
+        global $USER;
+        $USER->email = 'moodle26and27@require.this';
     }
 
     /**

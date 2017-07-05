@@ -47,6 +47,9 @@ class local_cleanurls_cleaner_muc_index_page_test extends advanced_testcase {
         self::setAdminUser();
 
         $OUTPUT = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+
+        global $USER;
+        $USER->email = 'moodle26and27@require.this';
     }
 
     public function test_it_outputs_header_and_footer() {
