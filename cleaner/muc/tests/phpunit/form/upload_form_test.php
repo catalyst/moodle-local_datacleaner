@@ -57,6 +57,7 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
             'sesskey'                           => sesskey(),
             'mucfiles'                          => $itemid,
             '_qf__cleaner_muc_form_upload_form' => '1',
+            '_qf__cleaner_muc\form\upload_form' => '1', // Moodle 2.6 identifier.
         ];
     }
 
