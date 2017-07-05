@@ -86,6 +86,8 @@ class controller {
         switch ($action) {
             case 'current':
                 return $this->action_current();
+            case 'download':
+                return $this->action_download();
             default:
                 return false;
         }
@@ -101,6 +103,24 @@ class controller {
         }
 
         readfile($mucfile);
+
+        return true;
+    }
+
+    private function action_download() {
+        $environment = required_param('environment', PARAM_RAW);
+        $environment = rawurldecode($environment);
+        $config = muc_config_db::get($environment);
+
+        if (is_null($config)) {
+            return false;
+        }
+
+        if (!headers_sent()) {
+            header('Content-Type: text/plain');
+        }
+
+        echo $config;
 
         return true;
     }

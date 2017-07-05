@@ -102,6 +102,17 @@ class local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase 
         $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
     }
 
+    public function test_it_downloads_environment_config_file() {
+        muc_config_db::save('http://moodle.test/somewhere', 'My Config');
+
+        $_GET['action'] = 'download';
+        $_GET['environment'] = rawurlencode('http://moodle.test/somewhere');
+        $_GET['sesskey'] = sesskey();
+        $actual = self::get_page();
+
+        self::assertSame('My Config', $actual);
+    }
+
     private function get_page() {
         ob_start();
         try {

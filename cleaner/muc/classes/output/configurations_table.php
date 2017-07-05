@@ -92,7 +92,7 @@ class configurations_table extends flexible_table {
         $params = [
             'sesskey'     => sesskey(),
             'action'      => is_null($wwwroot) ? 'current' : 'download',
-            'environment' => is_null($wwwroot) ? '' : $wwwroot,
+            'environment' => is_null($wwwroot) ? '' : rawurlencode($wwwroot),
         ];
         $filename = controller::get_download_filename(is_null($wwwroot) ? $CFG->wwwroot : $wwwroot);
 
