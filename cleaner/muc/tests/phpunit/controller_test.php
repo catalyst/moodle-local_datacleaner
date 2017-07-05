@@ -170,7 +170,7 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
             self::assertSame('Unsupported redirect detected, script execution terminated', $exception->getMessage());
         }
 
-        $found = muc_config_db::get($wwwroot);
+        $found = muc_config_db::get_by_wwwroot($wwwroot);
         self::assertNull($found);
     }
 }

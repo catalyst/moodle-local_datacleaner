@@ -115,7 +115,7 @@ class controller {
     }
 
     private function action_download($environment) {
-        $config = muc_config_db::get($environment);
+        $config = muc_config_db::get_by_wwwroot($environment);
 
         if (is_null($config)) {
             return false;

@@ -26,6 +26,7 @@ namespace cleaner_muc\dml;
 
 use cleaner_muc\event\muc_config_deleted;
 use cleaner_muc\event\muc_config_saved;
+use cleaner_muc\muc_config;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -41,40 +42,44 @@ defined('MOODLE_INTERNAL') || die();
 class muc_config_db {
     const TABLE_NAME = 'cleaner_muc_configs';
 
-    public static function save($wwwroot, $configuration) {
+    public static function save(muc_config $config) {
         global $DB;
 
-        static::delete($wwwroot);
+        static::delete($config->get_wwwroot());
 
         // The wwwroot is base64 encoded to prevent being washed during cleanup.
-        $wwwroot64 = base64_encode($wwwroot);
+        $wwwroot64 = base64_encode($config->get_wwwroot());
+
+        $config->set_lastmodified(time());
 
         $data = (object)[
             'wwwroot'       => $wwwroot64,
-            'configuration' => $configuration,
-            'lastmodified'  => time(),
+            'configuration' => $config->get_configuration(),
+            'lastmodified'  => $config->get_lastmodified(),
         ];
 
         $id = $DB->insert_record(self::TABLE_NAME, $data);
+        $config->set_id($id);
 
-        muc_config_saved::fire($id, $wwwroot);
-
-        return $id;
+        muc_config_saved::fire($id, $config->get_wwwroot());
     }
 
-    public static function get($wwwroot) {
+    /**
+     * @param $wwwroot string
+     * @return muc_config
+     */
+    public static function get_by_wwwroot($wwwroot) {
         global $DB;
 
         $wwwroot64 = base64_encode($wwwroot);
-        $config = $DB->get_field(self::TABLE_NAME, 'configuration', ['wwwroot' => $wwwroot64]);
+        $data = $DB->get_record(self::TABLE_NAME, ['wwwroot' => $wwwroot64]);
 
-        if ($config === false) {
-            return null;
-        }
-
-        return $config;
+        return self::create_from_db($data);
     }
 
+    /**
+     * @return muc_config[]
+     */
     public static function get_all() {
         global $DB;
 
@@ -82,7 +87,8 @@ class muc_config_db {
 
         $all = [];
         foreach ($rows as $row) {
-            $all[base64_decode($row->wwwroot)] = $row->configuration;
+            $config = self::create_from_db($row);
+            $all[$config->get_wwwroot()] = $config;
         }
 
         ksort($all);
@@ -119,5 +125,15 @@ class muc_config_db {
         $DB->delete_records(self::TABLE_NAME, ['id' => $id]);
 
         muc_config_deleted::fire($id, $wwwroot);
+    }
+
+    private static function create_from_db($data) {
+        if ($data === false) {
+            return null;
+        }
+
+        $data = (array)$data;
+        $data['wwwroot'] = base64_decode($data['wwwroot']);
+        return new muc_config($data);
     }
 }

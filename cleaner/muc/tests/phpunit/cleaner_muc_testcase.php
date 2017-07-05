@@ -26,6 +26,7 @@ use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\event\muc_config_deleted;
 use cleaner_muc\event\muc_config_event;
 use cleaner_muc\event\muc_config_saved;
+use cleaner_muc\muc_config;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -44,9 +45,22 @@ class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
+        class_exists(muc_config::class);
         class_exists(muc_config_db::class);
         class_exists(muc_config_saved::class);
         class_exists(muc_config_deleted::class);
         class_exists(muc_config_event::class);
+    }
+
+    protected static function create_test_config($data = []) {
+        $defaults = [
+            'wwwroot'       => 'http://moodle.test',
+            'configuration' => '<?php // Configuration',
+        ];
+        $data = array_merge($defaults, $data);
+
+        $config = new muc_config($data);
+        muc_config_db::save($config);
+        return $config;
     }
 }
