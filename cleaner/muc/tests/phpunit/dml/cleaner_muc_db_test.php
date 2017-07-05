@@ -167,8 +167,4 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
         $found = muc_config_db::get($leaveme);
         self::assertNull($found, 'Should have not been deleted.');
     }
-
-    public function test_it_logs() {
-        $this->markTestSkipped('Test not implemented.');
-    }
 }

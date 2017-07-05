@@ -24,6 +24,9 @@
 
 namespace cleaner_muc\dml;
 
+use cleaner_muc\event\muc_config_deleted;
+use cleaner_muc\event\muc_config_saved;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -52,7 +55,11 @@ class muc_config_db {
             'lastmodified'  => time(),
         ];
 
-        return $DB->insert_record(self::TABLE_NAME, $data);
+        $id = $DB->insert_record(self::TABLE_NAME, $data);
+
+        muc_config_saved::fire($id, $wwwroot);
+
+        return $id;
     }
 
     public static function get($wwwroot) {
@@ -102,6 +109,15 @@ class muc_config_db {
         global $DB;
 
         $wwwroot64 = base64_encode($wwwroot);
-        $DB->delete_records(self::TABLE_NAME, ['wwwroot' => $wwwroot64]);
+
+        $id = $DB->get_field(self::TABLE_NAME, 'id', ['wwwroot' => $wwwroot64]);
+
+        if ($id === false) {
+            return;
+        }
+
+        $DB->delete_records(self::TABLE_NAME, ['id' => $id]);
+
+        muc_config_deleted::fire($id, $wwwroot);
     }
 }
