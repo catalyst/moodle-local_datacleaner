@@ -24,7 +24,17 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_version_test extends advanced_testcase {
+/**
+ * Tests.
+ *
+ * @package     cleaner_muc
+ * @subpackage  local_cleanurls
+ * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
+ * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @SuppressWarnings(public) Allow as many methods as needed.
+ */
+class local_cleanurls_cleaner_muc_version_test extends advanced_testcase {
     public function test_it_has_order_220() {
         $plugin = $this->get_version_definition();
         self::assertSame(220, $plugin->sortorder);

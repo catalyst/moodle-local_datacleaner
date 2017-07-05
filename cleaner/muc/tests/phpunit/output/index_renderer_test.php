@@ -27,6 +27,16 @@ use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Tests.
+ *
+ * @package     cleaner_muc
+ * @subpackage  local_cleanurls
+ * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
+ * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @SuppressWarnings(public) Allow as many methods as needed.
+ */
 class local_cleanurls_cleaner_muc_index_page_test extends advanced_testcase {
     protected function setUp() {
         global $PAGE, $OUTPUT;

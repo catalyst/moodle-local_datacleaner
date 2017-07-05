@@ -26,8 +26,17 @@ use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
 
 defined('MOODLE_INTERNAL') || die();
-
-class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
+/**
+ * Tests.
+ *
+ * @package     cleaner_muc
+ * @subpackage  local_cleanurls
+ * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
+ * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @SuppressWarnings(public) Allow as many methods as needed.
+ */
+class local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
