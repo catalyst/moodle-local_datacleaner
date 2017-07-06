@@ -27,7 +27,17 @@ use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
 
-class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
+/**
+ * Tests.
+ *
+ * @package     cleaner_muc
+ * @subpackage  local_cleanurls
+ * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
+ * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @SuppressWarnings(public) Allow as many methods as needed.
+ */
+class local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
@@ -39,6 +49,9 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();
+
+        global $USER;
+        $USER->email = 'moodle26and27@require.this';
     }
 
     /**
@@ -52,7 +65,7 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
-     * @expectedExceptionMessage Only admins can manage MUC configuration
+     * @expectedExceptionMessage Access denied
      */
     public function test_it_does_not_allow_download_current_config_if_not_admin() {
         self::setUser($this->getDataGenerator()->create_user());
@@ -74,7 +87,7 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
-     * @expectedExceptionMessage Only admins can manage MUC configuration
+     * @expectedExceptionMessage Access denied
      */
     public function test_it_does_not_allow_download_environment_config_if_not_admin() {
         muc_config_db::save('http://moodle.test/somewhere', 'My Config');
@@ -107,7 +120,7 @@ class  local_cleanurls_cleaner_muc_controller_test extends advanced_testcase {
 
     /**
      * @expectedException \moodle_exception
-     * @expectedExceptionMessage Only admins can manage MUC configuration
+     * @expectedExceptionMessage Access denied
      */
     public function test_it_does_not_allow_delete_if_not_admin() {
         $wwwroot = 'http://www.moodle.test/sub';

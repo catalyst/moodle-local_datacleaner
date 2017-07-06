@@ -27,11 +27,29 @@ use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
 
-class local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase {
+/**
+ * Tests.
+ *
+ * @package     cleaner_muc
+ * @subpackage  local_cleanurls
+ * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
+ * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @SuppressWarnings(public) Allow as many methods as needed.
+ */
+class local_cleanurls_cleaner_muc_index_page_test extends advanced_testcase {
     protected function setUp() {
+        global $PAGE, $OUTPUT;
+
         parent::setUp();
+
         $this->resetAfterTest(true);
         self::setAdminUser();
+
+        $OUTPUT = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+
+        global $USER;
+        $USER->email = 'moodle26and27@require.this';
     }
 
     public function test_it_outputs_header_and_footer() {
@@ -63,9 +81,7 @@ class local_cleanurls_cleaner_muc_index_renderer_test extends advanced_testcase 
     public function test_it_outputs_the_upload_section() {
         $html = $this->get_page();
 
-        self::assertContains('<h2>MUC Config Uploader</h2>', $html);
         self::assertContains('<form', $html);
-        self::assertContains('MUC Config Files', $html);
         self::assertContains('type="submit"', $html);
     }
 
