@@ -83,6 +83,21 @@ class muc_config_db {
         return $all;
     }
 
+    public static function get_environments() {
+        global $DB;
+
+        $rows = $DB->get_records(self::TABLE_NAME, null, '', 'id,wwwroot');
+
+        $envs = [];
+        foreach ($rows as $row) {
+            $envs[] = base64_decode($row->wwwroot);
+        }
+
+        sort($envs);
+
+        return $envs;
+    }
+
     public static function delete($wwwroot) {
         global $DB;
 

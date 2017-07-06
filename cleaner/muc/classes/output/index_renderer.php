@@ -25,9 +25,7 @@
 namespace cleaner_muc\output;
 
 use cleaner_muc\form\upload_form;
-use cleaner_muc\controller;
 use core_renderer;
-use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -47,36 +45,23 @@ class index_renderer {
         $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
     }
 
-    public function render_index_page(upload_form $uploadform) {
+    public function render_index_page(upload_form $uploadform, array $configurations) {
         return $this->renderer->header() .
-               $this->render_upload_section($uploadform) .
+               $this->render_configuration_list_section($configurations) .
                '<br /><br />' .
-               $this->render_download_section() .
+               $this->render_upload_section($uploadform) .
                $this->renderer->footer();
     }
 
+    private function render_configuration_list_section(array $configurations) {
+        $table = new configurations_table();
+
+        return $this->renderer->heading(get_string('setting_configuration_list', 'cleaner_muc')) .
+               $table->get_html($configurations);
+    }
+
     private function render_upload_section(upload_form $form) {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
-
-        // TODO fix uploader
-        return $renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
+        return $this->renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
                $form->render();
-    }
-
-    private function render_download_section() {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
-
-        return $renderer->heading(get_string('setting_downloader', 'cleaner_muc')) .
-               $this->render_download_link();
-    }
-
-    private function render_download_link() {
-        $url = new moodle_url('/local/datacleaner/cleaner/muc/download.php', ['sesskey' => sesskey()]);
-        $filename = controller::get_download_filename();
-        return '<a download="' . $filename . '" href="' . $url . '">' .
-               get_string('downloader_link', 'cleaner_muc') .
-               '</a>';
     }
 }

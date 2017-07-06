@@ -62,9 +62,15 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     }
 
     protected function setUp() {
+        global $CFG;
+
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();
+
+        if ($CFG->branch < 30) {
+            $this->markTestSkipped('Cannot test due to a bug fixed in MDL-56250 for Moodle 3.0+, skip tests below that version.');
+        }
     }
 
     public function test_it_exists() {
@@ -77,26 +83,33 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     }
 
     public function test_it_requires_muc_files() {
-        $this->markTestSkipped('Test not implemented.');
+        self::mock_submit(['site.notmuc' => '<?php // Not Muc']);
+        $upload = new upload_form();
+
+        self::assertNull($upload->get_data());
+
+        self::assertSame(['mucfiles' => 'Not a .MUC file: site.notmuc'], $upload->get_errors());
     }
 
-    public function test_it_validates_muc_files() {
-        $this->markTestSkipped('Test not implemented.');
+    public function test_it_requires_a_php_file() {
+        self::mock_submit(['site.muc' => 'Not a PHP. <?php echo "now I am PHP";']);
+        $upload = new upload_form();
+
+        self::assertNull($upload->get_data());
+
+        $errors = $upload->get_errors();
+        self::assertSame(['mucfiles' => 'Not starting with "<?php ": site.muc'], $errors);
     }
 
     public function test_it_gets_data_with_files() {
         $expected = [
-            'test1.muc' => 'Mock1',
-            'test2.muc' => 'Mock2',
+            'test1.muc' => '<?php // Mock1',
+            'test2.muc' => '<?php // Mock2',
         ];
         self::mock_submit($expected);
         $upload = new upload_form();
         $data = $upload->get_data();
         self::assertSame($expected, $data->files);
-    }
-
-    public function test_it_does_not_process_cancelled_form() {
-        $this->markTestSkipped('Test not implemented.');
     }
 
     public function test_it_mocks_submitted_file() {
@@ -129,8 +142,8 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
 
     public function test_it_saves_the_configuration() {
         $mock = [
-            'http%3A%2F%2Fmoodle.test.muc'             => 'Mock Moodle',
-            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => 'Mock SubMoodle',
+            'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
+            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => '<?php // Mock SubMoodle',
         ];
         self::mock_submit($mock);
 
@@ -139,14 +152,34 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
         self::assertTrue($saved);
 
         $expected = [
-            'http://moodle.test'           => 'Mock Moodle',
-            'http://moodle.test/submoodle' => 'Mock SubMoodle',
+            'http://moodle.test'           => '<?php // Mock Moodle',
+            'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
         ];
         $actual = muc_config_db::get_all();
         self::assertSame($expected, $actual);
     }
 
     public function test_it_updates_the_configuration() {
-        $this->markTestSkipped('Test/Feature not yet implemented.');
+        $wwwroot = 'https://moodle2.test';
+        muc_config_db::save($wwwroot, '<?php // Old Config');
+
+        $mock = [
+            'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
+            'http%3A%2F%2Fmoodle.test%2Fsubmoodle.muc' => '<?php // Mock SubMoodle',
+            rawurlencode($wwwroot) . '.muc'            => '<?php // New Config',
+        ];
+        self::mock_submit($mock);
+
+        $upload = new upload_form();
+        $saved = $upload->process_submit();
+        self::assertTrue($saved);
+
+        $expected = [
+            'http://moodle.test'           => '<?php // Mock Moodle',
+            'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
+            $wwwroot                       => '<?php // New Config',
+        ];
+        $actual = muc_config_db::get_all();
+        self::assertSame($expected, $actual);
     }
 }

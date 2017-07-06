@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
 use cleaner_muc\output\index_renderer;
 use moodle_exception;
@@ -43,9 +44,14 @@ class controller {
     /** @var upload_form */
     private $uploadform;
 
-    public static function get_download_filename() {
-        global $CFG;
-        return rawurlencode($CFG->wwwroot) . '.muc';
+    public static function get_download_filename($wwwroot) {
+        return rawurlencode($wwwroot) . '.muc';
+    }
+
+    private static function get_action_environment() {
+        $environment = required_param('environment', PARAM_RAW);
+        $environment = rawurldecode($environment);
+        return $environment;
     }
 
     public function __construct() {
@@ -57,24 +63,79 @@ class controller {
 
         $renderer = new index_renderer();
 
+        $action = optional_param('action', '', PARAM_ALPHA);
+        if ($action) {
+            if ($this->perform_action($action)) {
+                return;
+            } else {
+                throw new moodle_exception('Invalid action: ' . $action);
+            }
+        }
+
         if ($this->uploadform->process_submit()) {
             redirect(self::MY_URL);
         }
 
         $PAGE->set_url(self::MY_URL);
-        echo $renderer->render_index_page($this->uploadform);
+
+        $configurations = muc_config_db::get_environments();
+        echo $renderer->render_index_page($this->uploadform, $configurations);
     }
 
-    public function download() {
-        global $CFG;
-
+    private function perform_action($action) {
         if (!is_siteadmin()) {
-            throw new moodle_exception('Only admins can download MUC configuration.');
+            throw new moodle_exception('Only admins can manage MUC configuration.');
         }
 
         require_sesskey();
 
+        switch ($action) {
+            case 'current':
+                return $this->action_current();
+            case 'download':
+                return $this->action_download(self::get_action_environment());
+            case 'delete':
+                return $this->action_delete(self::get_action_environment());
+            default:
+                return false;
+        }
+    }
+
+    private function action_current() {
+        global $CFG;
+
         $mucfile = "{$CFG->dataroot}/muc/config.php";
+
+        if (!headers_sent()) {
+            header('Content-Type: text/plain');
+        }
+
         readfile($mucfile);
+
+        return true;
+    }
+
+    private function action_download($environment) {
+        $config = muc_config_db::get($environment);
+
+        if (is_null($config)) {
+            return false;
+        }
+
+        if (!headers_sent()) {
+            header('Content-Type: text/plain');
+        }
+
+        echo $config;
+
+        return true;
+    }
+
+    private function action_delete($environment) {
+        muc_config_db::delete($environment);
+
+        redirect(self::MY_URL);
+
+        return true;
     }
 }

@@ -25,8 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['downloader_link'] = 'Download MUC Config file.';
+$string['error_upload_invalid_muc_extension'] = 'Not a .MUC file: {$a}';
+$string['error_upload_invalid_php'] = 'Not starting with "<?php ": {$a}';
 $string['pluginname'] = 'Clean MUC';
-$string['setting_downloader'] = 'MUC Config Downloader';
+$string['setting_configuration_list'] = 'MUC Configurations';
 $string['setting_uploader'] = 'MUC Config Uploader';
 $string['setting_uploader_files'] = 'MUC Config Files';
+$string['table_current_configuration'] = '<i>{$a}</i> (current configuration)';
+$string['table_header_wwwroot'] = 'Environment';

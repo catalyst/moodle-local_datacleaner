@@ -101,6 +101,42 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
         self::assertSame($expected, $actual);
     }
 
+    public function test_it_reads_environments() {
+        $expected = [
+            'http://moodle1.test'            => 'Moodle 1 Config',
+            'http://moodle2'                 => 'Moodle 2 Configuration!',
+            'https://moodle1.test/submoodle' => 'Moodle 1 SubMoodle Config',
+        ];
+
+        foreach ($expected as $wwwroot => $configuration) {
+            muc_config_db::save($wwwroot, $configuration);
+        }
+
+        $actual = muc_config_db::get_environments();
+        self::assertSame(array_keys($expected), $actual);
+    }
+
+    public function test_it_reads_environments_ordered_by_wwwroot() {
+        $expected = [
+            'https://c' => 'Config',
+            'http://c'  => 'Config',
+            'https://a' => 'Config',
+            'http://a'  => 'Config',
+            'http://b'  => 'Config',
+            'https://b' => 'Config',
+        ];
+
+        foreach ($expected as $wwwroot => $configuration) {
+            muc_config_db::save($wwwroot, $configuration);
+        }
+
+        $expected = array_keys($expected);
+        sort($expected);
+
+        $actual = muc_config_db::get_environments();
+        self::assertSame($expected, $actual);
+    }
+
     public function test_it_updates() {
         muc_config_db::save('http://wwwroot.moodle.test', 'Wrong Config');
         muc_config_db::save('http://wwwroot.moodle.test', 'Correct Config');
