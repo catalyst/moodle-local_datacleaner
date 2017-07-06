@@ -23,8 +23,10 @@
  */
 
 use cleaner_muc\dml\muc_config_db;
+use cleaner_muc\muc_config;
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../cleaner_muc_testcase.php');
 
 /**
  * Tests.
@@ -36,17 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
-    public static function setUpBeforeClass() {
-        parent::setUpBeforeClass();
-
-        // Trigger classloaders.
-        class_exists(muc_config_db::class);
-        class_exists(\cleaner_muc\event\muc_config_saved::class);
-        class_exists(\cleaner_muc\event\muc_config_deleted::class);
-        class_exists(\cleaner_muc\event\muc_config_event::class);
-    }
-
+class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_testcase {
     protected function setUp() {
         parent::setUp();
         $this->resetAfterTest(true);
@@ -59,22 +51,27 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
     public function test_it_creates() {
         global $DB;
 
-        $id = muc_config_db::save('http://wwwroot.moodle.test', '<?php // File Contents');
+        $config = new muc_config([
+                                     'wwwroot'       => 'http://wwwroot.moodle.test',
+                                     'configuration' => '<?php // File Contents',
+                                 ]);
+        muc_config_db::save($config);
 
-        $actual = $DB->get_record('cleaner_muc_configs', ['id' => $id]);
+        $actual = $DB->get_record('cleaner_muc_configs', ['id' => $config->get_id()]);
         self::assertSame(base64_encode('http://wwwroot.moodle.test'), $actual->wwwroot);
         self::assertSame('<?php // File Contents', $actual->configuration);
         self::assertGreaterThan(0, $actual->lastmodified);
     }
 
     public function test_it_reads_one() {
-        muc_config_db::save('http://moodle.test', 'My Configuration');
-        $config = muc_config_db::get('http://moodle.test');
-        self::assertSame('My Configuration', $config);
+        $expected = self::create_muc_config();
+        $actual = muc_config_db::get_by_wwwroot($expected->get_wwwroot());
+
+        self::assertSame($expected->to_array(), $actual->to_array());
     }
 
     public function test_it_reads_one_null_if_not_found() {
-        $config = muc_config_db::get('http://moodle.test');
+        $config = muc_config_db::get_by_wwwroot('http://moodle.test');
         self::assertNull($config);
     }
 
@@ -86,10 +83,15 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            muc_config_db::save($wwwroot, $configuration);
+            $config = self::create_muc_config($wwwroot, $configuration);
+            $expected[$wwwroot] = $config->to_array();
         }
 
         $actual = muc_config_db::get_all();
+        foreach ($actual as $wwwroot => $config) {
+            $actual[$wwwroot] = $config->to_array();
+        }
+
         self::assertSame($expected, $actual);
     }
 
@@ -104,7 +106,7 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            muc_config_db::save($wwwroot, $configuration);
+            $expected[$wwwroot] = self::create_muc_config($wwwroot, $configuration);
         }
 
         $expected = array_keys($expected);
@@ -122,7 +124,7 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            muc_config_db::save($wwwroot, $configuration);
+            $expected[$wwwroot] = self::create_muc_config($wwwroot, $configuration);
         }
 
         $actual = muc_config_db::get_environments();
@@ -140,7 +142,7 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
         ];
 
         foreach ($expected as $wwwroot => $configuration) {
-            muc_config_db::save($wwwroot, $configuration);
+            $expected[$wwwroot] = self::create_muc_config($wwwroot, $configuration);
         }
 
         $expected = array_keys($expected);
@@ -151,23 +153,31 @@ class  local_cleanurls_cleaner_muc_db_test extends advanced_testcase {
     }
 
     public function test_it_updates() {
-        muc_config_db::save('http://wwwroot.moodle.test', 'Wrong Config');
-        muc_config_db::save('http://wwwroot.moodle.test', 'Correct Config');
-        $config = muc_config_db::get('http://wwwroot.moodle.test');
-        self::assertSame('Correct Config', $config);
+        muc_config_db::save(new muc_config(['wwwroot' => 'http://wwwroot.moodle.test', 'configuration' => 'Wrong Config']));
+        muc_config_db::save(new muc_config(['wwwroot' => 'http://wwwroot.moodle.test', 'configuration' => 'Correct Config']));
+
+        $config = muc_config_db::get_by_wwwroot('http://wwwroot.moodle.test');
+        self::assertSame('Correct Config', $config->get_configuration());
     }
 
     public function test_it_deletes() {
-        $wwwroot = 'http://moodle.test';
-        $leaveme = 'http://moodle2.test';
+        self::create_muc_config('http://moodle.test');
+        self::create_muc_config('http://moodle2.test');
 
-        muc_config_db::save($wwwroot, 'My Configuration');
-        muc_config_db::delete($wwwroot);
+        muc_config_db::delete('http://moodle.test');
 
-        $found = muc_config_db::get($wwwroot);
+        $found = muc_config_db::get_by_wwwroot('http://moodle.test');
         self::assertNull($found, 'Should have been deleted.');
 
-        $found = muc_config_db::get($leaveme);
-        self::assertNull($found, 'Should have not been deleted.');
+        $found = muc_config_db::get_by_wwwroot('http://moodle2.test');
+        self::assertNotNull($found, 'Should have not been deleted.');
+    }
+
+    public function test_it_updates_lastmodified_when_saving() {
+        $config = new muc_config(['wwwroot' => 'http://moodle.test']);
+        $config->set_lastmodified(123);
+
+        muc_config_db::save($config);
+        self::assertGreaterThan(123, $config->get_lastmodified());
     }
 }

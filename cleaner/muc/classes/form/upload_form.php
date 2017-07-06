@@ -25,6 +25,7 @@
 namespace cleaner_muc\form;
 
 use cleaner_muc\dml\muc_config_db;
+use cleaner_muc\muc_config;
 use context_user;
 use moodleform;
 
@@ -51,8 +52,11 @@ class upload_form extends moodleform {
         $data = $this->get_data();
         if ($data) {
             foreach ($data->files as $filename => $config) {
-                $wwwroot = self::filename_to_wwwroot($filename);
-                muc_config_db::save($wwwroot, $config);
+                $data = [
+                    'wwwroot'       => $wwwroot = self::filename_to_wwwroot($filename),
+                    'configuration' => $config,
+                ];
+                muc_config_db::save(new muc_config($data));
             }
             return true;
         }

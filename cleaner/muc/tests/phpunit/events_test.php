@@ -26,11 +26,11 @@ use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\event\muc_config_deleted;
 use cleaner_muc\event\muc_config_event;
 use cleaner_muc\event\muc_config_saved;
-use local_emoticons\event\feedback_created;
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/cleaner_muc_testcase.php');
 
-class local_cleanurls_cleaner_muc_events_test extends advanced_testcase {
+class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_muc_testcase {
     protected function setUp() {
         parent::setUp();
         self::setAdminUser();
@@ -95,7 +95,7 @@ class local_cleanurls_cleaner_muc_events_test extends advanced_testcase {
 
     public function test_muc_config_saved_is_triggered() {
         $sink = $this->redirectEvents();
-        muc_config_db::save('https://moodle.site', '<?php // PHP File');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File');
         $events = $sink->get_events();
         $sink->close();
 
@@ -104,7 +104,7 @@ class local_cleanurls_cleaner_muc_events_test extends advanced_testcase {
     }
 
     public function test_muc_config_deleted_is_triggered() {
-        muc_config_db::save('https://moodle.site', '<?php // PHP File');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File');
 
         $sink = $this->redirectEvents();
         muc_config_db::delete('https://moodle.site');
@@ -116,10 +116,10 @@ class local_cleanurls_cleaner_muc_events_test extends advanced_testcase {
     }
 
     public function test_muc_config_deleted_and_saved_are_triggered() {
-        muc_config_db::save('https://moodle.site', '<?php // PHP File');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File');
 
         $sink = $this->redirectEvents();
-        muc_config_db::save('https://moodle.site', '<?php // PHP File 2');
+        self::create_muc_config('https://moodle.site', '<?php // PHP File 2');
         $events = $sink->get_events();
         $sink->close();
 

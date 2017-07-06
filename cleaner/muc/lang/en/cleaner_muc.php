@@ -30,4 +30,6 @@ $string['error_upload_invalid_php'] = 'Not starting with "<?php ": {$a}';
 $string['heading_configurations'] = 'MUC Configurations';
 $string['pluginname'] = 'Clean MUC';
 $string['table_current_configuration'] = '<i>{$a}</i> (current configuration)';
+$string['table_header_uploaded'] = 'Uploaded';
+$string['table_header_uploaded_text'] = '{$a} ago';
 $string['table_header_wwwroot'] = 'Environment';

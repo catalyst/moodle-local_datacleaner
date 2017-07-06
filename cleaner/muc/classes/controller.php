@@ -81,7 +81,7 @@ class controller {
 
         $PAGE->set_url(self::MY_URL);
 
-        $configurations = muc_config_db::get_environments();
+        $configurations = muc_config_db::get_all();
         index_renderer::output($this->uploadform, $configurations);
     }
 
@@ -115,7 +115,7 @@ class controller {
     }
 
     private function action_download($environment) {
-        $config = muc_config_db::get($environment);
+        $config = muc_config_db::get_by_wwwroot($environment);
 
         if (is_null($config)) {
             return false;
@@ -125,7 +125,7 @@ class controller {
             header('Content-Type: text/plain');
         }
 
-        echo $config;
+        echo $config->get_configuration();
 
         return true;
     }

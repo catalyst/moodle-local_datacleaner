@@ -26,6 +26,8 @@ use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../cleaner_muc_testcase.php');
+
 /**
  * Tests.
  *
@@ -36,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
+class local_cleanurls_cleaner_muc_upload_form_test extends local_datacleaner_cleaner_muc_testcase {
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
@@ -164,13 +166,18 @@ class local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
             'http://moodle.test'           => '<?php // Mock Moodle',
             'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
         ];
+
         $actual = muc_config_db::get_all();
+        foreach ($actual as $wwwroot => $config) {
+            $actual[$wwwroot] = $config->get_configuration();
+        }
+
         self::assertSame($expected, $actual);
     }
 
     public function test_it_updates_the_configuration() {
         $wwwroot = 'https://moodle2.test';
-        muc_config_db::save($wwwroot, '<?php // Old Config');
+        self::create_muc_config($wwwroot, '<?php // Old Config');
 
         $mock = [
             'http%3A%2F%2Fmoodle.test.muc'             => '<?php // Mock Moodle',
@@ -188,7 +195,12 @@ class local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
             'http://moodle.test/submoodle' => '<?php // Mock SubMoodle',
             $wwwroot                       => '<?php // New Config',
         ];
+
         $actual = muc_config_db::get_all();
+        foreach ($actual as $wwwroot => $config) {
+            $actual[$wwwroot] = $config->get_configuration();
+        }
+
         self::assertSame($expected, $actual);
     }
 }

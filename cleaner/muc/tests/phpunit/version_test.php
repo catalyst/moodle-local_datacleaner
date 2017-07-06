@@ -23,6 +23,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/cleaner_muc_testcase.php');
 
 /**
  * Tests.
@@ -34,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_cleanurls_cleaner_muc_version_test extends advanced_testcase {
+class local_cleanurls_cleaner_muc_version_test extends local_datacleaner_cleaner_muc_testcase {
     public function test_it_has_order_220() {
         $plugin = $this->get_version_definition();
         self::assertSame(220, $plugin->sortorder);
