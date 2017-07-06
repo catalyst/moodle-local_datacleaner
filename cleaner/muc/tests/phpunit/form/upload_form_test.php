@@ -62,9 +62,15 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
     }
 
     protected function setUp() {
+        global $CFG;
+
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();
+
+        if ($CFG->branch < 30) {
+            $this->markTestSkipped('Cannot test due to a bug fixed in MDL-56250 for Moodle 3.0+, skip tests below that version.');
+        }
     }
 
     public function test_it_exists() {
@@ -91,7 +97,8 @@ class  local_cleanurls_cleaner_muc_upload_form_test extends advanced_testcase {
 
         self::assertNull($upload->get_data());
 
-        self::assertSame(['mucfiles' => 'Not starting with "<?php ": site.muc'], $upload->get_errors());
+        $errors = $upload->get_errors();
+        self::assertSame(['mucfiles' => 'Not starting with "<?php ": site.muc'], $errors);
     }
 
     public function test_it_gets_data_with_files() {
