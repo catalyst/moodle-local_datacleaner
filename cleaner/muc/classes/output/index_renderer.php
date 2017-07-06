@@ -25,7 +25,7 @@
 namespace cleaner_muc\output;
 
 use cleaner_muc\form\upload_form;
-use core_renderer;
+use renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -36,32 +36,25 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class index_renderer {
-    /** @var core_renderer */
-    private $renderer;
+class index_renderer extends renderer_base {
+    public static function output(upload_form $uploadform, array $configurations) {
+        global $OUTPUT, $PAGE;
 
-    public function __construct() {
-        global $PAGE;
-        $this->renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
+        $renderer = $PAGE->get_renderer('cleaner_muc', 'index', RENDERER_TARGET_GENERAL);
+
+        echo $OUTPUT->header() .
+             $renderer->manage_muc_configurations($uploadform, $configurations) .
+             $OUTPUT->footer();
     }
 
-    public function render_index_page(upload_form $uploadform, array $configurations) {
-        return $this->renderer->header() .
-               $this->render_configuration_list_section($configurations) .
-               '<br /><br />' .
-               $this->render_upload_section($uploadform) .
-               $this->renderer->footer();
-    }
+    public function manage_muc_configurations(upload_form $uploadform, array $configurations) {
+        global $OUTPUT;
 
-    private function render_configuration_list_section(array $configurations) {
         $table = new configurations_table();
 
-        return $this->renderer->heading(get_string('setting_configuration_list', 'cleaner_muc')) .
-               $table->get_html($configurations);
-    }
-
-    private function render_upload_section(upload_form $form) {
-        return $this->renderer->heading(get_string('setting_uploader', 'cleaner_muc')) .
-               $form->render();
+        return $OUTPUT->heading(get_string('heading_configurations', 'cleaner_muc')) .
+               $table->get_html($configurations) .
+               '<br /><br />' .
+               $uploadform->render();
     }
 }

@@ -24,27 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * Tests.
- *
- * @package     cleaner_muc
- * @subpackage  local_cleanurls
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @SuppressWarnings(public) Allow as many methods as needed.
- */
-class local_cleanurls_cleaner_muc_version_test extends advanced_testcase {
-    public function test_it_has_order_220() {
-        $plugin = $this->get_version_definition();
-        self::assertSame(220, $plugin->sortorder);
-    }
-
-    /**
-     * @return mixed
-     */
-    private function get_version_definition() {
-        $plugins = core_plugin_manager::instance()->get_present_plugins('cleaner');
-        return $plugins['muc'];
-    }
+class cleaner_muc_index_renderer extends \cleaner_muc\output\index_renderer {
+    // Required for Moodle 26 and 27.
 }

@@ -80,13 +80,30 @@ class configurations_table extends flexible_table {
     }
 
     protected function create_data_buttons($wwwroot) {
-        $buttons = $this->create_buttons_viewdownload($wwwroot) .
+        $buttons = $this->create_buttons_view($wwwroot) .
+                   $this->create_buttons_download($wwwroot) .
                    $this->create_button_delete($wwwroot);
 
         return html_writer::tag('nobr', $buttons);
     }
 
-    protected function create_buttons_viewdownload($wwwroot) {
+    protected function create_buttons_view($wwwroot) {
+        global $OUTPUT;
+
+        $params = [
+            'sesskey'     => sesskey(),
+            'action'      => is_null($wwwroot) ? 'current' : 'download',
+            'environment' => is_null($wwwroot) ? '' : rawurlencode($wwwroot),
+        ];
+
+        return html_writer::link(
+            new moodle_url($this->baseurl, $params),
+            $OUTPUT->pix_icon("t/preview", get_string('view')),
+            ['target' => '_blank']
+        );
+    }
+
+    protected function create_buttons_download($wwwroot) {
         global $CFG, $OUTPUT;
 
         $params = [
@@ -96,18 +113,11 @@ class configurations_table extends flexible_table {
         ];
         $filename = controller::get_download_filename(is_null($wwwroot) ? $CFG->wwwroot : $wwwroot);
 
-        $buttons = '';
-        foreach (['view', 'download'] as $action) {
-            $icon = ($action == 'view') ? 'preview' : $action;
-
-            $buttons .= html_writer::link(
-                new moodle_url($this->baseurl, $params),
-                $OUTPUT->pix_icon("t/{$icon}", get_string($action)),
-                ($action == 'download') ? ['download' => $filename] : ['target' => '_blank']
-            );
-        }
-
-        return $buttons;
+        return html_writer::link(
+            new moodle_url($this->baseurl, $params),
+            $OUTPUT->pix_icon("t/download", get_string('download')),
+            ['download' => $filename]
+        );
     }
 
     protected function create_button_delete($wwwroot) {

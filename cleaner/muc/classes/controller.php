@@ -31,6 +31,10 @@ use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+
+require_once($CFG->libdir . '/adminlib.php');
+
 /**
  * @package     cleaner_muc
  * @subpackage  local_cleanurls
@@ -55,13 +59,12 @@ class controller {
     }
 
     public function __construct() {
+        admin_externalpage_setup('cleaner_muc');
         $this->uploadform = new upload_form();
     }
 
     public function index() {
         global $PAGE;
-
-        $renderer = new index_renderer();
 
         $action = optional_param('action', '', PARAM_ALPHA);
         if ($action) {
@@ -79,14 +82,10 @@ class controller {
         $PAGE->set_url(self::MY_URL);
 
         $configurations = muc_config_db::get_environments();
-        echo $renderer->render_index_page($this->uploadform, $configurations);
+        index_renderer::output($this->uploadform, $configurations);
     }
 
     private function perform_action($action) {
-        if (!is_siteadmin()) {
-            throw new moodle_exception('Only admins can manage MUC configuration.');
-        }
-
         require_sesskey();
 
         switch ($action) {
