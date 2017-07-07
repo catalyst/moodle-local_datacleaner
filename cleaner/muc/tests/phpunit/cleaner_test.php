@@ -122,6 +122,11 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
     }
 
     public function test_it_would_purges_caches_in_dry_run() {
+        if (!class_exists('cache_config_testing')) {
+            $this->markTestSkipped('No cache_config_testing for this Moodle version.');
+            return;
+        }
+
         $instance = cache_config_testing::instance();
         $instance->phpunit_add_definition('phpunit/simpletest', [
             'mode'       => cache_store::MODE_APPLICATION,
