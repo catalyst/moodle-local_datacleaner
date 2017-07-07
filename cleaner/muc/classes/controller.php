@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\cache\exposed_cache_config;
 use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
 use cleaner_muc\output\index_renderer;
@@ -44,11 +45,6 @@ require_once($CFG->libdir . '/adminlib.php');
  */
 class controller {
     const MY_URL = '/local/datacleaner/cleaner/muc/index.php';
-
-    public static function get_muc_file_location() {
-        global $CFG;
-        return "{$CFG->dataroot}/muc/config.php";
-    }
 
     /** @var upload_form */
     private $uploadform;
@@ -106,13 +102,11 @@ class controller {
     }
 
     private function action_current() {
-        global $CFG;
-
         if (!headers_sent()) {
             header('Content-Type: text/plain');
         }
 
-        readfile(self::get_muc_file_location());
+        readfile(exposed_cache_config::get_config_file_path());
 
         return true;
     }

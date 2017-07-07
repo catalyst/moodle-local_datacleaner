@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\cache\exposed_cache_config;
 use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
@@ -86,7 +87,7 @@ class cleaner {
         if ($this->dryrun) {
             mtrace('DRY RUN - Would load MUC Configuration.');
         } else {
-            file_put_contents(controller::get_muc_file_location(), $configuration);
+            file_put_contents(exposed_cache_config::get_config_file_path(), $configuration);
             mtrace('MUC Configuration Loaded!');
         }
     }

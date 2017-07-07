@@ -22,9 +22,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use cleaner_muc\cache\exposed_cache_config;
 use cleaner_muc\clean;
 use cleaner_muc\cleaner;
-use cleaner_muc\controller;
 use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\muc_config;
 
@@ -55,7 +55,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
         $CFG->wwwroot = $CFG->httpswwwroot = self::URL;
 
         purge_all_caches(); // Force creating MUC file.
-        $this->original = file_get_contents(controller::get_muc_file_location());
+        $this->original = file_get_contents(exposed_cache_config::get_config_file_path());
     }
 
     public function test_it_has_a_task() {
@@ -75,7 +75,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
 
         muc_config_db::save($config);
         $output = $this->execute(false, false);
-        $found = file_get_contents(controller::get_muc_file_location());
+        $found = file_get_contents(exposed_cache_config::get_config_file_path());
 
         self::assertContains('MUC Configuration Loaded!', $output);
         self::assertSame('<?php // MyConfig', $found);
@@ -89,7 +89,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
 
         muc_config_db::save($config);
         $output = $this->execute(true, false);
-        $found = file_get_contents(controller::get_muc_file_location());
+        $found = file_get_contents(exposed_cache_config::get_config_file_path());
 
         self::assertContains('DRY RUN - Would load MUC Configuration.', $output);
         self::assertSame($this->original, $found);
