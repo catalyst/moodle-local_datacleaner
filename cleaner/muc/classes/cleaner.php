@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cache_helper;
 use cleaner_muc\cache\exposed_cache_config;
 use cleaner_muc\dml\muc_config_db;
 
@@ -37,6 +38,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cleaner {
+    public static function extract_site_identifier($configuration) {
+        $pattern = "/'siteidentifier'\\s+=>\\s+'(\w+)'/";
+        if (!preg_match($pattern, $configuration, $matches)) {
+            return null;
+        }
+        return $matches[1];
+    }
+
     /** @var bool */
     private $dryrun;
 
@@ -59,7 +68,12 @@ class cleaner {
             return;
         }
 
+        if (!$this->check_site_identifier($config->get_configuration())) {
+            return;
+        }
+
         $this->replace_muc_configuration($config->get_configuration());
+
         $this->purge_caches();
     }
 
@@ -99,5 +113,21 @@ class cleaner {
             purge_all_caches();
             $this->verbose('Caches purged.');
         }
+    }
+
+    private function check_site_identifier($configuration) {
+        $expected = cache_helper::get_site_identifier();
+        $found = self::extract_site_identifier($configuration);
+
+        $this->verbose('Site Identifier:');
+        $this->verbose('* Expected: '.$expected);
+        $this->verbose('*    Found: '.$found);
+
+        if ($expected != $found) {
+            mtrace('*** ERROR *** MUC Config not loaded, invalid site identifier.');
+            return false;
+        }
+
+        return true;
     }
 }
