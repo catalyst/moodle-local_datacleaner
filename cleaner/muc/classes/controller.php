@@ -24,7 +24,7 @@
 
 namespace cleaner_muc;
 
-use cleaner_muc\cache\exposed_cache_config;
+use cleaner_muc\cache\cleaner_cache_config;
 use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
 use cleaner_muc\output\index_renderer;
@@ -106,7 +106,7 @@ class controller {
             header('Content-Type: text/plain');
         }
 
-        readfile(exposed_cache_config::get_config_file_path());
+        readfile(cleaner_cache_config::get_config_file_path());
 
         return true;
     }

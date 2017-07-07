@@ -22,7 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use cleaner_muc\cache\exposed_cache_config;
+use cleaner_muc\cache\cleaner_cache_config;
 use cleaner_muc\clean;
 use cleaner_muc\cleaner;
 use cleaner_muc\dml\muc_config_db;
@@ -42,8 +42,6 @@ require_once(__DIR__ . '/cleaner_muc_testcase.php');
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner_muc_testcase {
-    const URL = 'https://moodle.test/subdir';
-
     /** @var string */
     protected $original = null;
 
@@ -55,7 +53,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
         $CFG->wwwroot = $CFG->httpswwwroot = self::URL;
 
         purge_all_caches(); // Force creating MUC file.
-        $this->original = file_get_contents(exposed_cache_config::get_config_file_path());
+        $this->original = file_get_contents(cleaner_cache_config::get_config_file_path());
     }
 
     public function test_it_has_a_task() {
@@ -68,28 +66,18 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
     }
 
     public function test_it_replaces_the_muc_file() {
-        $config = new muc_config([
-                                     'wwwroot'       => self::URL,
-                                     'configuration' => '<?php // MyConfig',
-                                 ]);
-
-        muc_config_db::save($config);
+        $configuration = self::create_muc_config()->get_configuration();
         $output = $this->execute(false, false);
-        $found = file_get_contents(exposed_cache_config::get_config_file_path());
+        $found = file_get_contents(cleaner_cache_config::get_config_file_path());
 
         self::assertContains('MUC Configuration Loaded!', $output);
-        self::assertSame('<?php // MyConfig', $found);
+        self::assertSame($configuration, $found);
     }
 
     public function test_it_does_not_replace_in_dry_run() {
-        $config = new muc_config([
-                                     'wwwroot'       => self::URL,
-                                     'configuration' => '<?php // MyConfig',
-                                 ]);
-
-        muc_config_db::save($config);
+        self::create_muc_config();
         $output = $this->execute(true, false);
-        $found = file_get_contents(exposed_cache_config::get_config_file_path());
+        $found = file_get_contents(cleaner_cache_config::get_config_file_path());
 
         self::assertContains('DRY RUN - Would load MUC Configuration.', $output);
         self::assertSame($this->original, $found);
@@ -120,7 +108,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
         $cache = cache::make('phpunit', 'simpletest');
         $cache->set('foo', 'bar');
 
-        muc_config_db::save(new muc_config(['wwwroot' => self::URL]));
+        self::create_muc_config();
         $output = $this->execute(false, true);
 
         $cache = cache::make('phpunit', 'simpletest');
@@ -139,7 +127,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
         $cache = cache::make('phpunit', 'simpletest');
         $cache->set('foo', 'bar');
 
-        muc_config_db::save(new muc_config(['wwwroot' => self::URL]));
+        self::create_muc_config();
         $output = $this->execute(true, true);
 
         $cache = cache::make('phpunit', 'simpletest');

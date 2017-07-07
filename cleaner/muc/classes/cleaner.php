@@ -25,7 +25,7 @@
 namespace cleaner_muc;
 
 use cache_helper;
-use cleaner_muc\cache\exposed_cache_config;
+use cleaner_muc\cache\cleaner_cache_config;
 use cleaner_muc\dml\muc_config_db;
 
 defined('MOODLE_INTERNAL') || die();
@@ -39,7 +39,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 class cleaner {
     public static function extract_site_identifier($configuration) {
-        $pattern = "/'siteidentifier'\\s+=>\\s+'(\w+)'/";
+        $pattern = "/'siteidentifier'\\s+=>\\s+'([^']+)'/";
         if (!preg_match($pattern, $configuration, $matches)) {
             return null;
         }
@@ -101,7 +101,7 @@ class cleaner {
         if ($this->dryrun) {
             mtrace('DRY RUN - Would load MUC Configuration.');
         } else {
-            file_put_contents(exposed_cache_config::get_config_file_path(), $configuration);
+            cleaner_cache_config::config_save_from_string($configuration);
             mtrace('MUC Configuration Loaded!');
         }
     }
