@@ -22,6 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use cleaner_muc\cleaner;
 use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\event\muc_config_deleted;
 use cleaner_muc\event\muc_config_event;
@@ -41,10 +42,13 @@ defined('MOODLE_INTERNAL') || die();
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
+    const URL = 'https://moodle.test/subdir';
+
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
+        class_exists(cleaner::class);
         class_exists(muc_config::class);
         class_exists(muc_config_db::class);
         class_exists(muc_config_saved::class);
@@ -52,12 +56,18 @@ class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
         class_exists(muc_config_event::class);
     }
 
-    protected static function create_muc_config($wwwroot = 'http://moodle.test',
-                                                $configuration = '<?php // Configuration',
+    protected static function generate_valid_config() {
+        $identifier = cache_helper::get_site_identifier();
+        return "<?php \$configuration = ['siteidentifier' => '{$identifier}'];";
+    }
+
+    protected static function create_muc_config($wwwroot = null,
+                                                $configuration = null,
                                                 $data = []) {
+
         $defaults = [
-            'wwwroot'       => $wwwroot,
-            'configuration' => $configuration,
+            'wwwroot'       => $wwwroot ?: self::URL,
+            'configuration' => $configuration ?: self::generate_valid_config(),
         ];
         $data = array_merge($defaults, $data);
 

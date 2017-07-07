@@ -24,6 +24,7 @@
 
 namespace cleaner_muc;
 
+use cleaner_muc\cache\cleaner_cache_config;
 use cleaner_muc\dml\muc_config_db;
 use cleaner_muc\form\upload_form;
 use cleaner_muc\output\index_renderer;
@@ -101,15 +102,11 @@ class controller {
     }
 
     private function action_current() {
-        global $CFG;
-
-        $mucfile = "{$CFG->dataroot}/muc/config.php";
-
         if (!headers_sent()) {
             header('Content-Type: text/plain');
         }
 
-        readfile($mucfile);
+        readfile(cleaner_cache_config::get_config_file_path());
 
         return true;
     }
