@@ -30,6 +30,7 @@ use cache_factory;
 use core_component;
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../../../../../cache/locallib.php');
 
 /**
  * @package     cleaner_muc
