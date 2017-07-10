@@ -79,7 +79,7 @@ class configurations_table extends flexible_table {
             $uploaded = format_time($now - $config->get_lastmodified());
             $uploaded = get_string('table_header_uploaded_text', 'cleaner_muc', $uploaded);
             $this->add_data([
-                                $config->get_wwwroot(),
+                                $this->create_wwwroot_links($config),
                                 $uploaded,
                                 $this->create_data_buttons($config->get_wwwroot()),
                             ]);
@@ -144,5 +144,14 @@ class configurations_table extends flexible_table {
             new moodle_url($this->baseurl, ['action' => 'delete', 'environment' => $wwwroot, 'sesskey' => sesskey()]),
             $OUTPUT->pix_icon('t/delete', get_string('delete'))
         );
+    }
+
+    private function create_wwwroot_links($config) {
+        return html_writer::link($config->get_wwwroot(), $config->get_wwwroot()) .
+               ' (' .
+               html_writer::link(
+                   $config->get_wwwroot() . '/local/datacleaner/cleaner/muc/index.php',
+                   get_string('view_muc_cleaner_settings', 'cleaner_muc')) .
+               ')';
     }
 }

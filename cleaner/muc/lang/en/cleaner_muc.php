@@ -33,3 +33,4 @@ $string['table_current_configuration'] = '<i>{$a}</i> (current configuration)';
 $string['table_header_uploaded'] = 'Uploaded';
 $string['table_header_uploaded_text'] = '{$a} ago';
 $string['table_header_wwwroot'] = 'Environment';
+$string['view_muc_cleaner_settings'] = 'MUC Cleaner Config';
