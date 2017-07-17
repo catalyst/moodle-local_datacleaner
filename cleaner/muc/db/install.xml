@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/datacleaner/cleaner/muc/db" VERSION="20170704"
+       COMMENT="XMLDB file for Moodle local/datacleaner/cleaner/muc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+        <TABLE NAME="cleaner_muc_configs" COMMENT="MUC Configs for different environments.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="wwwroot" TYPE="char" LENGTH="200" NOTNULL="true" SEQUENCE="false"
+                       COMMENT="Environment (wwwroot) base64-encoded."/>
+                <FIELD NAME="configuration" TYPE="text" NOTNULL="true" SEQUENCE="false"
+                       COMMENT="The contents of the MUC config.php."/>
+                <FIELD NAME="lastmodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
+                       COMMENT="When was this config uploaded."/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="uk_wwwroot" TYPE="unique" FIELDS="wwwroot"
+                     COMMENT="Only one configuration per environment."/>
+            </KEYS>
+        </TABLE>
+    </TABLES>
+</XMLDB>
