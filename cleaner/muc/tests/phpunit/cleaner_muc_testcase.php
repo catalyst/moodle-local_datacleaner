@@ -75,14 +75,4 @@ class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
         muc_config_db::save($config);
         return $config;
     }
-
-    protected function setUp() {
-        global $CFG;
-
-        parent::setUp();
-
-        if (isset($CFG->totara_version)) {
-            $this->markTestSkipped('Our unit tests are not compatible with Totara.');
-        }
-    }
 }
