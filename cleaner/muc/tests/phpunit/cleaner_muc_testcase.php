@@ -56,6 +56,14 @@ class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
         class_exists(muc_config_event::class);
     }
 
+    protected function setUp() {
+        global $CFG, $TOTARA;
+
+        if (isset($TOTARA) || isset($CFG->totara_version)) {
+            $this->markTestSkipped('MUC Cleaner not stable with TOTARA.');
+        }
+    }
+
     protected static function generate_valid_config() {
         $identifier = cache_helper::get_site_identifier();
         return "<?php \$configuration = ['siteidentifier' => '{$identifier}'];";
