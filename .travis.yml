@@ -56,7 +56,7 @@ matrix:
     - php: 7.1
       env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
     - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=master CI_PLUGIN=true
+      env: DB=mysqli MOODLE_BRANCH=master CI_PLUGIN=2
   exclude:
     - php: 5.5
       env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
@@ -90,6 +90,8 @@ matrix:
 before_install:
   - phpenv config-rm xdebug.ini
   - cd ../..
+  - echo $CI_PLUGIN
+  - git clone --mirror 'https://github.com/moodlehq/moodle-behat-extension.git' '/home/travis/.composer/cache/vcs/git-github.com-moodlehq-moodle-behat-extension.git/' || true
   - if [ "$CI_PLUGIN" = 2 ]; then
       nvm install node;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;

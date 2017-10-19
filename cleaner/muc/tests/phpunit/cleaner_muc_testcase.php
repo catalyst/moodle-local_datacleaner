@@ -57,11 +57,14 @@ class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
     }
 
     protected function setUp() {
+        // Ignoring coding standards because $TOTARA is not valid in Moodle.
+        // @codingStandardsIgnoreStart
         global $CFG, $TOTARA;
 
         if (isset($TOTARA) || isset($CFG->totara_version)) {
             $this->markTestSkipped('MUC Cleaner not stable with TOTARA.');
         }
+        // @codingStandardsIgnoreEnd
     }
 
     protected static function generate_valid_config() {
