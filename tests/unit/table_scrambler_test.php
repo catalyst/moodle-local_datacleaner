@@ -178,7 +178,13 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
     }
 
     public function test_it_throws_an_exception_if_cannot_find_the_next_prime() {
-        $this->setExpectedException(invalid_parameter_exception::class);
+        global $CFG;
+        if ($CFG->branch < 32) {
+            $this->setExpectedException(invalid_parameter_exception::class);
+        } else {
+            $this->expectException(invalid_parameter_exception::class);
+        }
+
         table_scrambler::get_prime_after(999999);
     }
 
