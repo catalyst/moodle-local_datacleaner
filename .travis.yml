@@ -94,6 +94,7 @@ before_install:
   - git clone --mirror 'https://github.com/moodlehq/moodle-behat-extension.git' '/home/travis/.composer/cache/vcs/git-github.com-moodlehq-moodle-behat-extension.git/' || true
   - if [ "$CI_PLUGIN" = 2 ]; then
       nvm install node;
+      nvm use 8.9;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     else
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
