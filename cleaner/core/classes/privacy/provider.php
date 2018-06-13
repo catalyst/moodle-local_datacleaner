@@ -15,19 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
+ * Privacy Subsystem implementation for cleaner_core.
  *
- * @package    cleaner_delete_users
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham
+ * @package    cleaner_core
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Remove users';
-$string['privacy:metadata'] = 'The cleaner delete users plugin does not store any personal data.';
-$string['minimumage'] = 'Minimum age';
-$string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';
-$string['keepsiteadmins'] = 'Keep site admins';
-$string['keepsiteadminsdesc'] = 'Tick to retain site administrator accounts.';
-$string['keepusernames'] = 'Non site administrator usernames';
-$string['keepusernamesdesc'] = 'A comma separated list of non site administrator usernames that should be retained.';
+namespace cleaner_core\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Privacy Subsystem for cleaner_core implementing null_provider.
+ *
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

@@ -29,6 +29,7 @@ $string['cleanwysiwygdesc'] = 'This will enable replacing URLs in all rich text 
 $string['cleantext'] = 'Relace in database fields text / varchar';
 $string['cleantextdesc'] = 'This will enable replacing URLs in all database columns of type text and varchar.';
 $string['pluginname'] = 'Replace URLs';
+$string['privacy:metadata'] = 'The cleaner replace urls plugin does not store any personal data.';
 $string['origsiteurl'] = 'Original site URL';
 $string['origsiteurldesc'] = 'The URL of the production site.';
 $string['newsiteurl'] = 'New site URL';

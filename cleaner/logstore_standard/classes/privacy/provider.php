@@ -15,13 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
+ * Privacy Subsystem implementation for cleaner_logstore_standard.
  *
  * @package    cleaner_logstore_standard
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Remove standard logs';
-$string['privacy:metadata'] = 'The cleaner logstore standard plugin does not store any personal data.';
-$string['truncate'] = 'Truncate all standard database logs';
+namespace cleaner_logstore_standard\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Privacy Subsystem for cleaner_logstore_standard implementing null_provider.
+ *
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

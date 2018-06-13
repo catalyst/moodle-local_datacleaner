@@ -23,6 +23,7 @@
  */
 
 $string['pluginname'] = 'Scramble user data';
+$string['privacy:metadata'] = 'The cleaner users plugin does not store any personal data.';
 $string['keepsiteadmins'] = 'Keep site admins unmodified';
 $string['keepsiteadminsdesc'] = 'Tick to avoid modifying site administrator accounts and data.';
 $string['keepusernames'] = 'Non site administrator usernames';

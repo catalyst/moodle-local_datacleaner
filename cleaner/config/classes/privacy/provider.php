@@ -15,21 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
+ * Privacy Subsystem implementation for cleaner_config.
  *
- * @package    cleaner_core
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @package    cleaner_config
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Cleanup core';
-$string['privacy:metadata'] = 'The cleaner core plugin does not store any personal data.';
+namespace cleaner_config\privacy;
 
-$string['deletemucfile'] = 'Delete muc file';
-$string['deletemucfiledesc'] = 'Delete the muc configuration file.';
+defined('MOODLE_INTERNAL') || die();
 
-$string['woulddeletemuc'] = 'Would delete muc file.';
-$string['willdeletemuc'] = 'Will delete muc file.';
+/**
+ * Privacy Subsystem for cleaner_config implementing null_provider.
+ *
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
 
-$string['wouldtruncatetables'] = 'Would truncate {$a} tables.';
-$string['willtruncatetables'] = 'Will truncate {$a} tables.';
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

@@ -15,19 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language en for 'cleaner_environment_matrix'
+ * Privacy Subsystem implementation for cleaner_environment_matrix.
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace cleaner_environment_matrix\privacy;
 
-$string['button_search'] = 'Search';
-$string['existing_configuration'] = 'Existing configuration';
-$string['missingenvbar'] = 'Environment bar missing';
-$string['pluginname'] = 'Environment matrix';
-$string['privacy:metadata'] = 'The cleaner environment matrix plugin does not store any personal data.';
-$string['search_placeholder'] = 'Search for a named configuration item.';
-$string['search_results'] = 'Search results';
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Privacy Subsystem for cleaner_environment_matrix implementing null_provider.
+ *
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

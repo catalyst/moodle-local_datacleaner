@@ -15,14 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
+ * Privacy Subsystem implementation for cleaner_grades.
  *
  * @package    cleaner_grades
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Clean grades';
-$string['privacy:metadata'] = 'The cleaner grades plugin does not store any personal data.';
-$string['deleteall'] = 'Delete all';
-$string['deletealldesc'] = 'Delete all grade history. The alternative is to replace the values with fake data based on the user\'s ID number.';
+namespace cleaner_grades\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Privacy Subsystem for cleaner_grades implementing null_provider.
+ *
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

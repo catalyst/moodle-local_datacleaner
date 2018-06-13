@@ -15,20 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
+ * Privacy Subsystem implementation for cleaner_courses.
  *
  * @package    cleaner_courses
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Remove courses';
-$string['privacy:metadata'] = 'The cleaner courses plugin does not store any personal data.';
-$string['category'] = 'Category';
-$string['categories'] = 'Categories';
-$string['categoriesdesc'] = 'Remove courses in the selected categories only.';
-$string['coursename'] = 'Full name of course to keep';
-$string['courses'] = 'Courses';
-$string['coursesdesc'] = 'Shortname of courses that should never be deleted, separated by a new line.';
-$string['minimumage'] = 'Minimum age';
-$string['minimumagedesc'] = '';
+namespace cleaner_courses\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Privacy Subsystem for cleaner_courses implementing null_provider.
+ *
+ * @copyright  2018 Ilya Tregubov <ilyatregubov@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}
