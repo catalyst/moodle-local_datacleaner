@@ -63,11 +63,11 @@ function abort_message($prefix, $text, $highlight = false) {
  *
  * Make sure it's safe for us to continue. Don't wash prod!
  */
-function safety_checks($options) {
+function safety_checks($dryrun) {
     global $CFG, $DB;
 
     $willdie = false;
-    $abort = $options['dryrun'] ? 'Would abort' : 'Aborting';
+    $abort = $dryrun ? 'Would abort' : 'Aborting';
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
     $saved = isset($CFG->original_wwwroot) ? $CFG->original_wwwroot : false;
@@ -145,7 +145,7 @@ function safety_checks($options) {
         $willdie = true;
     }
 
-    if ($willdie && !$options['dryrun']) {
+    if ($willdie && !$dryrun) {
         exit(1);
     }
 
