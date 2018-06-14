@@ -141,7 +141,7 @@ function safety_checks($dryrun) {
 
     // 4. Check for an explicit flag in config.php just to be extra mega cautious!
     if (empty($CFG->config_php_settings['local_datacleaner_allowexecution'])) {
-        abort_message(get_string('error:explicitconfigphp', 'local_datacleaner'), '');
+        abort_message($abort, get_string('error:explicitconfigphp', 'local_datacleaner'), true);
         $willdie = true;
     }
 
