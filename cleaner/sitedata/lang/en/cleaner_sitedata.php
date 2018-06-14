@@ -33,6 +33,7 @@ $string['allcontextlevels'] = 'All context levels';
 $string['allcontextlevelsdesc'] = 'Replace all files in every context level, with a generic default';
 $string['contextlevels'] = 'Context levels';
 $string['contextlevelsdesc'] = 'Files in only the selected contexts will be replaced (if all context levels is not set).';
+$string['privacy:metadata'] = 'The cleaner sitedata plugin does not store any personal data.';
 
 $string['wouldreplace'] = 'Would update {$a->total} record(s) from the files table.
  File type = \'{$a->mimetype}\'.

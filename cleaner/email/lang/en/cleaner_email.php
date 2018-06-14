@@ -35,3 +35,4 @@ $string['emailsuffixignoredesc'] = 'Do not append the suffix to these addresses.
 $string['noemailever'] = 'No email ever';
 $string['noemaileverdesc'] = 'Enable the setting $CFG->noemailever';
 $string['pluginname'] = 'Cleanup email';
+$string['privacy:metadata'] = 'The cleaner email plugin does not store any personal data.';

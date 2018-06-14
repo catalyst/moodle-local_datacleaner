@@ -29,6 +29,7 @@ $string['error_upload_invalid_muc_extension'] = 'Not a .MUC file: {$a}';
 $string['error_upload_invalid_php'] = 'Not starting with "<?php ": {$a}';
 $string['heading_configurations'] = 'MUC Configurations';
 $string['pluginname'] = 'Clean MUC';
+$string['privacy:metadata'] = 'The cleaner muc plugin does not store any personal data.';
 $string['table_current_configuration'] = '<i>{$a}</i> (current configuration)';
 $string['table_header_uploaded'] = 'Uploaded';
 $string['table_header_uploaded_text'] = '{$a} ago';
