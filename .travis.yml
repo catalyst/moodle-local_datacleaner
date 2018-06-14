@@ -1,12 +1,5 @@
 language: php
 
-notifications:
-  email:
-    recipients:
-      - brendan@catalyst-au.net
-      - marcus@boon.mx
-      - danielroperto@catalyst-au.net
-
 sudo: false
 
 cache:
@@ -18,86 +11,52 @@ addons:
   postgresql: "9.3"
 
 php:
- - 5.5
- - 7.0
+  - 7.0
 
 env:
-  - DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_27_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
-  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
-  - DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
-  - DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
-  - DB=pgsql MOODLE_BRANCH=master CI_PLUGIN=2
-  - DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_28_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git
-  - DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
-  - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
-  - DB=mysqli MOODLE_BRANCH=master CI_PLUGIN=2
+  - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE CI_PLUGIN=1
+  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE CI_PLUGIN=1
+  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git CI_PLUGIN=1
+  - DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_34_STABLE
+  - DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE
+  - DB=pgsql MOODLE_BRANCH=master
+  - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE CI_PLUGIN=1
+  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE CI_PLUGIN=1
+  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git CI_PLUGIN=1
+  - DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_34_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
+  - DB=mysqli MOODLE_BRANCH=master
 
 matrix:
   include:
-    - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
-    - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
-    - php: 7.1
-      env: DB=pgsql MOODLE_BRANCH=master CI_PLUGIN=2
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
-    - php: 7.1
-      env: DB=mysqli MOODLE_BRANCH=master CI_PLUGIN=2
-  exclude:
     - php: 5.5
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE CI_PLUGIN=1
     - php: 5.5
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE CI_PLUGIN=1
     - php: 5.5
-      env: DB=mysqli MOODLE_BRANCH=master CI_PLUGIN=2
-    - php: 7.0
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_26_STABLE
-    - php: 7.0
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE
-    - php: 7.0
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_28_STABLE
-    - php: 7.0
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE CI_PLUGIN=1
     - php: 5.5
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_32_STABLE CI_PLUGIN=2
-    - php: 5.5
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE CI_PLUGIN=2
-    - php: 5.5
-      env: DB=pgsql MOODLE_BRANCH=master CI_PLUGIN=2
-    - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE
-    - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_27_STABLE
-    - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE
-    - php: 7.0
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_29_STABLE
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE CI_PLUGIN=1
+    - php: 7.1
+      env: DB=pgsql MOODLE_BRANCH=master
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=master
 
 before_install:
   - phpenv config-rm xdebug.ini
   - cd ../..
   - echo $CI_PLUGIN
   - git clone --mirror 'https://github.com/moodlehq/moodle-behat-extension.git' '/home/travis/.composer/cache/vcs/git-github.com-moodlehq-moodle-behat-extension.git/' || true
-  - if [ "$CI_PLUGIN" = 2 ]; then
+  - if [ "$CI_PLUGIN" = 1 ]; then
+      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
+    else
       nvm install node;
       nvm use 8.9;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
-    else
-      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
     fi
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
@@ -105,19 +64,20 @@ install:
   - moodle-plugin-ci install -vvv
 
 script:
+  - php moodle/local/datacleaner/tests/privacy/privacy.php
   - moodle-plugin-ci phplint
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci validate
-  - if [ "$CI_PLUGIN" = 2 ]; then
-      moodle-plugin-ci savepoints || travis_terminate 1;
-      moodle-plugin-ci mustache || travis_terminate 1;
-      moodle-plugin-ci grunt || travis_terminate 1;
-    else
+  - if [ "$CI_PLUGIN" = 1 ]; then
       moodle-plugin-ci csslint || travis_terminate 1;
       moodle-plugin-ci jshint || travis_terminate 1;
       moodle-plugin-ci shifter || travis_terminate 1;
+    else
+      moodle-plugin-ci savepoints || travis_terminate 1;
+      moodle-plugin-ci mustache || travis_terminate 1;
+      moodle-plugin-ci grunt || travis_terminate 1;
     fi
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
