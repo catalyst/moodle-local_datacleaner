@@ -21,6 +21,7 @@
  */
 
 $string['pluginname'] = 'Remove config';
+$string['privacy:metadata'] = 'The cleaner config plugin does not store any personal data.';
 $string['names'] = 'Config items to remove';
 $string['namesdesc'] = 'A list of config item names, one per line, which if matched will be removed. You can use the % wildcard to match multiple names.';
 $string['vals'] = 'Config values to remove';

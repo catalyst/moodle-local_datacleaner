@@ -24,6 +24,7 @@
  */
 
 $string['pluginname'] = 'Remove users';
+$string['privacy:metadata'] = 'The cleaner delete users plugin does not store any personal data.';
 $string['minimumage'] = 'Minimum age';
 $string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';
 $string['keepsiteadmins'] = 'Keep site admins';

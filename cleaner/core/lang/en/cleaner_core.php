@@ -23,6 +23,7 @@
  */
 
 $string['pluginname'] = 'Cleanup core';
+$string['privacy:metadata'] = 'The cleaner core plugin does not store any personal data.';
 
 $string['deletemucfile'] = 'Delete muc file';
 $string['deletemucfiledesc'] = 'Delete the muc configuration file.';

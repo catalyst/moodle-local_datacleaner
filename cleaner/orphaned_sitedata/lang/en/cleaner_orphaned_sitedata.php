@@ -24,6 +24,7 @@
  */
 
 $string['pluginname'] = 'Cleanup orphaned sitedata';
+$string['privacy:metadata'] = 'The cleaner orphaned sitedata plugin does not store any personal data.';
 
 // Settings page.
 $string['deletebackups'] = 'Delete backups';

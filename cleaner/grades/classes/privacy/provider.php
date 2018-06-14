@@ -13,19 +13,31 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Version details.
+ * Privacy provider.
  *
- * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   cleaner_grades
+ * @author    Ilya Tregubov (ilyatregubov@catalyst-au.net)
+ * @copyright 2018 Catalyst IT
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+namespace cleaner_grades\privacy;
 defined('MOODLE_INTERNAL') || die;
-
-$plugin->version   = 2018061400;
-$plugin->release   = '2.3.9';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
-$plugin->component = 'local_datacleaner';
+use core_privacy\local\metadata\null_provider;
+use core_privacy\local\legacy_polyfill;
+/**
+ * Class provider
+ * @package cleaner_grades\privacy
+ */
+class provider implements null_provider {
+    use legacy_polyfill;
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function _get_reason() {
+        return 'privacy:metadata';
+    }
+}

@@ -23,6 +23,7 @@
  */
 
 $string['pluginname'] = 'Clean completion';
+$string['privacy:metadata'] = 'The cleaner completion plugin does not store any personal data.';
 $string['deleteactivitycompletion'] = 'Delete activity completion';
 $string['deleteactivitycompletiondesc'] = 'Delete activity completion.';
 $string['deletecoursecompletion'] = 'Delete course completion';

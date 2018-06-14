@@ -28,5 +28,6 @@ $string['button_search'] = 'Search';
 $string['existing_configuration'] = 'Existing configuration';
 $string['missingenvbar'] = 'Environment bar missing';
 $string['pluginname'] = 'Environment matrix';
+$string['privacy:metadata'] = 'The cleaner environment matrix plugin does not store any personal data.';
 $string['search_placeholder'] = 'Search for a named configuration item.';
 $string['search_results'] = 'Search results';
