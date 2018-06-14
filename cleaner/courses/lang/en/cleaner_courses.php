@@ -23,6 +23,7 @@
  */
 
 $string['pluginname'] = 'Remove courses';
+$string['privacy:metadata'] = 'The cleaner courses plugin does not store any personal data.';
 $string['category'] = 'Category';
 $string['categories'] = 'Categories';
 $string['categoriesdesc'] = 'Remove courses in the selected categories only.';

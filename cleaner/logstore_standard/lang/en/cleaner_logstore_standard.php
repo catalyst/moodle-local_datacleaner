@@ -23,4 +23,5 @@
  */
 
 $string['pluginname'] = 'Remove standard logs';
+$string['privacy:metadata'] = 'The cleaner logstore standard plugin does not store any personal data.';
 $string['truncate'] = 'Truncate all standard database logs';
