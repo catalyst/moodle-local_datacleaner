@@ -62,7 +62,8 @@ class clean extends \local_datacleaner\clean {
 
         echo "Fetching users to update...\n";
 
-        $criteria = self::get_user_criteria(static::$options);
+        $config = get_config('cleaner_delete_users');
+        $criteria = self::get_user_criteria($config);
         list($where, $whereparams) = self::get_user_where_sql($criteria);
 
         $ids = $DB->get_records_select('user', 'id > 2 '.$where, $whereparams, 'id', 'id');
