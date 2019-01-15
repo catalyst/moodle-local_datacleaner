@@ -111,7 +111,7 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
 
         $expected = file_get_contents($mucfile);
 
-        self::assertSame($expected, $actual);
+        self::assertSame($expected, trim($actual));
         $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
     }
 
@@ -123,7 +123,7 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
         $_GET['sesskey'] = sesskey();
         $actual = self::get_page();
 
-        self::assertSame('My Config', $actual);
+        self::assertSame('My Config', trim($actual));
     }
 
     private function get_page() {
