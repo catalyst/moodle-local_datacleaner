@@ -8,7 +8,7 @@ cache:
     - $HOME/.npm
 
 addons:
-  postgresql: "9.3"
+  postgresql: "9.4"
 
 php:
   - 7.0
@@ -21,7 +21,6 @@ env:
   - DB=pgsql MOODLE_BRANCH=MOODLE_33_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_34_STABLE
   - DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE
-  - DB=pgsql MOODLE_BRANCH=master
   - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE CI_PLUGIN=1
   - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE CI_PLUGIN=1
   - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE_FSAPI MOODLE_REPO=https://github.com/kenneth-hendricks/moodle-fs-api.git CI_PLUGIN=1
@@ -29,7 +28,6 @@ env:
   - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_34_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
-  - DB=mysqli MOODLE_BRANCH=master
 
 matrix:
   include:
@@ -41,10 +39,14 @@ matrix:
       env: DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE CI_PLUGIN=1
     - php: 5.5
       env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE CI_PLUGIN=1
-    - php: 7.1
+    - php: 7.2
       env: DB=pgsql MOODLE_BRANCH=master
     - php: 7.1
       env: DB=mysqli MOODLE_BRANCH=master
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE
+    - php: 7.2
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_36_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
