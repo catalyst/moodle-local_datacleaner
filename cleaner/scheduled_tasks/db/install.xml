@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/datacleaner/cleaner/scheduled_tasks/db" VERSION="2019030400" COMMENT="XMLDB file for Moodle local/datacleaner/cleaner/scheduled_tasks"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+        <TABLE NAME="cleaner_scheduled_tasks" COMMENT="Scheduled tasks config - whether to disable the task in a clean">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="task_scheduled_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="disabled" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="lastmodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When was this config uploaded."/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+    </TABLES>
+</XMLDB>
