@@ -52,38 +52,57 @@ class task_form extends moodleform {
 		// Should have a checkbox here to select/deselect all
 
 		global $DB;
+		$cleaner_tasks = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
+												join {task_scheduled} ts on ts.id = cs.task_scheduled_id");
+
+		$i = 0;
+		$add_component = [];
+		$render_tasks = [];
 
 		// Now create an element for each task.
 		foreach ($tasks as $task) {
-			$render_tasks = [];
 
 			$component = $task->get_component();
 			$name = $task->get_name();
 			$class = get_class($task);
 
+
+			$status = ($task->get_disabled() == 0) ? "enabled" : "disabled";
+
+
 			// Key by which returned data is group on in the associative array, must be unique for each task.
 			$cbkey = "$class";
-			$render_tasks[] = &$mform->createElement('advcheckbox', $cbkey, '', "$component", '', [0, 1]);
+			$render_tasks[] = &$mform->createElement('advcheckbox', $cbkey, '', "$name: Currently $status", ['group' => 1]);
 
 			// We have our current saved settings as the default value.
 			$default = 0;
-			$records = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
-												join {task_scheduled} ts on ts.id = cs.task_scheduled_id");
-			foreach ($records as $record) {
-				if ($record->component == $component && $record->classname == "\\$class") {
+
+			foreach ($cleaner_tasks as $cleaner_task) {
+				if ($cleaner_task->component == $component && $cleaner_task->classname == "\\$class") {
 					$default = 1;
 				}
 			}
 
 			$mform->setDefault($cbkey, "$default");
-			$mform->setType('cleaner_scheduled_tasks', PARAM_RAW);
 
-			// should group everything by component here
+			// Group everything by component here
+			$add_component[] = $component;
+			// If the component is the same as the previous component, we continue to make elements before adding as a group
+			if (isset ($add_component[1]) && $component == $add_component[$i-1]) {
+				$i++;
+				continue;
+			}
+			$i++;
+
+			// If this group we are about to add has more than 3 elements, let's add a check all box.
 
 
 			// Add this group of elements to the form and display them.
-			$mform->addGroup($render_tasks, "$class", "$name", array(' '), false);
+			$mform->addGroup($render_tasks, "$class", "$component", array(' '), false);
+			$render_tasks = [];
 		}
+
+		$this->add_checkbox_controller(1, null, null, 0);
 
 		// Display save and cancel buttons at bottom of the form
 		$buttonarray = array();
