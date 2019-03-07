@@ -16,17 +16,20 @@
 
 /**
  * @package    cleaner_scheduled_tasks
+ * @subpackage  local_datacleaner
  * @copyright  2019 Catalyst IT
+ * @var $ADMIN  admin_root
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-if (!$ADMIN->fulltree || !$hassiteconfig) {
+if (!$hassiteconfig) {
     return;
 }
 
-// Add the new settings page that links to our custom table.
-$ADMIN->add('datacleaner', new admin_externalpage('cleaner_scheduled_tasks_settings',
+// Add the new settings page.
+$ADMIN->add('datacleaner', new admin_externalpage(
+    'cleaner_scheduled_tasks_settings',
     get_string('pluginname', 'cleaner_scheduled_tasks'),
     new moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php')
 ));

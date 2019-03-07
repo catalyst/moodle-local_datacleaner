@@ -148,6 +148,10 @@ class cleaner extends base {
             return new \moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
         }
 
+        if ($this->name == 'scheduled_tasks') {
+            return new \moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php');
+        }
+
         if (file_exists($this->full_path('settings.php'))) {
             return new \moodle_url('/admin/settings.php', array('section' => $this->get_settings_section_name()));
         }

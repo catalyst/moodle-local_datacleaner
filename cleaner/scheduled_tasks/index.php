@@ -24,11 +24,18 @@
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-admin_externalpage_setup('cleaner_scheduled_tasks');
+admin_externalpage_setup('cleaner_scheduled_tasks_settings');
 
+$PAGE->add_body_class('cleaner_scheduled_tasks');
+
+// grab the data that we are going to display. this is a list of all scheduled tasks.
+$tasks = \core\task\manager::get_all_scheduled_tasks();
+
+// Grab this url to redirect to.
 $post = new moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php');
 
-$taskform = new \cleaner_scheduled_tasks\task_form();
+// Then send this data to the form
+$taskform = new \cleaner_scheduled_tasks\form\task_form($post, $tasks);
 
 // We have created the form with the correct fields and data, but we don't want to display this one.
 if ($taskform->is_cancelled()) {
@@ -36,7 +43,37 @@ if ($taskform->is_cancelled()) {
     redirect($post);
 } else if ($data = $taskform->get_data()) {
     // If we submit the form, then we should look at the data here and for each record insert the data into our cleaner_scheduled_tasks table.
-    echo "great we are here";
-    die;
+	global $DB;
+
+	$taskdata = isset($data->selected) ? $data->selected : false;
+	$taskdata = $taskdata ? $taskdata : (array)$data;
+
+	$scheduled_tasks = $DB->get_records('task_scheduled');
+
+	foreach ($taskdata as $key => $task_enabled) {
+		foreach ($scheduled_tasks as $scheduled_task) {
+			if ("\\$key" == $scheduled_task->classname) {
+				$record = $DB->get_record('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduled_task->id]);
+				if ($record && $task_enabled == 0) {
+					// we have a record in our table but haven't selected it in our form. should be deleted.
+					$DB->delete_records('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduled_task->id]);
+				} else if ($record && $task_enabled == 1) {
+					// The record already exists in our table with the correct setting, no update needed.
+					continue;
+				} else if (!$record && $task_enabled == 1) {
+					// The record doesn't exist, but it should because we selected it, insert it
+					$task_insert = new stdClass;
+					$task_insert->task_scheduled_id = $scheduled_task->id;
+					$task_insert->lastmodified = time();
+
+					$DB->insert_record('cleaner_scheduled_tasks', $task_insert);
+				}
+			}
+		}
+	}
 }
 
+// If we are here, then we are just displaying the form, and haven't cancelled or submitted it on this page.
+echo $OUTPUT->header();
+$taskform->display();
+echo $OUTPUT->footer();

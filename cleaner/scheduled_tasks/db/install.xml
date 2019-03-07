@@ -8,7 +8,6 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="task_scheduled_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="disabled" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="lastmodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When was this config uploaded."/>
             </FIELDS>
             <KEYS>

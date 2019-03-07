@@ -31,10 +31,15 @@ class clean extends \local_datacleaner\clean {
      */
     static public function execute() {
         global $DB;
+		$disabled_tasks = $DB->get_records('cleaner_scheduled_tasks');
 
-    }
+		// Disable every task that has a record in our table.
+		foreach ($disabled_tasks as $disabled_task) {
+			$update = new \stdClass();
+			$update->id = $disabled_task->task_scheduled_id;
+			$update->disabled = 1;
 
-    static private function get_disabled_task_count($config) {
-        echo "here";
+			$DB->update_record('task_scheduled', $update);
+		}
     }
 }

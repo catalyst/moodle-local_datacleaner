@@ -20,8 +20,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace cleaner_scheduled_tasks;
+namespace cleaner_scheduled_tasks\form;
+use html_writer;
 use moodleform;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -29,36 +31,65 @@ global $CFG;
 require_once("{$CFG->libdir}/formslib.php");
 
 class task_form extends moodleform {
-    function definition() {
-        $mform = $this->_form;
+	function definition() {
+		$mform = $this->_form;
+		$tasks = $this->_customdata;
+
+		if (!$tasks) {
+			throw new coding_exception('You have no scheduled tasks, cannot display the task disabling form.');
+		}
+
+		// Display a header on the page.
+		// Need to put lang strings into lang folder later.
+		$header = html_writer::tag('h2', 'Scheduled task disabling form.', ['class' => 'scheduled_task_header']);
+		$header_subtitle = html_writer::tag('p', 'Select a task to disable it in the pre wash task. Unselected tasks will be unaffected.', ['class' => 'scheduled_task_header_subtitle']);
+
+		$header_array = [];
+		$header_array[] = &$mform->createElement('static', 'stitle', 'stitle', "$header $header_subtitle");
+		$mform->addGroup($header_array, 'header_array', '' , ' ', false);
 
 
-        echo "are we even here";
-        die;
-        // We want to display a disable setting for every scheduled task.
-        $tasks = \core\task\manager::get_all_scheduled_tasks();
-        $environmentheader = [];
-        //$environmentheader[] = &$mform->createElement('advcheckbox', '', '', '', ['class' => 'hiddencb'], [0, 1]);
-        $this->_form->addElement(
-            'filemanager',
-            'mucfiles',
-            '',
-            null,
-            ['subdirs' => false]
-        );
+		// Should have a checkbox here to select/deselect all
+
+		global $DB;
+
+		// Now create an element for each task.
+		foreach ($tasks as $task) {
+			$render_tasks = [];
+
+			$component = $task->get_component();
+			$name = $task->get_name();
+			$class = get_class($task);
+
+			// Key by which returned data is group on in the associative array, must be unique for each task.
+			$cbkey = "$class";
+			$render_tasks[] = &$mform->createElement('advcheckbox', $cbkey, '', "$component", '', [0, 1]);
+
+			// We have our current saved settings as the default value.
+			$default = 0;
+			$records = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
+												join {task_scheduled} ts on ts.id = cs.task_scheduled_id");
+			foreach ($records as $record) {
+				if ($record->component == $component && $record->classname == "\\$class") {
+					$default = 1;
+				}
+			}
+
+			$mform->setDefault($cbkey, "$default");
+			$mform->setType('cleaner_scheduled_tasks', PARAM_RAW);
+
+			// should group everything by component here
 
 
-        foreach ($tasks as $task) {
-            $class = preg_replace('{\\\}', '_', get_class($task));
-            $component = $task->get_component();
+			// Add this group of elements to the form and display them.
+			$mform->addGroup($render_tasks, "$class", "$name", array(' '), false);
+		}
 
-            $taskname = substr(strchr($class, "_task_"),6);
-
-            if ($taskname == false) {
-                continue;
-            }
-
-        }
-
-    }
+		// Display save and cancel buttons at bottom of the form
+		$buttonarray = array();
+		$buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
+		$buttonarray[] = &$mform->createElement('cancel');
+		$mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+		$mform->closeHeaderBefore('buttonar');
+	}
 }
