@@ -36,20 +36,17 @@ class task_form extends moodleform {
 		$tasks = $this->_customdata;
 
 		if (!$tasks) {
-			throw new coding_exception('You have no scheduled tasks, cannot display the task disabling form.');
+			throw new coding_exception(get_string('noscheduledtasks', 'cleaner_scheduled_tasks'));
 		}
-
+		get_string('pluginname', 'cleaner_scheduled_tasks');
 		// Display a header on the page.
 		// Need to put lang strings into lang folder later.
-		$header = html_writer::tag('h2', 'Scheduled task disabling form.', ['class' => 'scheduled_task_header']);
-		$header_subtitle = html_writer::tag('p', 'Select a task to disable it in the pre wash task. Unselected tasks will be unaffected.', ['class' => 'scheduled_task_header_subtitle']);
+		$header = html_writer::tag('h2', get_string('title', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header']);
+		$header_subtitle = html_writer::tag('p', get_string('subtitle', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header_subtitle']);
 
 		$header_array = [];
 		$header_array[] = &$mform->createElement('static', 'stitle', 'stitle', "$header $header_subtitle");
 		$mform->addGroup($header_array, 'header_array', '' , ' ', false);
-
-
-		// Should have a checkbox here to select/deselect all
 
 		global $DB;
 		$cleaner_tasks = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
@@ -68,7 +65,6 @@ class task_form extends moodleform {
 
 
 			$status = ($task->get_disabled() == 0) ? "enabled" : "disabled";
-
 
 			// Key by which returned data is group on in the associative array, must be unique for each task.
 			$cbkey = "$class";
@@ -101,7 +97,7 @@ class task_form extends moodleform {
 			$mform->addGroup($render_tasks, "$class", "$component", array(' '), false);
 			$render_tasks = [];
 		}
-
+		// Creates a select all/none button at the bottom of the page.
 		$this->add_checkbox_controller(1, null, null, 0);
 
 		// Display save and cancel buttons at bottom of the form
