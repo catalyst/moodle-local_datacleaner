@@ -36,7 +36,7 @@ class task_form extends moodleform {
 		$tasks = $this->_customdata;
 
 		if (!$tasks) {
-			throw new coding_exception(get_string('noscheduledtasks', 'cleaner_scheduled_tasks'));
+			throw new \coding_exception(get_string('noscheduledtasks', 'cleaner_scheduled_tasks'));
 		}
 		get_string('pluginname', 'cleaner_scheduled_tasks');
 		// Display a header on the page.
@@ -48,6 +48,9 @@ class task_form extends moodleform {
 		$header_array[] = &$mform->createElement('static', 'stitle', 'stitle', "$header $header_subtitle");
 		$mform->addGroup($header_array, 'header_array', '' , ' ', false);
 
+		// Header for each column
+		$mform->addElement('static', 'description', 'Component', 'Task Name');
+
 		global $DB;
 		$cleaner_tasks = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
 												join {task_scheduled} ts on ts.id = cs.task_scheduled_id");
@@ -57,13 +60,15 @@ class task_form extends moodleform {
 		$render_tasks = [];
 
 		// Now create an element for each task.
-		foreach ($tasks as $task) {
+		foreach ($tasks as $key => $task) {
 
-			$component = $task->get_component();
-			$name = $task->get_name();
+			// Group everything by component here
 			$class = get_class($task);
+			$component = $task->get_component();
+			$add_component[] = $component;
+			$name = $task->get_name();
 
-
+			// Create the next element.
 			$status = ($task->get_disabled() == 0) ? "enabled" : "disabled";
 
 			// Key by which returned data is group on in the associative array, must be unique for each task.
@@ -78,25 +83,19 @@ class task_form extends moodleform {
 					$default = 1;
 				}
 			}
-
 			$mform->setDefault($cbkey, "$default");
 
-			// Group everything by component here
-			$add_component[] = $component;
-			// If the component is the same as the previous component, we continue to make elements before adding as a group
-			if (isset ($add_component[1]) && $component == $add_component[$i-1]) {
-				$i++;
-				continue;
+			$nexttaskcomponent = (isset($tasks[$key + 1])) ? $tasks[$key + 1]->get_component() : null;
+			if (isset($add_component[0]) && isset($nexttaskcomponent) && $component == $nexttaskcomponent) {
+				// do nothing and continue
+			} else if (isset($add_component[0])) {
+				// if different component to the next, then we add group
+				$mform->addGroup($render_tasks, "$class", "$component", array(' '), false);
+				$render_tasks = [];
 			}
 			$i++;
-
-			// If this group we are about to add has more than 3 elements, let's add a check all box.
-
-
-			// Add this group of elements to the form and display them.
-			$mform->addGroup($render_tasks, "$class", "$component", array(' '), false);
-			$render_tasks = [];
 		}
+
 		// Creates a select all/none button at the bottom of the page.
 		$this->add_checkbox_controller(1, null, null, 0);
 
