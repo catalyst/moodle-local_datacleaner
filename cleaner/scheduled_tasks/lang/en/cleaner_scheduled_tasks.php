@@ -24,7 +24,7 @@
 $string['pluginname'] = 'cleaner_scheduled_tasks';
 
 // Settings page.
-$string['privacy:metadata'] = 'The cleaner sitedata plugin does not store any personal data.';
+$string['privacy:metadata'] = 'The cleaner scheduled tasks plugin does not store any personal data.';
 $string['subtitle'] = 'Select a task to disable it in the pre wash task.
 Unselected tasks will be unaffected and will remain in their current enabled/disabled state.';
 $string['noscheduledtasks'] = 'Could not find any scheduled tasks, cannot display the task disabling form.';
