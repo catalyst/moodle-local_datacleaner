@@ -48,25 +48,25 @@ if ($taskform->is_cancelled()) {
     $taskdata = isset($data->selected) ? $data->selected : false;
     $taskdata = $taskdata ? $taskdata : (array)$data;
 
-    $scheduled_tasks = $DB->get_records('task_scheduled');
+    $scheduledtasks = $DB->get_records('task_scheduled');
 
-    foreach ($taskdata as $key => $task_enabled) {
-        foreach ($scheduled_tasks as $scheduled_task) {
-            if ("\\$key" == $scheduled_task->classname) {
-                $record = $DB->get_record('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduled_task->id]);
-                if ($record && $task_enabled == 0) {
+    foreach ($taskdata as $key => $taskenabled) {
+        foreach ($scheduledtasks as $scheduledtask) {
+            if ("\\$key" == $scheduledtask->classname) {
+                $record = $DB->get_record('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduledtask->id]);
+                if ($record && $taskenabled == 0) {
                     // we have a record in our table but haven't selected it in our form. should be deleted.
-                    $DB->delete_records('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduled_task->id]);
-                } else if ($record && $task_enabled == 1) {
+                    $DB->delete_records('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduledtask->id]);
+                } else if ($record && $taskenabled == 1) {
                     // The record already exists in our table with the correct setting, no update needed.
                     continue;
-                } else if (!$record && $task_enabled == 1) {
+                } else if (!$record && $taskenabled == 1) {
                     // The record doesn't exist, but it should because we selected it, insert it
-                    $task_insert = new stdClass;
-                    $task_insert->task_scheduled_id = $scheduled_task->id;
-                    $task_insert->lastmodified = time();
+                    $taskinsert = new stdClass;
+                    $taskinsert->task_scheduled_id = $scheduledtask->id;
+                    $taskinsert->lastmodified = time();
 
-                    $DB->insert_record('cleaner_scheduled_tasks', $task_insert);
+                    $DB->insert_record('cleaner_scheduled_tasks', $taskinsert);
                 }
             }
         }

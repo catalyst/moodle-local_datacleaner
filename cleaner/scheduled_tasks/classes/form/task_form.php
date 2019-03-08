@@ -23,7 +23,6 @@
 namespace cleaner_scheduled_tasks\form;
 use html_writer;
 use moodleform;
-use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,7 +30,7 @@ global $CFG;
 require_once("{$CFG->libdir}/formslib.php");
 
 class task_form extends moodleform {
-    function definition() {
+    protected function definition() {
         $mform = $this->_form;
         $tasks = $this->_customdata;
 
@@ -42,22 +41,22 @@ class task_form extends moodleform {
         // Display a header on the page.
         // Need to put lang strings into lang folder later.
         $header = html_writer::tag('h2', get_string('title', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header']);
-        $header_subtitle = html_writer::tag('p', get_string('subtitle', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header_subtitle']);
+        $headersubtitle = html_writer::tag('p', get_string('subtitle', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header_subtitle']);
 
-        $header_array = [];
-        $header_array[] = &$mform->createElement('static', 'stitle', 'stitle', "$header $header_subtitle");
-        $mform->addGroup($header_array, 'header_array', '' , ' ', false);
+        $headerarray = [];
+        $headerarray[] = &$mform->createElement('static', 'stitle', 'stitle', "$header $headersubtitle");
+        $mform->addGroup($headerarray, 'header_array', '' , ' ', false);
 
         // Header for each column
         $mform->addElement('static', 'description', 'Component', 'Task Name');
 
         global $DB;
-        $cleaner_tasks = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
+        $cleanertasks = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
 												join {task_scheduled} ts on ts.id = cs.task_scheduled_id");
 
         $i = 0;
-        $add_component = [];
-        $render_tasks = [];
+        $addcomponent = [];
+        $rendertasks = [];
 
         // Now create an element for each task.
         foreach ($tasks as $key => $task) {
@@ -65,7 +64,7 @@ class task_form extends moodleform {
             // Group everything by component here
             $class = get_class($task);
             $component = $task->get_component();
-            $add_component[] = $component;
+            $addcomponent[] = $component;
             $name = $task->get_name();
 
             // Create the next element.
@@ -73,25 +72,24 @@ class task_form extends moodleform {
 
             // Key by which returned data is group on in the associative array, must be unique for each task.
             $cbkey = "$class";
-            $render_tasks[] = &$mform->createElement('advcheckbox', $cbkey, '', "$name: Currently $status", ['group' => 1]);
+            $rendertasks[] = &$mform->createElement('advcheckbox', $cbkey, '', "$name: Currently $status", ['group' => 1]);
 
             // We have our current saved settings as the default value.
             $default = 0;
 
-            foreach ($cleaner_tasks as $cleaner_task) {
-                if ($cleaner_task->component == $component && $cleaner_task->classname == "\\$class") {
+            foreach ($cleanertasks as $cleanertask) {
+                if ($cleanertask->component == $component && $cleanertask->classname == "\\$class") {
                     $default = 1;
                 }
             }
             $mform->setDefault($cbkey, "$default");
 
             $nexttaskcomponent = (isset($tasks[$key + 1])) ? $tasks[$key + 1]->get_component() : null;
-            if (isset($add_component[0]) && isset($nexttaskcomponent) && $component == $nexttaskcomponent) {
-                // do nothing and continue
-            } else if (isset($add_component[0])) {
+
+            if (isset($addcomponent[0]) && $component != $nexttaskcomponent) {
                 // if different component to the next, then we add group
-                $mform->addGroup($render_tasks, "$class", "$component", array(' '), false);
-                $render_tasks = [];
+                $mform->addGroup($rendertasks, "$class", "$component", array(' '), false);
+                $rendertasks = [];
             }
             $i++;
         }

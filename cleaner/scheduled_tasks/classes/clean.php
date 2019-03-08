@@ -31,8 +31,8 @@ class clean extends \local_datacleaner\clean {
      */
     static public function execute() {
         global $DB;
-        $disabled_tasks = $DB->get_records('cleaner_scheduled_tasks');
-        $count = count($disabled_tasks);
+        $disabledtasks = $DB->get_records('cleaner_scheduled_tasks');
+        $count = count($disabledtasks);
         $tasknames = $DB->get_records('task_scheduled');
         $dryrun = self::$options['dryrun'];
         $increment = 1;
@@ -47,9 +47,9 @@ class clean extends \local_datacleaner\clean {
             }
 
             // Disable every task that has a record in our table.
-            foreach ($disabled_tasks as $disabled_task) {
+            foreach ($disabledtasks as $disabledtask) {
                 foreach ($tasknames as $taskname) {
-                    if ($taskname->id == $disabled_task->task_scheduled_id) {
+                    if ($taskname->id == $disabledtask->task_scheduled_id) {
                         if ($taskname->disabled == 1) {
                             mtrace("Task $increment/$count: $taskname->classname selected to disable but is already disabled, skipping..");
                             $increment++;
@@ -60,7 +60,7 @@ class clean extends \local_datacleaner\clean {
                             } else {
                                 mtrace("Task $increment/$count: Disabling task: $taskname->classname");
                                 $updatetask = new \stdClass();
-                                $updatetask->id = $disabled_task->task_scheduled_id;
+                                $updatetask->id = $disabledtask->task_scheduled_id;
                                 $updatetask->disabled = 1;
                                 $DB->update_record('task_scheduled', $updatetask);
                                 $increment++;
