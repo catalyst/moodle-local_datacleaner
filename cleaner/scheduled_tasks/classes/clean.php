@@ -26,49 +26,49 @@ defined('MOODLE_INTERNAL') || die();
 
 class clean extends \local_datacleaner\clean {
 
-	/**
-	 * Disable the scheduled tasks that we don't want.
-	 */
-	static public function execute() {
-		global $DB;
-		$disabled_tasks = $DB->get_records('cleaner_scheduled_tasks');
-		$count = count($disabled_tasks);
-		$tasknames = $DB->get_records('task_scheduled');
-		$dryrun = self::$options['dryrun'];
-		$increment = 1;
+    /**
+     * Disable the scheduled tasks that we don't want.
+     */
+    static public function execute() {
+        global $DB;
+        $disabled_tasks = $DB->get_records('cleaner_scheduled_tasks');
+        $count = count($disabled_tasks);
+        $tasknames = $DB->get_records('task_scheduled');
+        $dryrun = self::$options['dryrun'];
+        $increment = 1;
 
-		if ($count == 0) {
-			mtrace("No tasks selected to disable, skipping this task");
-		} else {
-			if ($dryrun) {
-				mtrace("Would disable the {$count} following tasks:");
-			} else {
-				mtrace("Disabling the {$count} following tasks:");
-			}
+        if ($count == 0) {
+            mtrace("No tasks selected to disable, skipping this task");
+        } else {
+            if ($dryrun) {
+                mtrace("Would disable the {$count} following tasks:");
+            } else {
+                mtrace("Disabling the {$count} following tasks:");
+            }
 
-			// Disable every task that has a record in our table.
-			foreach ($disabled_tasks as $disabled_task) {
-				foreach ($tasknames as $taskname) {
-					if ($taskname->id == $disabled_task->task_scheduled_id) {
-						if ($taskname->disabled == 1) {
-							mtrace("Task $increment/$count: $taskname->classname selected to disable but is already disabled, skipping..");
-							$increment++;
-						} else {
-							if ($dryrun) {
-								mtrace("Task $increment/$count: Would disable task: $taskname->classname");
-								$increment++;
-							} else {
-								mtrace("Task $increment/$count: Disabling task: $taskname->classname");
-								$updatetask = new \stdClass();
-								$updatetask->id = $disabled_task->task_scheduled_id;
-								$updatetask->disabled = 1;
-								$DB->update_record('task_scheduled', $updatetask);
-								$increment++;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+            // Disable every task that has a record in our table.
+            foreach ($disabled_tasks as $disabled_task) {
+                foreach ($tasknames as $taskname) {
+                    if ($taskname->id == $disabled_task->task_scheduled_id) {
+                        if ($taskname->disabled == 1) {
+                            mtrace("Task $increment/$count: $taskname->classname selected to disable but is already disabled, skipping..");
+                            $increment++;
+                        } else {
+                            if ($dryrun) {
+                                mtrace("Task $increment/$count: Would disable task: $taskname->classname");
+                                $increment++;
+                            } else {
+                                mtrace("Task $increment/$count: Disabling task: $taskname->classname");
+                                $updatetask = new \stdClass();
+                                $updatetask->id = $disabled_task->task_scheduled_id;
+                                $updatetask->disabled = 1;
+                                $DB->update_record('task_scheduled', $updatetask);
+                                $increment++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
