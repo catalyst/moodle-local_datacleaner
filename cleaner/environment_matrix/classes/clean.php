@@ -43,6 +43,14 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Environment matrix configuration';
 
     /**
+     * Get the settings section url.
+     * @return \moodle_url the settings section URL
+     */
+    public static function get_settings_section_url($name) {
+        return new \moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
+    }
+
+    /**
      * Do the work.
      */
     static public function execute() {

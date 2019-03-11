@@ -27,6 +27,14 @@ defined('MOODLE_INTERNAL') || die();
 class clean extends \local_datacleaner\clean {
 
     /**
+     * Get the settings section url.
+     * @return \moodle_url the settings section URL
+     */
+    public static function get_settings_section_url($name) {
+        return new \moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php');
+    }
+
+    /**
      * Disable the scheduled tasks that we don't want.
      */
     static public function execute() {
