@@ -147,12 +147,8 @@ class cleaner extends base {
         $sectionname = $this->get_settings_section_name();
         $classname = "\\" . $sectionname . "\\clean";
 
-        if ($sectionname && method_exists($classname, 'get_settings_section_url')) {
+        if ($sectionname) {
             return $classname::get_settings_section_url($sectionname);
-        }
-
-        if (file_exists($this->full_path('settings.php'))) {
-            return new \moodle_url('/admin/settings.php', array('section' => $this->get_settings_section_name()));
         }
         return null;
     }
