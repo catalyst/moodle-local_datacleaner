@@ -37,9 +37,7 @@ class task_form extends moodleform {
         if (!$tasks) {
             throw new \coding_exception(get_string('noscheduledtasks', 'cleaner_scheduled_tasks'));
         }
-        get_string('pluginname', 'cleaner_scheduled_tasks');
         // Display a header on the page.
-        // Need to put lang strings into lang folder later.
         $header = html_writer::tag('h2', get_string('title', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header']);
         $headersubtitle = html_writer::tag('p', get_string('subtitle', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header_subtitle']);
 
@@ -51,10 +49,10 @@ class task_form extends moodleform {
         $mform->addElement('static', 'description', 'Component', 'Task Name');
 
         global $DB;
-        $cleanertasks = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cs
-												join {task_scheduled} ts on ts.id = cs.task_scheduled_id");
+        $cleanertasks = $DB->get_records_sql("SELECT * 
+                                                    FROM {cleaner_scheduled_tasks} cs 
+                                                    JOIN {task_scheduled} ts ON ts.id = cs.taskscheduledid");
 
-        $i = 0;
         $addcomponent = [];
         $rendertasks = [];
 
@@ -91,7 +89,6 @@ class task_form extends moodleform {
                 $mform->addGroup($rendertasks, "$class", "$component", array(' '), false);
                 $rendertasks = [];
             }
-            $i++;
         }
 
         // Creates a select all/none button at the bottom of the page.

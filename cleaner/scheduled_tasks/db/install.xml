@@ -7,7 +7,7 @@
         <TABLE NAME="cleaner_scheduled_tasks" COMMENT="Scheduled tasks config - whether to disable the task in a clean">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="task_scheduled_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="taskscheduledid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="lastmodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When was this config uploaded."/>
             </FIELDS>
             <KEYS>

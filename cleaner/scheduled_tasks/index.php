@@ -28,7 +28,7 @@ admin_externalpage_setup('cleaner_scheduled_tasks_settings');
 
 $PAGE->add_body_class('cleaner_scheduled_tasks');
 
-// grab the data that we are going to display. this is a list of all scheduled tasks.
+// Grab the data that we are going to display. This is a list of all scheduled tasks.
 $tasks = \core\task\manager::get_all_scheduled_tasks();
 
 // Grab this url to redirect to.
@@ -48,27 +48,29 @@ if ($taskform->is_cancelled()) {
     $taskdata = isset($data->selected) ? $data->selected : false;
     $taskdata = $taskdata ? $taskdata : (array)$data;
 
-    $scheduledtasks = $DB->get_records('task_scheduled');
+    // Get an associative array so we can match submitted tasks to the tasks in the task_scheduled table
+    $scheduledtasks = $DB->get_records_select_menu('task_scheduled', '', [], 'id', 'classname, id');
 
     foreach ($taskdata as $key => $taskenabled) {
-        foreach ($scheduledtasks as $scheduledtask) {
-            if ("\\$key" == $scheduledtask->classname) {
-                $record = $DB->get_record('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduledtask->id]);
-                if ($record && $taskenabled == 0) {
-                    // we have a record in our table but haven't selected it in our form. should be deleted.
-                    $DB->delete_records('cleaner_scheduled_tasks', ['task_scheduled_id' => $scheduledtask->id]);
-                } else if ($record && $taskenabled == 1) {
-                    // The record already exists in our table with the correct setting, no update needed.
-                    continue;
-                } else if (!$record && $taskenabled == 1) {
-                    // The record doesn't exist, but it should because we selected it, insert it
-                    $taskinsert = new stdClass;
-                    $taskinsert->task_scheduled_id = $scheduledtask->id;
-                    $taskinsert->lastmodified = time();
 
-                    $DB->insert_record('cleaner_scheduled_tasks', $taskinsert);
-                }
-            }
+        if (!isset($scheduledtasks["\\$key"])) {
+            continue;
+        }
+
+        $record = $DB->get_record('cleaner_scheduled_tasks', ['taskscheduledid' => $scheduledtasks["\\$key"]]);
+        if ($record && $taskenabled == 0) {
+            // We have a record in our table but haven't selected it in our form. Should be deleted.
+            $DB->delete_records('cleaner_scheduled_tasks', ['taskscheduledid' => $scheduledtasks["\\$key"]]);
+        } else if ($record && $taskenabled == 1) {
+            // The record already exists in our table with the correct setting, no update needed
+            continue;
+        } else if (!$record && $taskenabled == 1) {
+            // The record doesn't exist, but it should because we selected it, insert it
+            $taskinsert = new stdClass;
+            $taskinsert->taskscheduledid = $scheduledtasks["\\$key"];
+            $taskinsert->lastmodified = time();
+
+            $DB->insert_record('cleaner_scheduled_tasks', $taskinsert);
         }
     }
 }
