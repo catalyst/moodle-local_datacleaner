@@ -51,32 +51,36 @@ class clean extends \local_datacleaner\clean {
 
         if ($count == 0) {
             mtrace("No tasks selected to disable, skipping this task");
-        } else {
-            if ($dryrun) {
-                mtrace("Would disable the {$count} following tasks:");
-            } else {
-                mtrace("Disabling the {$count} following tasks:");
-            }
+            return;
+        }
 
-            // Disable every task that has a record in our table.
-            foreach ($disabledtasks as $disabledtask) {
-                if ($disabledtask->disabled == 1) {
-                    mtrace("Task $increment/$count: $disabledtask->classname selected to disable but is already disabled, skipping..");
+        if ($dryrun) {
+            mtrace("Would disable the {$count} following tasks:");
+        } else {
+            mtrace("Disabling the {$count} following tasks:");
+        }
+
+        // Disable every task that has a record in our table.
+        foreach ($disabledtasks as $disabledtask) {
+            if ($disabledtask->disabled == 1) {
+                mtrace("Task $increment/$count: $disabledtask->classname selected to disable but is already disabled, skipping..");
+                $increment++;
+            } else {
+                if ($dryrun) {
+                    mtrace("Task $increment/$count: Would disable task: $disabledtask->classname");
                     $increment++;
                 } else {
-                    if ($dryrun) {
-                        mtrace("Task $increment/$count: Would disable task: $disabledtask->classname");
-                        $increment++;
-                    } else {
-                        mtrace("Task $increment/$count: Disabling task: $disabledtask->classname");
-                        $updatetask = new \stdClass();
-                        $updatetask->id = $disabledtask->taskscheduledid;
-                        $updatetask->disabled = 1;
-                        $DB->update_record('task_scheduled', $updatetask);
-                        $increment++;
-                    }
+                    mtrace("Task $increment/$count: Disabling task: $disabledtask->classname");
+
+                    // Collect all the tasks to update and update in one query
+                    $taskstoupdate[] = $disabledtask->taskscheduledid;
+                    $increment++;
                 }
             }
+        }
+        if ($taskstoupdate) {
+            list($sql, $params) = $DB->get_in_or_equal($taskstoupdate);
+            $DB->set_field_select('task_scheduled', 'disabled', 1, "id $sql", $params);
         }
     }
 }
