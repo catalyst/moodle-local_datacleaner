@@ -49,8 +49,8 @@ class task_form extends moodleform {
         $mform->addElement('static', 'description', 'Component', 'Task Name');
 
         global $DB;
-        $cleanertasks = $DB->get_records_sql("SELECT * 
-                                                    FROM {cleaner_scheduled_tasks} cs 
+        $cleanertasks = $DB->get_records_sql("SELECT *
+                                                    FROM {cleaner_scheduled_tasks} cs
                                                     JOIN {task_scheduled} ts ON ts.id = cs.taskscheduledid");
 
         $addcomponent = [];

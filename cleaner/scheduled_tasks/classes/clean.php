@@ -41,8 +41,9 @@ class clean extends \local_datacleaner\clean {
         global $DB;
         $dryrun = self::$options['dryrun'];
 
-        $disabledtasks = $DB->get_records_sql("select * from {cleaner_scheduled_tasks} cst join 
-{task_scheduled} ts on ts.id=cst.taskscheduledid");
+        $disabledtasks = $DB->get_records_sql("SELECT *
+                                                FROM {cleaner_scheduled_tasks} cst
+                                                JOIN {task_scheduled} ts ON ts.id=cst.taskscheduledid");
 
         $count = count($disabledtasks);
         $increment = 1;
@@ -68,19 +69,13 @@ class clean extends \local_datacleaner\clean {
                         $increment++;
                     } else {
                         mtrace("Task $increment/$count: Disabling task: $disabledtask->classname");
-                        $updatetask = [];
-                        $updatetask['id'] = $disabledtask->taskscheduledid;
-                        $updatetask['disabled'] = 1;
-                        $taskstoupdate[] = $updatetask;
-                        //$DB->update_record('task_scheduled', $updatetask);
+                        $updatetask = new \stdClass();
+                        $updatetask->id = $disabledtask->taskscheduledid;
+                        $updatetask->disabled = 1;
+                        $DB->update_record('task_scheduled', $updatetask);
                         $increment++;
                     }
                 }
-            }
-            if ($taskstoupdate) {
-                // Collect all the tasks to update and update in one query
-                list($sql, $params) = $DB->get_in_or_equal($taskstoupdate);
-                $DB->execute("UPDATE {task_scheduled} SET disabled = 1 WHERE id " . $sql, $params);
             }
         }
     }
