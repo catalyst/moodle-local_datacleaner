@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'cleaner_scheduled_tasks';
+$string['pluginname'] = 'Cleaner scheduled tasks';
 
 // Settings page.
 $string['privacy:metadata'] = 'The cleaner scheduled tasks plugin does not store any personal data.';
