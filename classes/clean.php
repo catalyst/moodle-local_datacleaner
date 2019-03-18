@@ -345,4 +345,13 @@ abstract class clean {
 
         return $DB->get_records_select_menu('course', 'id > 1 '.$extrasql, $params, '', 'id, id');
     }
+
+    /**
+     * Get the settings section url.
+     * @param string
+     * @return \moodle_url
+     */
+    public static function get_settings_section_url($sectionname) {
+        return new \moodle_url('/admin/settings.php', array('section' => $sectionname));
+    }
 }
