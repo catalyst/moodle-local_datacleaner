@@ -50,6 +50,11 @@ class backup_cleaner_test extends orphaned_sitedata_testcase {
         $this->initialfiles = $this->get_files();
     }
 
+    public function tearDown() {
+        unset($this->initialfiles);
+        parent::tearDown();
+    }
+
     public function test_it_exists() {
         $cleaner = new backup_cleaner(true);
         self::assertNotNull($cleaner);
