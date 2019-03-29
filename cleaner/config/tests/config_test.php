@@ -65,6 +65,15 @@ class cleaner_config_test extends advanced_testcase {
     }
 
     /**
+     * Teardown unit tests.
+     */
+    protected function tearDown() {
+        $this->names = null;
+        $this->values = null;
+        parent::tearDown();
+    }
+
+    /**
      * Test the wheresql function
      */
     public function test_cleaner_config_getwhere() {
