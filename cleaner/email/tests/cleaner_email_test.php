@@ -85,6 +85,15 @@ class cleaner_email_test extends advanced_testcase {
     }
 
     /**
+     * Teardown unit tests.
+     */
+    protected function tearDown() {
+        $this->config = null;
+        $this->users = null;
+        parent::tearDown();
+    }
+
+    /**
      * Test appending the suffix and ignoring a basic pattern.
      */
     public function test_cleaner_email_suffix_ignore() {
