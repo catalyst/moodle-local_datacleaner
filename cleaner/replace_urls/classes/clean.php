@@ -40,6 +40,18 @@ class clean extends \local_datacleaner\clean {
         self::$config = get_config('cleaner_replace_urls');
         self::$skiptables = self::get_skiptables(self::$config);
         self::$tables = self::get_tables(self::$skiptables);
+        self::set_newsiteurl();
+    }
+
+    /**
+     * Set wwwroot as newsiteurl if not provided
+     */
+    private static function set_newsiteurl() {
+        global $CFG;
+
+        if (empty(self::$config->newsiteurl)) {
+            self::$config->newsiteurl = $CFG->wwwroot;
+        }
     }
 
     /**
@@ -96,8 +108,11 @@ class clean extends \local_datacleaner\clean {
     private static function db_replace() {
         global $DB;
 
-        // Turn off time limits.
-        \core_php_time_limit::raise();
+        // Turn off time limits
+        // Check for MOODLE_26 and below
+        if (class_exists('core_php_time_limit')) {
+            \core_php_time_limit::raise();
+        }
 
         $replacing = array();
 

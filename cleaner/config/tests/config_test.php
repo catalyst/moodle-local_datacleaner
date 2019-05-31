@@ -110,4 +110,5 @@ class cleaner_config_test extends advanced_testcase {
         $this->assertEquals(0, $namesafter);
         $this->assertEquals(0, $valsafter);
     }
+
 }
