@@ -51,7 +51,7 @@ class backup_cleaner_test extends orphaned_sitedata_testcase {
     }
 
     public function tearDown() {
-        unset($this->initialfiles);
+        $this->initialfiles = null;
         parent::tearDown();
     }
 
