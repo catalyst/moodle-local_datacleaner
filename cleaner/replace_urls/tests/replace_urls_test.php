@@ -58,6 +58,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
      * Teardown unit tests.
      */
     protected function tearDown() {
+        $this->course = null;
         parent::tearDown();
     }
 
