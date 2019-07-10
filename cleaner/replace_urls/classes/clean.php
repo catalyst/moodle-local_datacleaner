@@ -165,7 +165,9 @@ class clean extends \local_datacleaner\clean {
         foreach ($replacing as $table => $columns) {
             self::new_task(count($columns));
             foreach ($columns as $column) {
-                mtrace("Replacing in $table::$column->name ...");
+                if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                    mtrace("Replacing in $table::$column->name ...");
+                }
                 $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
                 self::next_step();
             }
@@ -207,7 +209,9 @@ class clean extends \local_datacleaner\clean {
         self::new_task(count($blockfunctions));
 
         foreach ($blockfunctions as $function) {
-            mtrace("Replacing using $function function ...");
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                mtrace("Replacing using $function function ...");
+            }
             $function(self::$config->origsiteurl, self::$config->newsiteurl);
             self::next_step();
         }
@@ -222,7 +226,9 @@ class clean extends \local_datacleaner\clean {
     static public function execute() {
         if (self::$options['dryrun']) {
             $count = count(self::$tables);
-            mtrace("Would replace URLs in {$count} tables.");
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                mtrace("Would replace URLs in {$count} tables.");
+            }
         } else {
             self::db_replace();
             self::blocks_replace();

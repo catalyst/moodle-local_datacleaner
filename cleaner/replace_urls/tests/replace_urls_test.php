@@ -74,7 +74,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
         // Set the newsiteurl config
         set_config('newsiteurl', 'new.origin', 'cleaner_replace_urls');
 
-        $configcleaner = new clean(array('dryrun' => false));
+        $configcleaner = new clean(array('dryrun' => false, 'verbose' => false));
         $configcleaner::execute();
 
         $namesafter = $DB->get_record_sql('SELECT fullname FROM {course} WHERE id=:name', ['name' => $this->course->id]);
@@ -95,7 +95,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
         // Set the newsiteurl to null
         set_config('newsiteurl', '', 'cleaner_replace_urls');
 
-        $configcleaner = new clean(array('dryrun' => false));
+        $configcleaner = new clean(array('dryrun' => false, 'verbose' => false));
         $configcleaner::execute();
 
         $namesafter = $DB->get_record_sql('SELECT fullname FROM {course} WHERE id=:name', ['name' => $this->course->id]);
