@@ -122,12 +122,16 @@ abstract class clean {
             self::$tasks[$taskname] = time();
         }
 
-        printf("\r %-20s %4d%% (%d/%d)    $timeleft  \n", $taskname, $perc, $itemno, $total);
+        if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+            printf("\r %-20s %4d%% (%d/%d)    $timeleft  \n", $taskname, $perc, $itemno, $total);
+        }
 
         if ($itemno == $total) {
             // No more output for this step; move to a new line.
             unset(self::$tasks[$taskname]);
-            printf("\n");
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                printf("\n");
+            }
         }
     }
 
@@ -155,7 +159,9 @@ abstract class clean {
         // Print the execution time if we're done.
         if (static::$step == static::$maxsteps) {
             static::$exectime += microtime(true);
-            echo "Execution took ", gmdate("H:i:s", static::$exectime), PHP_EOL;
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                echo "Execution took ", gmdate("H:i:s", static::$exectime), PHP_EOL;
+            }
         }
     }
 
