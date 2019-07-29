@@ -22,6 +22,8 @@
 
 namespace local_datacleaner;
 
+use core\base;
+
 defined('MOODLE_INTERNAL') || die();
 
 abstract class clean {
