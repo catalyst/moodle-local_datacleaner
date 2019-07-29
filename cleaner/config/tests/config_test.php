@@ -104,7 +104,7 @@ class cleaner_config_test extends advanced_testcase {
         $this->assertEquals(3, $namesbefore);
         $this->assertEquals(2, $valsbefore);
 
-        $configcleaner = new clean(false);
+        $configcleaner = new clean();
         $configcleaner::execute();
 
         $namesafter = $DB->count_records_select('config', "name LIKE '%unittestname%'");
