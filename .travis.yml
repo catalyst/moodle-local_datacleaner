@@ -10,6 +10,9 @@ cache:
 addons:
   postgresql: "9.4"
 
+services:
+  - mysql
+
 php:
   - 7.0
 
@@ -33,13 +36,18 @@ env:
 
 matrix:
   include:
+    #Moodle 2.7 Not compataible with MySQL 5.7
     - php: 5.5
+      dist: trusty
       env: DB=pgsql MOODLE_BRANCH=MOODLE_26_STABLE CI_PLUGIN=1
     - php: 5.5
+      dist: trusty
       env: DB=mysqli MOODLE_BRANCH=MOODLE_27_STABLE CI_PLUGIN=1
     - php: 5.5
+      dist: trusty
       env: DB=pgsql MOODLE_BRANCH=MOODLE_28_STABLE CI_PLUGIN=1
     - php: 5.5
+      dist: trusty
       env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE CI_PLUGIN=1
     - php: 7.1
       env: DB=pgsql MOODLE_BRANCH=master
@@ -59,6 +67,7 @@ before_install:
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
     else
       nvm install node;
+      nvm install 8.9;
       nvm use 8.9;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     fi
