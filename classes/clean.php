@@ -353,6 +353,34 @@ abstract class clean {
     }
 
     /**
+     * Execute SQL in single transaction
+     *
+     * @param  string $sql
+     */
+    protected static function execute_sql($sql) {
+        global $DB;
+
+        $dryrun = (bool)self::$options['dryrun'];
+        $verbose = (bool)self::$options['verbose'];
+
+        if ($verbose) {
+            mtrace("Executing: {$sql}");
+        }
+
+        if ($dryrun) {
+            return;
+        }
+
+        $transaction = $DB->start_delegated_transaction();
+        foreach (array_map('trim', explode(";", $sql)) as $sql1) {
+            if (!empty($sql1)) {
+                $DB->execute($sql1);
+            }
+        }
+        $transaction->allow_commit();
+    }
+
+    /**
      * Get the settings section url.
      * @param string
      * @return \moodle_url
