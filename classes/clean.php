@@ -372,7 +372,11 @@ abstract class clean {
         }
 
         $transaction = $DB->start_delegated_transaction();
-        $DB->execute($sql);
+        foreach (array_map('trim', explode(";", $sql)) as $sql1) {
+            if (!empty($sql1)) {
+                $DB->execute($sql1);
+            }
+        }
         $transaction->allow_commit();
     }
 
