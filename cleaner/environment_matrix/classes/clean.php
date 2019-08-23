@@ -96,7 +96,14 @@ class clean extends \local_datacleaner\clean {
                         }
 
                         if (!$dryrun) {
-                            set_config($config->config, $config->value, $config->plugin);
+
+                            $classname = $config->plugin.'\admin\setting_'.$config->config;
+                            if (class_exists($classname)) {
+                                $configobject = new $classname;
+                                $configobject->write_setting($config->value);
+                            } else {
+                                set_config($config->config, $config->value, $config->plugin);
+                            }
                         }
 
                     }
