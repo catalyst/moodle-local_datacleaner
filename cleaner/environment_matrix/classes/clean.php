@@ -30,6 +30,8 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
+require_once('../../../../../lib/adminlib.php');
+
 /**
  * Clean class for Environment matrix.
  *
@@ -83,6 +85,9 @@ class clean extends \local_datacleaner\clean {
                 // Obtain the data for this environment only.
                 $matrixdata = local\matrix::get_matrix_data($environment);
 
+                // Set Admin User for admin_write_settings perms
+                \core\session\manager::set_user(get_admin());
+                
                 // Process settings.
                 foreach ($matrixdata as $plugin => $items) {
                     foreach ($items as $name => $env) {
@@ -97,11 +102,16 @@ class clean extends \local_datacleaner\clean {
 
                         if (!$dryrun) {
 
-                            $classname = $config->plugin.'\admin\setting_'.$config->config;
-                            if (class_exists($classname)) {
-                                $configobject = new $classname;
-                                $configobject->write_setting($config->value);
-                            } else {
+
+                            // Build internal configuration string name such as s_auth_saml2_idpmetadata or s__passwordpolicy for core
+                            $configstring = 's_'.$config->plugin.'_'.$config->config;
+                            $data = (object)["$configstring" => $config->value];
+
+                            // Execute the update
+                            $num = admin_write_settings($data);
+
+                            // If admin_write_setting failed, manually set database tables
+                            if ($num < 1) {
                                 set_config($config->config, $config->value, $config->plugin);
                             }
                         }
