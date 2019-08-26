@@ -30,7 +30,7 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
-require_once('../../../../../lib/adminlib.php');
+require_once($CFG->libdir.'/adminlib.php');
 
 /**
  * Clean class for Environment matrix.
@@ -87,7 +87,10 @@ class clean extends \local_datacleaner\clean {
 
                 // Set Admin User for admin_write_settings perms
                 \core\session\manager::set_user(get_admin());
-                
+
+                // Generate an admin settings tree
+                $admintree = admin_get_root();
+
                 // Process settings.
                 foreach ($matrixdata as $plugin => $items) {
                     foreach ($items as $name => $env) {
@@ -96,26 +99,55 @@ class clean extends \local_datacleaner\clean {
                         // set_config requires a null 'plugin' value when updating core configuration values.
                         $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
 
-                        if ($verbose) {
-                            mtrace("set_config('{$config->config}', '{$config->value})'");
-                        }
+                        // Get strings in nicer format for reuse
+                        $configname = $config->config;
+                        $pluginname = $config->plugin;
+                        $elementname = $pluginname.$configname;
 
-                        if (!$dryrun) {
+                        // Search the admintree for configname
+                        $nodes = $admintree->search($configname);
+                        $relevantobject = '';
 
-
-                            // Build internal configuration string name such as s_auth_saml2_idpmetadata or s__passwordpolicy for core
-                            $configstring = 's_'.$config->plugin.'_'.$config->config;
-                            $data = (object)["$configstring" => $config->value];
-
-                            // Execute the update
-                            $num = admin_write_settings($data);
-
-                            // If admin_write_setting failed, manually set database tables
-                            if ($num < 1) {
-                                set_config($config->config, $config->value, $config->plugin);
+                        // Iterate through tree for specific page and elementname
+                        foreach ($nodes as $node) {
+                            if ($node->page instanceof \admin_settingpage && isset($node->page->settings->$elementname)) {
+                                // Should only ever be reached once, so break loop
+                                $relevantobject = $node->page->settings->$elementname;
+                                break;
                             }
                         }
 
+                        // bool to track error status setting configs
+                        $error = false;
+
+                        // Check object is found, and for extra safety, ensure it is for the right plugin
+                        if ($relevantobject != '' && $relevantobject->plugin == $pluginname) {
+                            // Output write_setting command
+                            if ($verbose) {
+                                mtrace("{$config->plugin}:{$relevantobject->name}->write_setting('{$config->value}')");
+                            }
+                            if (!$dryrun) {
+                                // Use the write_setting method to safely update value
+                                $relevantobject->write_setting($config->value);
+
+                                // If DB values dont match the config we tried to write, use set_config
+                                if (get_config($config->plugin, $config->config) != $config->value) {
+                                    $error = true;
+                                    mtrace("Error in write_setting, using set_config");
+                                }
+                            }
+                        }
+                        if ($relevantobject == '' || $error) {
+                            // Output set_config command
+                            if ($verbose) {
+                                mtrace("set_config('{$config->config}', '{$config->value})'");
+                            }
+                            if (!$dryrun) {
+                                // Object wasnt found in admin tree (shouldnt happen)
+                                // Manually set value
+                                set_config($config->config, $config->value, $config->plugin);
+                            }
+                        }
                     }
 
                 }
