@@ -6,7 +6,7 @@
 
 Moodle DataCleaner is an anonymiser of your Moodle data.
 
-Supported versions of Moodle: 2.6 to 3.1 inclusive
+Supported versions of Moodle: 2.6 to 3.7 inclusive
 
 ## How it works
 
@@ -81,7 +81,7 @@ configuration details. Note that you MUST visit the DataCleaner config page to
 save the current wwwroot, or the cleaner will not run later in the other
 environments.
 
-```
+```php
 $CFG->local_datacleaner_allowexecution = true;
 ```
 
