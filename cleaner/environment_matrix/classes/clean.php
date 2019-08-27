@@ -88,9 +88,6 @@ class clean extends \local_datacleaner\clean {
                 // Set Admin User for admin_write_settings perms
                 \core\session\manager::set_user(get_admin());
 
-                // Generate an admin settings tree
-                $admintree = admin_get_root();
-
                 // Process settings.
                 foreach ($matrixdata as $plugin => $items) {
                     foreach ($items as $name => $env) {
@@ -98,6 +95,17 @@ class clean extends \local_datacleaner\clean {
 
                         // set_config requires a null 'plugin' value when updating core configuration values.
                         $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
+
+                        // First, set config in database
+                        if ($verbose) {
+                            mtrace("set_config('{$config->config}', '{$config->value})'");
+                        }
+                        if (!$dryrun) {
+                            set_config($config->config, $config->value, $config->plugin);
+                        }
+
+                        // Generate an admin settings tree
+                        $admintree = admin_get_root(true);
 
                         // Get strings in nicer format for reuse
                         $configname = $config->config;
@@ -117,35 +125,19 @@ class clean extends \local_datacleaner\clean {
                             }
                         }
 
-                        // bool to track error status setting configs
-                        $error = false;
-
-                        // Check object is found, and for extra safety, ensure it is for the right plugin
-                        if ($relevantobject != '' && $relevantobject->plugin == $pluginname) {
-                            // Output write_setting command
-                            if ($verbose) {
-                                mtrace("{$config->plugin}:{$relevantobject->name}->write_setting('{$config->value}')");
-                            }
-                            if (!$dryrun) {
-                                // Use the write_setting method to safely update value
-                                $relevantobject->write_setting($config->value);
-
-                                // If DB values dont match the config we tried to write, use set_config
-                                if (get_config($config->plugin, $config->config) != $config->value) {
-                                    $error = true;
-                                    mtrace("Error in write_setting, using set_config");
-                                }
-                            }
+                        // Now perform any additional validation
+                        if ($verbose) {
+                            // Show the additional write_settings
+                            mtrace("{$config->plugin}:{$relevantobject->name}->write_setting('{$config->value}')");
                         }
-                        if ($relevantobject == '' || $error) {
-                            // Output set_config command
-                            if ($verbose) {
-                                mtrace("set_config('{$config->config}', '{$config->value})'");
-                            }
-                            if (!$dryrun) {
-                                // Object wasnt found in admin tree (shouldnt happen)
-                                // Manually set value
-                                set_config($config->config, $config->value, $config->plugin);
+                        if ($relevantobject != '' && $relevantobject->plugin == $pluginname) {
+                            // Get setting object back out of config control
+                            $settings = $relevantobject->get_setting();
+                            // Reset to fire additional validation/actions
+                            $errors = $relevantobject->write_setting($settings);
+                            // log any errors that might have been thrown
+                            if ($errors != '') {
+                                mtrace($errors);
                             }
                         }
                     }
