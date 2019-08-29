@@ -98,7 +98,7 @@ class clean extends \local_datacleaner\clean {
 
                         // First, set config in database
                         if ($verbose) {
-                            mtrace("set_config('{$config->config}', '{$config->value}')");
+                            mtrace("set_config('{$config->config}', '{$config->value}', '{$config->plugin}')");
                         }
                         if (!$dryrun) {
                             set_config($config->config, $config->value, $config->plugin);
