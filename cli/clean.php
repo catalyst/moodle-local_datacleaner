@@ -38,7 +38,10 @@ list($options, $unrecognized) = cli_get_params(
         'verbose' => false,
         'reset' => false,
     ),
-    array('h' => 'help')
+    array(
+        'h' => 'help',
+        'v' => 'verbose',
+    )
 );
 
 if ($unrecognized) {
@@ -57,7 +60,7 @@ Options:
      --run-post-wash  Run the washing process for the post-restore step
      --dryrun         Print an overview of what would run
      --force          Skip all prod detection safety checks
-     --verbose        Be noisy about what is being done or would be done
+ -v, --verbose        Be noisy about what is being done or would be done
 
 Environment matrix options
      --reset          This will clear the configured items for other environments
