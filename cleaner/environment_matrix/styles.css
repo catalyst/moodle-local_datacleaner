@@ -4,6 +4,7 @@
 
 .cleaner_environment_matrix .mform .fitem .felement {
     white-space: nowrap;
+    flex-wrap: nowrap;
 }
 
 .cleaner_environment_matrix .mform .fitem .felement input {
