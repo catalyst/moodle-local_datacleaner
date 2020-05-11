@@ -24,7 +24,4 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$subplugins = array(
-    'cleaner'       => 'local/datacleaner/cleaner',
-);
-
+$subplugins = (array) json_decode(file_get_contents(__DIR__ . "/subplugins.json"))->plugintypes;
