@@ -374,10 +374,7 @@ abstract class clean {
         $transaction = $DB->start_delegated_transaction();
         foreach (array_map('trim', explode(";", $sql)) as $sql1) {
             if (!empty($sql1)) {
-                $params = [];
-                preg_match_all("('(.+?)')", $sql1, $params);
-                $sql1 = preg_replace("('(.+?)')", '?', $sql1);
-                $DB->execute($sql1, $params[1]);
+                $DB->execute($sql1);
             }
         }
         $transaction->allow_commit();
