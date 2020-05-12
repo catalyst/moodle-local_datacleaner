@@ -38,6 +38,8 @@ class clean extends \local_datacleaner\clean {
         $config = get_config('cleaner_config');
 
         $where = '';
+        $params = [];
+
         $names = isset($config->names) ? explode("\n", $config->names) : array();
         foreach ($names as $name) {
             $name = trim($name);
@@ -47,7 +49,8 @@ class clean extends \local_datacleaner\clean {
             if ($where) {
                 $where .= " OR ";
             }
-            $where .= " name LIKE '$name'"; // SQL injection vector but we're admin so OK.
+            $where .= " name LIKE ?";
+            $params[] = $name;
         }
         $values = isset($config->vals) ? explode("\n", $config->vals) : array();
         foreach ($values as $val) {
@@ -58,10 +61,11 @@ class clean extends \local_datacleaner\clean {
             if ($where) {
                 $where .= " OR ";
             }
-            $where .= " value LIKE '$val'"; // SQL injection vector but we're admin so OK.
+            $where .= " value LIKE ?";
+            $params[] = $val;
         }
 
-        return $where;
+        return [$where, $params];
     }
 
     /**
@@ -70,22 +74,22 @@ class clean extends \local_datacleaner\clean {
     static public function execute() {
         global $DB;
 
-        $where = self::get_where();
+        list($where, $params) = self::get_where();
 
         if ($where) {
             self::new_task(2);
             if (self::$options['dryrun']) {
-                $count = $DB->count_records_select('config', $where);
+                $count = $DB->count_records_select('config', $where, $params);
                 echo "Would delete {$count} records from the config table.\n";
             } else {
-                $DB->delete_records_select("config", $where);
+                $DB->delete_records_select("config", $where, $params);
             }
             self::next_step();
             if (self::$options['dryrun']) {
-                $count = $DB->count_records_select('config_plugins', $where);
+                $count = $DB->count_records_select('config_plugins', $where, $params);
                 echo "Would delete {$count} records from the config_plugins table.\n";
             } else {
-                $DB->delete_records_select("config_plugins", $where);
+                $DB->delete_records_select("config_plugins", $where, $params);
             }
             self::next_step();
         }
