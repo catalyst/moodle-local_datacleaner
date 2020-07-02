@@ -41,9 +41,9 @@ matrix:
       env: DB=pgsql MOODLE_BRANCH=MOODLE_38_STABLE
     - php: 7.2
       env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
-    - php: 7.2
+    - php: 7.4
       env: DB=pgsql MOODLE_BRANCH=master
-    - php: 7.2
+    - php: 7.4
       env: DB=mysqli MOODLE_BRANCH=master
 
 before_install:
@@ -55,8 +55,8 @@ before_install:
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
     else
       nvm install node;
-      nvm install 8.9;
-      nvm use 8.9;
+      nvm install 14.0.0;
+      nvm use 14.0.0;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     fi
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
