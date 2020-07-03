@@ -29,7 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 abstract class clean {
     private static $tasks = array(); // For storing task start times.
 
-    protected static $options = array();
+    protected static $options = array(
+        'verbose' => false,
+        'dryrun' => false
+    );
 
     protected $needscascadedelete = false;
 
@@ -42,10 +45,14 @@ abstract class clean {
     /**
      * Constructor
      *
-     * @param bool $options Runtime configuration options for the plugin to apply.
+     * @param array $options Runtime configuration options for the plugin to apply.
      */
     public function __construct($options = array()) {
-        self::$options = $options;
+        if (!is_array($options)) {
+            throw new \coding_exception('Options should be an array');
+        }
+
+        self::$options = array_merge(self::$options, $options);
     }
 
     /**

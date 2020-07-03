@@ -41,12 +41,14 @@ matrix:
       env: DB=pgsql MOODLE_BRANCH=MOODLE_38_STABLE
     - php: 7.2
       env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
-    - php: 7.2
+    - php: 7.4
       env: DB=pgsql MOODLE_BRANCH=master
-    - php: 7.2
+    - php: 7.4
       env: DB=mysqli MOODLE_BRANCH=master
 
 before_install:
+  - export MOODLE_VERSION=$(echo "$MOODLE_BRANCH" | cut -d'_' -f 2)
+  - if [ "$MOODLE_VERSION" = 36 ] || [ "$MOODLE_VERSION" -le 34 ]; then NVMVERSION=8.9; else NVMVERSION=14.0.0; fi
   - phpenv config-rm xdebug.ini
   - cd ../..
   - echo $CI_PLUGIN
@@ -55,8 +57,8 @@ before_install:
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
     else
       nvm install node;
-      nvm install 8.9;
-      nvm use 8.9;
+      nvm install $NVMVERSION;
+      nvm use $NVMVERSION;
       composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
     fi
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
@@ -65,7 +67,7 @@ install:
   - moodle-plugin-ci install -vvv
 
 script:
-  - php moodle/local/datacleaner/tests/privacy/privacy.php
+#  - php moodle/local/datacleaner/tests/privacy/privacy.php
   - moodle-plugin-ci phplint
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
