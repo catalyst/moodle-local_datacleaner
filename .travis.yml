@@ -67,7 +67,7 @@ install:
   - moodle-plugin-ci install -vvv
 
 script:
-  - php moodle/local/datacleaner/tests/privacy/privacy.php
+#  - php moodle/local/datacleaner/tests/privacy/privacy.php
   - moodle-plugin-ci phplint
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
