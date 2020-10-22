@@ -61,12 +61,6 @@ class clean extends \local_datacleaner\clean {
                  WHERE " . $likefrag;
         $rs = $DB->get_recordset_sql($sql, ['like' => $like]);
 
-        if (!$rs->valid()) {
-            // No backups found, free win!
-            $rs->close();
-            return;
-        }
-
         foreach ($rs as $record) {
             // Get the file record, then delete it from table.
             $file = $storage->get_file_instance($record);
