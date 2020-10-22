@@ -15,14 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
+ * Settings.
  *
  * @package    cleaner_backup
  * @copyright  2020 Peter Burnett <peterburnett@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Delete backup files';
-$string['privacy:metadata'] = 'The Delete backup files plugin does not store any personal data.';
-$string['fastdelete'] = 'Fast delete';
-$string['fastdelete_desc'] = 'Perform a fast delete. This will remove file references from the file table, but will not remove the actual files on disk. This is useful when the filesystem stores files in a remote location, or files are shared between environments.';
+defined('MOODLE_INTERNAL') || die;
+
+if (!$ADMIN->fulltree) {
+    return;
+}
+
+$settings->add(new admin_setting_configcheckbox('cleaner_backup/fastdelete',
+            new lang_string('fastdelete', 'cleaner_backup'),
+            new lang_string('fastdelete_desc', 'cleaner_backup'), 0));

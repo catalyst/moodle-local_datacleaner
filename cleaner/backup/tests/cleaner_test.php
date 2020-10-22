@@ -44,6 +44,7 @@ class cleaner_backup_test extends \advanced_testcase {
      * @dataProvider delete_provider
      */
     public function test_delete_backups($filename, $deleted) {
+        global $DB;
         $this->resetAfterTest();
 
         // Create a course, and create a file in the course area.
@@ -60,6 +61,31 @@ class cleaner_backup_test extends \advanced_testcase {
             'filename' => $filename
         ], 'content');
 
+        \cleaner_backup\clean::delete_backups();
+
+        $this->assertEquals($deleted, !$storage->file_exists(
+            $file->get_contextid(),
+            $file->get_component(),
+            $file->get_filearea(),
+            $file->get_itemid(),
+            $file->get_filepath(),
+            $file->get_filename()
+        ));
+
+        // Purge the files table to be sure its fresh.
+        $DB->delete_records('files', []);
+
+        // Now recreate this file, and process a fast delete.
+        $file = $storage->create_file_from_string([
+            'contextid' => $context->id,
+            'component' => 'cleaner_backup',
+            'filearea' => 'backup',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => $filename
+        ], 'content');
+
+        set_config('fastdelete', 1, 'cleaner_backup');
         \cleaner_backup\clean::delete_backups();
 
         $this->assertEquals($deleted, !$storage->file_exists(

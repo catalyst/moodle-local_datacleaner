@@ -42,10 +42,24 @@ class clean extends \local_datacleaner\clean {
         global $DB;
         $storage = get_file_storage();
 
-        $sql = "SELECT contextid, component, filearea, itemid, filepath, filename
+        $fastdelete = get_config('cleaner_backup', 'fastdelete');
+        $likefrag = $DB->sql_like('filename', ':like');
+        $like = '%.mbz';
+
+        // If this is a fast delete, do a quick delete from files table and return.
+        if ($fastdelete) {
+            $sql = "DELETE FROM {files}
+                     WHERE " . $likefrag;
+
+            $DB->execute($sql, ['like' => $like]);
+            return;
+        }
+
+        // Do a "proper" delete.
+        $sql = "SELECT *
                   FROM {files}
-                 WHERE filename LIKE '%.mbz'";
-        $rs = $DB->get_recordset_sql($sql);
+                 WHERE " . $likefrag;
+        $rs = $DB->get_recordset_sql($sql, ['like' => $like]);
 
         if (!$rs->valid()) {
             // No backups found, free win!
@@ -55,14 +69,7 @@ class clean extends \local_datacleaner\clean {
 
         foreach ($rs as $record) {
             // Get the file record, then delete it from table.
-            $file = $storage->get_file(
-                $record->contextid,
-                $record->component,
-                $record->filearea,
-                $record->itemid,
-                $record->filepath,
-                $record->filename
-            );
+            $file = $storage->get_file_instance($record);
 
             if ($file) {
                 $file->delete();
