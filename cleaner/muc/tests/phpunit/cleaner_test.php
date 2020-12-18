@@ -45,7 +45,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
     /** @var string */
     protected $original = null;
 
-    protected function setUp() {
+    protected function setUp(): void {
         global $CFG;
 
         parent::setUp();
