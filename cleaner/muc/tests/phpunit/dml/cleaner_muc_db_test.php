@@ -39,7 +39,7 @@ require_once(__DIR__ . '/../cleaner_muc_testcase.php');
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_cleanurls_cleaner_muc_db_test extends local_datacleaner_cleaner_muc_testcase {
-    protected function setUp() {
+    protected function setUp() : void {
         parent::setUp();
         $this->resetAfterTest(true);
     }

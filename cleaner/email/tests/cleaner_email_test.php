@@ -49,7 +49,7 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Create some test users.
      */
-    protected function setUp() {
+    protected function setUp() : void {
         parent::setup();
         $this->resetAfterTest(true);
 
@@ -71,7 +71,7 @@ class cleaner_email_test extends advanced_testcase {
 
         // Obtain the list of generated users.
         foreach ($this->users as $user) {
-            $this->assertNotContains('.test', $user->email);
+            $this->assertStringNotContainsString('.test', $user->email);
         }
 
         // Lets clean!
@@ -80,14 +80,14 @@ class cleaner_email_test extends advanced_testcase {
         // Check that suffix exists.
         foreach ($this->users as $user) {
             $record = $DB->get_record('user', ['id' => $user->id]);
-            $this->assertContains('.test', $record->email);
+            $this->assertStringContainsString('.test', $record->email);
         }
     }
 
     /**
      * Teardown unit tests.
      */
-    protected function tearDown() {
+    protected function tearDown() : void {
         $this->config = null;
         $this->users = null;
         parent::tearDown();
@@ -104,7 +104,8 @@ class cleaner_email_test extends advanced_testcase {
 
         // Obtain the list of generated users.
         foreach ($this->users as $user) {
-            $this->assertNotContains('.test', $user->email);
+            //$this->assertStringNotContainsString('.test', $user->email);
+            self::assertNotContains('.test', $user->email);
         }
 
         // Lets clean!
@@ -113,7 +114,7 @@ class cleaner_email_test extends advanced_testcase {
         // Check that suffix does not exist for users.
         foreach ($this->users as $user) {
             $record = $DB->get_record('user', ['id' => $user->id]);
-            $this->assertNotContains('.test', $record->email);
+            $this->assertStringNotContainsString('.test', $record->email);
         }
     }
 
