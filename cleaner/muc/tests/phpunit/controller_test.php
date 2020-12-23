@@ -39,14 +39,14 @@ require_once(__DIR__ . '/cleaner_muc_testcase.php');
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_cleaner_muc_testcase {
-    public static function setUpBeforeClass() {
+    public static function setUpBeforeClass() : void {
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
         class_exists(controller::class);
     }
 
-    protected function setUp() {
+    protected function setUp() : void {
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();

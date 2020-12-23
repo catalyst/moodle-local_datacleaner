@@ -45,7 +45,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
     /** @var string */
     protected $original = null;
 
-    protected function setUp() {
+    protected function setUp() : void {
         global $CFG;
 
         parent::setUp();
@@ -62,7 +62,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
 
     public function test_it_shows_verbose_mode() {
         $output = $this->execute(true, true);
-        self::assertContains('Verbose', $output);
+        self::assertStringContainsString('Verbose', $output);
     }
 
     public function test_it_replaces_the_muc_file() {
@@ -70,7 +70,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
         $output = $this->execute(false, false);
         $found = file_get_contents(cleaner_cache_config::get_config_file_path());
 
-        self::assertContains('MUC Configuration Loaded!', $output);
+        self::assertStringContainsString('MUC Configuration Loaded!', $output);
         self::assertSame($configuration, $found);
     }
 
@@ -79,22 +79,22 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
         $output = $this->execute(true, false);
         $found = file_get_contents(cleaner_cache_config::get_config_file_path());
 
-        self::assertContains('DRY RUN - Would load MUC Configuration.', $output);
+        self::assertStringContainsString('DRY RUN - Would load MUC Configuration.', $output);
         self::assertSame($this->original, $found);
     }
 
     public function test_it_shows_a_message_if_config_not_found() {
         $output = $this->execute(true, false);
-        self::assertContains('Configuration not found', $output);
+        self::assertStringContainsString('Configuration not found', $output);
     }
 
     public function test_it_shows_verbose_message_with_available_configurations_if_current_not_found() {
         muc_config_db::save(new muc_config(['wwwroot' => 'http://site1.moodle']));
         muc_config_db::save(new muc_config(['wwwroot' => 'http://site2.moodle']));
         $output = $this->execute(true, true);
-        self::assertContains('Configurations found (2):', $output);
-        self::assertContains('http://site1.moodle', $output);
-        self::assertContains('http://site2.moodle', $output);
+        self::assertStringContainsString('Configurations found (2):', $output);
+        self::assertStringContainsString('http://site1.moodle', $output);
+        self::assertStringContainsString('http://site2.moodle', $output);
     }
 
     public function test_it_purges_caches_after_loading_new_configuration() {
@@ -118,7 +118,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
 
         $cache = cache::make('phpunit', 'simpletest');
         self::assertFalse($cache->get('foo'));
-        self::assertContains('Caches purged', $output);
+        self::assertStringContainsString('Caches purged', $output);
     }
 
     public function test_it_would_purges_caches_in_dry_run() {
@@ -142,7 +142,7 @@ class local_cleanurls_cleaner_muc_cleaner_test extends local_datacleaner_cleaner
 
         $cache = cache::make('phpunit', 'simpletest');
         self::assertSame('bar', $cache->get('foo'));
-        self::assertContains('DRY RUN - Would purge caches', $output);
+        self::assertStringContainsString('DRY RUN - Would purge caches', $output);
     }
 
     protected function execute($dryrun, $verbose) {

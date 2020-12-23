@@ -1,6 +1,6 @@
 language: php
 
-sudo: false
+sudo: required
 
 cache:
   directories:
@@ -14,25 +14,16 @@ services:
   - mysql
 
 php:
-  - 7.0
+  - 7.2
 
 env:
-  - DB=pgsql  MOODLE_BRANCH=MOODLE_31_STABLE CI_PLUGIN=1
-  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE CI_PLUGIN=1
-  - DB=pgsql  MOODLE_BRANCH=MOODLE_35_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
-  - DB=pgsql  MOODLE_BRANCH=MOODLE_36_STABLE
-  - DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE
+  - DB=pgsql  MOODLE_BRANCH=MOODLE_37_STABLE
+  - DB=pgsql  MOODLE_BRANCH=MOODLE_38_STABLE
+  - DB=pgsql  MOODLE_BRANCH=MOODLE_39_STABLE
+  - DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE
 
 matrix:
   include:
-    - php: 5.5
-      dist: trusty
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_29_STABLE CI_PLUGIN=1
-    - php: 7.2
-      env: DB=pgsql MOODLE_BRANCH=MOODLE_36_STABLE
-    - php: 7.2
-      env: DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE
     - php: 7.2
       env: DB=pgsql MOODLE_BRANCH=MOODLE_37_STABLE
     - php: 7.2
@@ -42,25 +33,23 @@ matrix:
     - php: 7.2
       env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
     - php: 7.4
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_39_STABLE
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE
+    - php: 7.4
       env: DB=pgsql MOODLE_BRANCH=master
     - php: 7.4
       env: DB=mysqli MOODLE_BRANCH=master
 
 before_install:
   - export MOODLE_VERSION=$(echo "$MOODLE_BRANCH" | cut -d'_' -f 2)
-  - if [ "$MOODLE_VERSION" = 36 ] || [ "$MOODLE_VERSION" -le 34 ]; then NVMVERSION=8.9; else NVMVERSION=14.0.0; fi
   - phpenv config-rm xdebug.ini
   - cd ../..
-  - echo $CI_PLUGIN
-  - git clone --mirror 'https://github.com/moodlehq/moodle-behat-extension.git' '/home/travis/.composer/cache/vcs/git-github.com-moodlehq-moodle-behat-extension.git/' || true
-  - if [ "$CI_PLUGIN" = 1 ]; then
-      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1;
-    else
-      nvm install node;
-      nvm install $NVMVERSION;
-      nvm use $NVMVERSION;
-      composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2;
-    fi
+  - nvm install node;
+  - nvm install 14.0.0;
+  - nvm use 14.0.0;
+  - composer selfupdate
+  - composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3;
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
@@ -73,14 +62,8 @@ script:
   - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci validate
-  - if [ "$CI_PLUGIN" = 1 ]; then
-      moodle-plugin-ci csslint || travis_terminate 1;
-      moodle-plugin-ci jshint || travis_terminate 1;
-      moodle-plugin-ci shifter || travis_terminate 1;
-    else
-      moodle-plugin-ci savepoints || travis_terminate 1;
-      moodle-plugin-ci mustache || travis_terminate 1;
-      moodle-plugin-ci grunt || travis_terminate 1;
-    fi
+  - moodle-plugin-ci savepoints
+  - moodle-plugin-ci mustache
+  - moodle-plugin-ci grunt
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
