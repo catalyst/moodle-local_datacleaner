@@ -25,6 +25,7 @@
 
 use cleaner_muc\controller;
 
+// @codingStandardsIgnoreLine
 require_once(__DIR__ . '/../../../../config.php');
 
 (new controller())->index();

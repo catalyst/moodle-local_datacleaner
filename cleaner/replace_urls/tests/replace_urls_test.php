@@ -41,12 +41,12 @@ class cleaner_replace_urls_test extends advanced_testcase {
         parent::setup();
         $this->resetAfterTest(true);
 
-        // Set config for original and new site
+        // Set config for original and new site.
         set_config('origsiteurl', 'local.origin', 'cleaner_replace_urls');
         set_config('enabled', 1, 'cleaner_replace_urls');
         set_config('cleantext', 1, 'cleaner_replace_urls');
 
-        // create a course to test
+        // Create a course to test.
         $coursearray = array(
             'fullname' => get_config('cleaner_replace_urls', 'origsiteurl'),
         );
@@ -71,7 +71,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        // Set the newsiteurl config
+        // Set the newsiteurl config.
         set_config('newsiteurl', 'new.origin', 'cleaner_replace_urls');
 
         $configcleaner = new clean();
@@ -92,7 +92,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        // Set the newsiteurl to null
+        // Set the newsiteurl to null.
         set_config('newsiteurl', '', 'cleaner_replace_urls');
 
         $configcleaner = new clean();

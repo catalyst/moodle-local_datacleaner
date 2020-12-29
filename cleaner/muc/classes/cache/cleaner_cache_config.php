@@ -41,30 +41,25 @@ require_once(__DIR__ . '/../../../../../../cache/locallib.php');
  */
 class cleaner_cache_config extends cache_config_writer {
     /**
-     * Expose this method.
-     *
-     * @return string
-     */
-    public static function get_config_file_path() {
-        return parent::get_config_file_path();
-    }
-
-    /**
      * Based on parent::config_save().
      */
     public static function config_save_from_string($configuration) {
         global $CFG;
 
-        $cachefile = static::get_config_file_path();
+        $cachefile = parent::get_config_file_path();
         $directory = dirname($cachefile);
         if ($directory !== $CFG->dataroot && !file_exists($directory)) {
             $result = make_writable_directory($directory, false);
             if (!$result) {
-                throw new cache_exception('ex_configcannotsave', 'cache', '', null, 'Cannot create config directory. Check the permissions on your moodledata directory.');
+                throw new cache_exception('ex_configcannotsave', 'cache', '', null,
+                    'Cannot create config directory. Check the permissions on your moodledata directory.'
+                );
             }
         }
         if (!file_exists($directory) || !is_writable($directory)) {
-            throw new cache_exception('ex_configcannotsave', 'cache', '', null, 'Config directory is not writable. Check the permissions on the moodledata/muc directory.');
+            throw new cache_exception('ex_configcannotsave', 'cache', '', null,
+                'Config directory is not writable. Check the permissions on the moodledata/muc directory.'
+            );
         }
 
         // Prepare the file content.

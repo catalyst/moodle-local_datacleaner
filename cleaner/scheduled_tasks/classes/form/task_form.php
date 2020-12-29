@@ -39,13 +39,15 @@ class task_form extends moodleform {
         }
         // Display a header on the page.
         $header = html_writer::tag('h2', get_string('title', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header']);
-        $headersubtitle = html_writer::tag('p', get_string('subtitle', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header_subtitle']);
+        $headersubtitle = html_writer::tag('p',
+            get_string('subtitle', 'cleaner_scheduled_tasks'), ['class' => 'scheduled_task_header_subtitle']
+        );
 
         $headerarray = [];
         $headerarray[] = &$mform->createElement('static', 'stitle', 'stitle', "$header $headersubtitle");
         $mform->addGroup($headerarray, 'header_array', '' , ' ', false);
 
-        // Header for each column
+        // Header for each column.
         $mform->addElement('static', 'description', 'Component', 'Task Name');
 
         global $DB;
@@ -59,7 +61,7 @@ class task_form extends moodleform {
         // Now create an element for each task.
         foreach ($tasks as $key => $task) {
 
-            // Group everything by component here
+            // Group everything by component here.
             $class = get_class($task);
             $component = $task->get_component();
             $addcomponent[] = $component;
@@ -85,7 +87,7 @@ class task_form extends moodleform {
             $nexttaskcomponent = (isset($tasks[$key + 1])) ? $tasks[$key + 1]->get_component() : null;
 
             if (isset($addcomponent[0]) && $component != $nexttaskcomponent) {
-                // if different component to the next, then we add group
+                // If different component to the next, then we add group.
                 $mform->addGroup($rendertasks, "$class", "$component", array(' '), false);
                 $rendertasks = [];
             }
@@ -94,7 +96,7 @@ class task_form extends moodleform {
         // Creates a select all/none button at the bottom of the page.
         $this->add_checkbox_controller(1, null, null, 0);
 
-        // Display save and cancel buttons at bottom of the form
+        // Display save and cancel buttons at bottom of the form.
         $buttonarray = array();
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
         $buttonarray[] = &$mform->createElement('cancel');

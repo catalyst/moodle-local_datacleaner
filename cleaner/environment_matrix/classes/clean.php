@@ -85,7 +85,7 @@ class clean extends \local_datacleaner\clean {
                 // Obtain the data for this environment only.
                 $matrixdata = local\matrix::get_matrix_data($environment);
 
-                // Set Admin User for admin_write_settings perms
+                // Set Admin User for admin_write_settings perms.
                 \core\session\manager::set_user(get_admin());
 
                 // Process settings.
@@ -93,10 +93,10 @@ class clean extends \local_datacleaner\clean {
                     foreach ($items as $name => $env) {
                         $config = $env[$environment->id];
 
-                        // set_config requires a null 'plugin' value when updating core configuration values.
+                        // Method set_config requires a null 'plugin' value when updating core configuration values.
                         $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
 
-                        // First, set config in database
+                        // First, set config in database.
                         if ($verbose) {
                             mtrace("set_config('{$config->config}', '{$config->value}')");
                         }
@@ -104,38 +104,38 @@ class clean extends \local_datacleaner\clean {
                             set_config($config->config, $config->value, $config->plugin);
                         }
 
-                        // Generate an admin settings tree
+                        // Generate an admin settings tree.
                         $admintree = admin_get_root(true);
 
-                        // Get strings in nicer format for reuse
+                        // Get strings in nicer format for reuse.
                         $configname = $config->config;
                         $pluginname = $config->plugin;
                         $elementname = $pluginname.$configname;
 
-                        // Search the admintree for configname
+                        // Search the admintree for configname.
                         $nodes = $admintree->search($configname);
                         $relevantobject = '';
 
-                        // Iterate through tree for specific page and elementname
+                        // Iterate through tree for specific page and elementname.
                         foreach ($nodes as $node) {
                             if ($node->page instanceof \admin_settingpage && isset($node->page->settings->$elementname)) {
-                                // Should only ever be reached once, so break loop
+                                // Should only ever be reached once, so break loop.
                                 $relevantobject = $node->page->settings->$elementname;
                                 break;
                             }
                         }
 
-                        // Now perform any additional validation
+                        // Now perform any additional validation.
                         if ($verbose) {
-                            // Show the additional write_settings
+                            // Show the additional write_settings.
                             mtrace("{$config->plugin}:{$relevantobject->name}->write_setting('{$config->value}')");
                         }
                         if ($relevantobject != '' && $relevantobject->plugin == $pluginname) {
-                            // Get setting object back out of config control
+                            // Get setting object back out of config control.
                             $settings = $relevantobject->get_setting();
-                            // Reset to fire additional validation/actions
+                            // Reset to fire additional validation/actions.
                             $errors = $relevantobject->write_setting($settings);
-                            // log any errors that might have been thrown
+                            // Log any errors that might have been thrown.
                             if ($errors != '') {
                                 mtrace($errors);
                             }

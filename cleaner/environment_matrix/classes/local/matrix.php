@@ -31,6 +31,7 @@ use admin_setting_configtextarea;
 use admin_setting_heading;
 use stdClass;
 
+// @codingStandardsIgnoreLine
 require_once(__DIR__ . '/../../../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
@@ -216,7 +217,7 @@ class matrix {
             }
         }
 
-        // $records now contains the tables display
+        // Array $records now contains the tables display.
         return $display;
 
     }

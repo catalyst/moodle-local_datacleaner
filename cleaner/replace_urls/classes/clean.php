@@ -108,8 +108,8 @@ class clean extends \local_datacleaner\clean {
     private static function db_replace() {
         global $DB;
 
-        // Turn off time limits
-        // Check for MOODLE_26 and below
+        // Turn off time limits.
+        // Check for MOODLE_26 and below.
         if (class_exists('core_php_time_limit')) {
             \core_php_time_limit::raise();
         }

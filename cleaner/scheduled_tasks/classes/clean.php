@@ -72,7 +72,7 @@ class clean extends \local_datacleaner\clean {
                 } else {
                     mtrace("Task $increment/$count: Disabling task: $disabledtask->classname");
 
-                    // Collect all the tasks to update and update in one query
+                    // Collect all the tasks to update and update in one query.
                     $taskstoupdate[] = $disabledtask->taskscheduledid;
                     $increment++;
                 }

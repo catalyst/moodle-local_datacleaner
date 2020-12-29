@@ -34,21 +34,22 @@ $tasks = \core\task\manager::get_all_scheduled_tasks();
 // Grab this url to redirect to.
 $post = new moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php');
 
-// Then send this data to the form
+// Then send this data to the form.
 $taskform = new \cleaner_scheduled_tasks\form\task_form($post, $tasks);
 
 // We have created the form with the correct fields and data, but we don't want to display this one.
 if ($taskform->is_cancelled()) {
-    // redirect to settings page if we cancelled.
+    // Redirect to settings page if we cancelled.
     redirect($post);
 } else if ($data = $taskform->get_data()) {
-    // If we submit the form, then we should look at the data here and for each record insert the data into our cleaner_scheduled_tasks table.
+    // If we submit the form, then we should look at the data here
+    // and for each record insert the data into our cleaner_scheduled_tasks table.
     global $DB;
 
     $taskdata = isset($data->selected) ? $data->selected : false;
     $taskdata = $taskdata ? $taskdata : (array)$data;
 
-    // Get an associative array so we can match submitted tasks to the tasks in the task_scheduled table
+    // Get an associative array so we can match submitted tasks to the tasks in the task_scheduled table.
     $scheduledtasks = $DB->get_records_select_menu('task_scheduled', '', [], 'id', 'classname, id');
 
     foreach ($taskdata as $key => $taskenabled) {
@@ -62,10 +63,10 @@ if ($taskform->is_cancelled()) {
             // We have a record in our table but haven't selected it in our form. Should be deleted.
             $DB->delete_records('cleaner_scheduled_tasks', ['taskscheduledid' => $scheduledtasks["\\$key"]]);
         } else if ($record && $taskenabled == 1) {
-            // The record already exists in our table with the correct setting, no update needed
+            // The record already exists in our table with the correct setting, no update needed.
             continue;
         } else if (!$record && $taskenabled == 1) {
-            // The record doesn't exist, but it should because we selected it, insert it
+            // The record doesn't exist, but it should because we selected it, insert it.
             $taskinsert = new stdClass;
             $taskinsert->taskscheduledid = $scheduledtasks["\\$key"];
             $taskinsert->lastmodified = time();
