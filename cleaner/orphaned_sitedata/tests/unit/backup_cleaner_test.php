@@ -45,12 +45,12 @@ require_once(__DIR__.'/orphaned_sitedata_testcase.php');
 class backup_cleaner_test extends orphaned_sitedata_testcase {
     private $initialfiles;
 
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->initialfiles = $this->get_files();
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         $this->initialfiles = null;
         parent::tearDown();
     }
