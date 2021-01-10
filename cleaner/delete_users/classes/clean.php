@@ -57,6 +57,10 @@ class clean extends \local_datacleaner\clean {
                 $users = self::get_user_chunk($config);
             }
             echo 'Deleted ' . $numusers . " users.\n";
+
+            // Now clean broken contexts.
+            echo "Cleaning up context records.\n";
+            \context_helper::cleanup_instances();
         }
     }
 }

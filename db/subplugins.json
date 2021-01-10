@@ -1,0 +1,5 @@
+{
+    "plugintypes": {
+        "cleaner": "local\/datacleaner\/cleaner"
+    }
+}

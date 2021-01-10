@@ -31,6 +31,7 @@ list($options, $unrecognized) = cli_get_params(
     array(
         'help' => false,
         'force' => false,
+        'filter' => false,
         'run' => false,
         'run-pre-wash' => false,
         'run-post-wash' => false,
@@ -38,7 +39,10 @@ list($options, $unrecognized) = cli_get_params(
         'verbose' => false,
         'reset' => false,
     ),
-    array('h' => 'help')
+    array(
+        'h' => 'help',
+        'v' => 'verbose',
+    )
 );
 
 if ($unrecognized) {
@@ -52,12 +56,13 @@ To configure this plugin goto $CFG->wwwroot/local/datacleaner/
 
 Options:
  -h, --help           Print out this help
+     --filter         Filter to a single exact cleaner step name
      --run            Run the full datawashing process
      --run-pre-wash   Run the washing process for the pre-restore step
      --run-post-wash  Run the washing process for the post-restore step
      --dryrun         Print an overview of what would run
      --force          Skip all prod detection safety checks
-     --verbose        Be noisy about what is being done or would be done
+ -v, --verbose        Be noisy about what is being done or would be done
 
 Environment matrix options
      --reset          This will clear the configured items for other environments
@@ -69,6 +74,7 @@ Example:
 if (!$options['run'] &&
     !$options['run-pre-wash'] &&
     !$options['run-post-wash'] &&
+    !$options['filter'] &&
     !$options['dryrun']) {
     echo $help;
     die;
@@ -99,11 +105,23 @@ if ($options['dryrun']) {
     echo "=== DRY RUN ===\n";
 }
 
+$filter = $options['filter'];
+if ($filter) {
+    echo "Filtering to ONLY run: $filter \n";
+}
+
 $cascade = null;
 
 foreach ($plugins as $plugin) {
     // Get the class that does the work.
     $classname = 'cleaner_' . $plugin->name . '\clean';
+
+    // Only run a certain cleaner.
+    if ($filter) {
+        if ($plugin->name != $filter) {
+            continue;
+        }
+    }
 
     // Pre washing detection.
     // Skip subplugins that have a sort order that is greater or equal to 200.

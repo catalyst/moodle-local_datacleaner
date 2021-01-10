@@ -65,6 +65,15 @@ class cleaner_config_test extends advanced_testcase {
     }
 
     /**
+     * Teardown unit tests.
+     */
+    protected function tearDown() {
+        $this->names = null;
+        $this->values = null;
+        parent::tearDown();
+    }
+
+    /**
      * Test the wheresql function
      */
     public function test_cleaner_config_getwhere() {
@@ -72,12 +81,14 @@ class cleaner_config_test extends advanced_testcase {
         $this->resetAfterTest(true);
 
         $configcleaner = new clean();
-        $tobecleaned = $configcleaner->get_where();
-        $this->assertRegExp("/name LIKE 'unittestname1'/", $tobecleaned);
-        $this->assertRegExp("/name LIKE 'unittestname2'/", $tobecleaned);
-        $this->assertRegExp("/name LIKE 'unittestname3'/", $tobecleaned);
-        $this->assertRegExp("/value LIKE 'unittestvalsA'/", $tobecleaned);
-        $this->assertRegExp("/value LIKE 'unittestvalsB'/", $tobecleaned);
+        list($where, $params) = $configcleaner->get_where();
+        $this->assertRegExp("/name LIKE ?/", $where);
+        $this->assertRegExp("/value LIKE ?/", $where);
+        $this->assertEquals('unittestname1', $params[0]);
+        $this->assertEquals('unittestname2', $params[1]);
+        $this->assertEquals('unittestname3', $params[2]);
+        $this->assertEquals('unittestvalsA', $params[3]);
+        $this->assertEquals('unittestvalsB', $params[4]);
     }
 
     /**
@@ -93,7 +104,7 @@ class cleaner_config_test extends advanced_testcase {
         $this->assertEquals(3, $namesbefore);
         $this->assertEquals(2, $valsbefore);
 
-        $configcleaner = new clean(false);
+        $configcleaner = new clean();
         $configcleaner::execute();
 
         $namesafter = $DB->count_records_select('config', "name LIKE '%unittestname%'");
@@ -101,4 +112,5 @@ class cleaner_config_test extends advanced_testcase {
         $this->assertEquals(0, $namesafter);
         $this->assertEquals(0, $valsafter);
     }
+
 }

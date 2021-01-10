@@ -29,6 +29,9 @@ require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('cleaner_environment_matrix');
 
+// Workaround see issue #95.
+header('X-XSS-Protection:0');
+
 $PAGE->requires->css('/local/datacleaner/cleaner/environment_matrix/styles.css');
 $PAGE->requires->js_call_amd('cleaner_environment_matrix/matrix', 'init');
 $PAGE->add_body_class('cleaner_environment_matrix');

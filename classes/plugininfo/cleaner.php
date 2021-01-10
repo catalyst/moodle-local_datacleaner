@@ -141,15 +141,14 @@ class cleaner extends base {
     /**
      * Get the settings section url.
      *
-     * @return null|string the settings section name.
+     * @return null|\moodle_url the settings section name.
      */
     public function get_settings_section_url() {
-        if ($this->name == 'environment_matrix') {
-            return new \moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
-        }
+        $sectionname = $this->get_settings_section_name();
+        $classname = "\\" . $sectionname . "\\clean";
 
-        if (file_exists($this->full_path('settings.php'))) {
-            return new \moodle_url('/admin/settings.php', array('section' => $this->get_settings_section_name()));
+        if ($sectionname) {
+            return $classname::get_settings_section_url($sectionname);
         }
         return null;
     }

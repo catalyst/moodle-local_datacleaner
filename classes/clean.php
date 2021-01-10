@@ -29,7 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 abstract class clean {
     private static $tasks = array(); // For storing task start times.
 
-    protected static $options = array();
+    protected static $options = array(
+        'verbose' => false,
+        'dryrun' => false
+    );
 
     protected $needscascadedelete = false;
 
@@ -42,10 +45,14 @@ abstract class clean {
     /**
      * Constructor
      *
-     * @param bool $options Runtime configuration options for the plugin to apply.
+     * @param array $options Runtime configuration options for the plugin to apply.
      */
     public function __construct($options = array()) {
-        self::$options = $options;
+        if (!is_array($options)) {
+            throw new \coding_exception('Options should be an array');
+        }
+
+        self::$options = array_merge(self::$options, $options);
     }
 
     /**
@@ -122,12 +129,16 @@ abstract class clean {
             self::$tasks[$taskname] = time();
         }
 
-        printf("\r %-20s %4d%% (%d/%d)    $timeleft  \n", $taskname, $perc, $itemno, $total);
+        if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+            printf("\r %-20s %4d%% (%d/%d)    $timeleft  \n", $taskname, $perc, $itemno, $total);
+        }
 
         if ($itemno == $total) {
             // No more output for this step; move to a new line.
             unset(self::$tasks[$taskname]);
-            printf("\n");
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                printf("\n");
+            }
         }
     }
 
@@ -155,7 +166,9 @@ abstract class clean {
         // Print the execution time if we're done.
         if (static::$step == static::$maxsteps) {
             static::$exectime += microtime(true);
-            echo "Execution took ", gmdate("H:i:s", static::$exectime), PHP_EOL;
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                echo "Execution took ", gmdate("H:i:s", static::$exectime), PHP_EOL;
+            }
         }
     }
 
@@ -344,5 +357,45 @@ abstract class clean {
         }
 
         return $DB->get_records_select_menu('course', 'id > 1 '.$extrasql, $params, '', 'id, id');
+    }
+
+    /**
+     * Execute SQL in single transaction
+     *
+     * @param  string $sql
+     */
+    protected static function execute_sql($sql) {
+        global $DB;
+
+        $dryrun = (bool)self::$options['dryrun'];
+        $verbose = (bool)self::$options['verbose'];
+
+        if ($verbose) {
+            mtrace("Executing: {$sql}");
+        }
+
+        if ($dryrun) {
+            return;
+        }
+
+        $transaction = $DB->start_delegated_transaction();
+        foreach (array_map('trim', explode(";", $sql)) as $sql1) {
+            if (!empty($sql1)) {
+                $params = [];
+                preg_match_all("('(.+?)')", $sql1, $params);
+                $sql1 = preg_replace("('(.+?)')", '?', $sql1);
+                $DB->execute($sql1, $params[1]);
+            }
+        }
+        $transaction->allow_commit();
+    }
+
+    /**
+     * Get the settings section url.
+     * @param string
+     * @return \moodle_url
+     */
+    public static function get_settings_section_url($sectionname) {
+        return new \moodle_url('/admin/settings.php', array('section' => $sectionname));
     }
 }

@@ -40,6 +40,18 @@ class clean extends \local_datacleaner\clean {
         self::$config = get_config('cleaner_replace_urls');
         self::$skiptables = self::get_skiptables(self::$config);
         self::$tables = self::get_tables(self::$skiptables);
+        self::set_newsiteurl();
+    }
+
+    /**
+     * Set wwwroot as newsiteurl if not provided
+     */
+    private static function set_newsiteurl() {
+        global $CFG;
+
+        if (empty(self::$config->newsiteurl)) {
+            self::$config->newsiteurl = $CFG->wwwroot;
+        }
     }
 
     /**
@@ -96,8 +108,11 @@ class clean extends \local_datacleaner\clean {
     private static function db_replace() {
         global $DB;
 
-        // Turn off time limits.
-        \core_php_time_limit::raise();
+        // Turn off time limits
+        // Check for MOODLE_26 and below
+        if (class_exists('core_php_time_limit')) {
+            \core_php_time_limit::raise();
+        }
 
         $replacing = array();
 
@@ -150,7 +165,9 @@ class clean extends \local_datacleaner\clean {
         foreach ($replacing as $table => $columns) {
             self::new_task(count($columns));
             foreach ($columns as $column) {
-                mtrace("Replacing in $table::$column->name ...");
+                if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                    mtrace("Replacing in $table::$column->name ...");
+                }
                 $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
                 self::next_step();
             }
@@ -192,7 +209,9 @@ class clean extends \local_datacleaner\clean {
         self::new_task(count($blockfunctions));
 
         foreach ($blockfunctions as $function) {
-            mtrace("Replacing using $function function ...");
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                mtrace("Replacing using $function function ...");
+            }
             $function(self::$config->origsiteurl, self::$config->newsiteurl);
             self::next_step();
         }
@@ -207,7 +226,9 @@ class clean extends \local_datacleaner\clean {
     static public function execute() {
         if (self::$options['dryrun']) {
             $count = count(self::$tables);
-            mtrace("Would replace URLs in {$count} tables.");
+            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
+                mtrace("Would replace URLs in {$count} tables.");
+            }
         } else {
             self::db_replace();
             self::blocks_replace();
