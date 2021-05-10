@@ -13,6 +13,12 @@ The following maps the plugin version to use depending on your Moodle version.
 | Moodle up to 3.9  | master             |
 | Moodle 3.10       | MOODLE_310_STABLE  |
 
+The following maps the plugin version to use depending on your Totara version.
+
+| Totara verion     | Branch             |
+| ----------------- | -------------------|
+| Totara 13         | TOTARA_13          |
+
 ## How it works
 
 Standard practice when hosting most applications, Moodle included, is to have
