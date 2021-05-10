@@ -1,12 +1,17 @@
-<a href="https://travis-ci.org/catalyst/moodle-local_datacleaner">
-<img src="https://travis-ci.org/catalyst/moodle-local_datacleaner.svg?branch=master">
-</a>
+![Build Status](https://github.com/catalyst/moodle-local_datacleaner//actions/workflows/ci.yml/badge.svg?branch=MOODLE_310_STABLE)
 
 # DataCleaner Moodle Module
 
 Moodle DataCleaner is an anonymiser of your Moodle data.
 
-Supported versions of Moodle: 2.6 to 3.7 inclusive
+## Branches ##
+
+The following maps the plugin version to use depending on your Moodle version.
+
+| Moodle verion     | Branch             |
+| ----------------- | -------------------|
+| Moodle up to 3.9  | master             |
+| Moodle 3.10       | MOODLE_310_STABLE  |
 
 ## How it works
 
