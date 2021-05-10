@@ -39,7 +39,7 @@ require_once(__DIR__ . '/../cleaner_muc_testcase.php');
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_cleaner_muc_testcase {
-    protected function setUp() {
+    protected function setUp() : void {
         global $PAGE, $OUTPUT;
 
         parent::setUp();
@@ -57,39 +57,39 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
         $html = $this->get_page();
 
         self::assertNotEmpty($html);
-        self::assertContains('<html', $html);
-        self::assertContains('</html', $html);
+        self::assertStringContainsString('<html', $html);
+        self::assertStringContainsString('</html', $html);
     }
 
     public function test_it_outputs_the_configuratoin_list_section() {
         global $CFG;
         $html = $this->get_page();
 
-        self::assertContains('<h2>MUC Configurations</h2>', $html);
-        self::assertContains('id="local_cleanurls_cleaner_muc_configurations_table', $html);
-        self::assertContains('Environment', $html);
-        self::assertContains('Actions', $html);
-        self::assertContains("<i>{$CFG->wwwroot}</i> (current configuration)", $html);
+        self::assertStringContainsString('<h2>MUC Configurations</h2>', $html);
+        self::assertStringContainsString('id="local_cleanurls_cleaner_muc_configurations_table', $html);
+        self::assertStringContainsString('Environment', $html);
+        self::assertStringContainsString('Actions', $html);
+        self::assertStringContainsString("<i>{$CFG->wwwroot}</i> (current configuration)", $html);
     }
 
     public function test_it_outputs_the_configuratoin_list_section_with_a_muc_config_entry() {
         self::create_muc_config('http://sometest.somewhere/everywhere', 'Cool Dude!');
         $html = $this->get_page();
 
-        self::assertContains('http://sometest.somewhere/everywhere', $html);
+        self::assertStringContainsString('http://sometest.somewhere/everywhere', $html);
     }
 
     public function test_it_outputs_the_upload_section() {
         $html = $this->get_page();
 
-        self::assertContains('<form', $html);
-        self::assertContains('type="submit"', $html);
+        self::assertStringContainsString('<form', $html);
+        self::assertStringContainsString('type="submit"', $html);
     }
 
     public function test_it_provides_download_html5_tag() {
         $html = $this->get_page();
         $expected = 'download="';
-        self::assertContains($expected, $html);
+        self::assertStringContainsString($expected, $html);
     }
 
     public function test_it_downloads_the_current_config_file() {
@@ -111,7 +111,7 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
 
         $expected = file_get_contents($mucfile);
 
-        self::assertSame($expected, $actual);
+        self::assertSame($expected, trim($actual));
         $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
     }
 
@@ -123,7 +123,7 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
         $_GET['sesskey'] = sesskey();
         $actual = self::get_page();
 
-        self::assertSame('My Config', $actual);
+        self::assertSame('My Config', trim($actual));
     }
 
     private function get_page() {

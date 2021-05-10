@@ -44,7 +44,7 @@ defined('MOODLE_INTERNAL') || die();
 class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
     const URL = 'https://moodle.test/subdir';
 
-    public static function setUpBeforeClass() {
+    public static function setUpBeforeClass() : void {
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
@@ -56,7 +56,7 @@ class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
         class_exists(muc_config_event::class);
     }
 
-    protected function setUp() {
+    protected function setUp() : void {
         // Ignoring coding standards because $TOTARA is not valid in Moodle.
         // @codingStandardsIgnoreStart
         global $CFG, $TOTARA;

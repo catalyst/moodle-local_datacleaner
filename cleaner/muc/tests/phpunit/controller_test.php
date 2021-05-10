@@ -39,14 +39,14 @@ require_once(__DIR__ . '/cleaner_muc_testcase.php');
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_cleaner_muc_testcase {
-    public static function setUpBeforeClass() {
+    public static function setUpBeforeClass() : void {
         parent::setUpBeforeClass();
 
         // Trigger classloaders.
         class_exists(controller::class);
     }
 
-    protected function setUp() {
+    protected function setUp() : void {
         parent::setUp();
         $this->resetAfterTest(true);
         self::setAdminUser();
@@ -55,45 +55,41 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
         $USER->email = 'moodle26and27@require.this';
     }
 
-    /**
-     * @expectedException \moodle_exception
-     * @expectedExceptionMessage sesskey
-     */
     public function test_it_requires_sesskey_to_download_current_config_file() {
+        $this->expectException(moodle_exception::class);
+        $this->expectErrorMessage('sesskey');
+
         $_GET = ['action' => 'current'];
         (new controller())->index();
     }
 
-    /**
-     * @expectedException \moodle_exception
-     * @expectedExceptionMessage Access denied
-     */
     public function test_it_does_not_allow_download_current_config_if_not_admin() {
         self::setUser($this->getDataGenerator()->create_user());
+
+        $this->expectException(moodle_exception::class);
+        $this->expectErrorMessage('Access denied');
 
         $_GET = ['action' => 'current', 'sesskey' => sesskey()];
         (new controller())->index();
     }
 
-    /**
-     * @expectedException \moodle_exception
-     * @expectedExceptionMessage sesskey
-     */
     public function test_it_requires_sesskey_to_download_environment_config_file() {
         self::create_muc_config('http://moodle.test/somewhere', 'My Config');
+
+        $this->expectException(moodle_exception::class);
+        $this->expectErrorMessage('sesskey');
 
         $_GET = ['action' => 'download', 'environment' => rawurlencode('http://moodle.test/somewhere')];
         (new controller())->index();
     }
 
-    /**
-     * @expectedException \moodle_exception
-     * @expectedExceptionMessage Access denied
-     */
     public function test_it_does_not_allow_download_environment_config_if_not_admin() {
         self::create_muc_config('http://moodle.test/somewhere', 'My Config');
 
         self::setUser($this->getDataGenerator()->create_user());
+
+        $this->expectException(moodle_exception::class);
+        $this->expectErrorMessage('Access denied');
 
         $_GET = [
             'action'      => 'download',
@@ -103,13 +99,12 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
         (new controller())->index();
     }
 
-    /**
-     * @expectedException \moodle_exception
-     * @expectedExceptionMessage sesskey
-     */
     public function test_it_requires_sesskey_to_delete_config() {
         $wwwroot = 'http://www.moodle.test/sub';
         self::create_muc_config($wwwroot, 'New Config');
+
+        $this->expectException(moodle_exception::class);
+        $this->expectErrorMessage('sesskey');
 
         $_GET = [
             'action'      => 'delete',
@@ -119,15 +114,14 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
         (new controller())->index();
     }
 
-    /**
-     * @expectedException \moodle_exception
-     * @expectedExceptionMessage Access denied
-     */
     public function test_it_does_not_allow_delete_if_not_admin() {
         $wwwroot = 'http://www.moodle.test/sub';
         self::create_muc_config($wwwroot, 'New Config');
 
         self::setUser($this->getDataGenerator()->create_user());
+
+        $this->expectException(moodle_exception::class);
+        $this->expectErrorMessage('Access denied');
 
         $_GET = [
             'action'      => 'delete',
@@ -144,11 +138,10 @@ class local_cleanurls_cleaner_muc_controller_test extends local_datacleaner_clea
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @expectedException \moodle_exception
-     * @expectedExceptionMessage Invalid action: somethinginvalid
-     */
     public function test_it_throws_an_exception_for_invalid_action() {
+        $this->expectException(moodle_exception::class);
+        $this->expectErrorMessage('Invalid action: somethinginvalid');
+
         $_GET = ['action' => 'somethinginvalid', 'sesskey' => sesskey()];
         (new controller())->index();
     }
