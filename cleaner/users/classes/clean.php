@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 require(__DIR__.'/../../../classes/table_scrambler.php');
 
 class clean extends \local_datacleaner\clean {
-    const PASSWORD_AFTER_CLEANING = 'F4k3p3s5w0rD%';
     const TASK = 'Scrambling user data';
     const USERNAME_PREFIX = 'user_';
 
@@ -114,9 +113,9 @@ SQL;
         echo "Erasing extra information...\n";
 
         $fields = [
-            'auth'         => 'manual',
+            'auth'         => 'nologin',
             'mnethostid'   => 1,
-            'password'     => hash_internal_user_password(self::PASSWORD_AFTER_CLEANING),
+            'password'     => AUTH_PASSWORD_NOT_CACHED,
             'email'        => 'cleaned@datacleaner.example',
             'emailstop'    => 1,
             'firstaccess'  => 0,
