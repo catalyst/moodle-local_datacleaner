@@ -15,18 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Upgrade script for cleaner_users_upgrade.
  *
  * @package    cleaner_users
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @author     Kevin Pham <kevinpham@catalyst-au.net>
+ * @copyright  Catalyst IT, 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021120100;
-$plugin->release   = 2021120100;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
-$plugin->component = 'cleaner_users';
-$plugin->sortorder = 80;
+function xmldb_cleaner_users_upgrade($oldversion) {
+    global $DB;
+
+    if ($oldversion < 2021120100) {
+        // Standardise user clean passwords on update.
+        $sqllike = $DB->sql_like('email', ':email', false, false);
+        $params = [
+            'email' => '%cleaned@datacleaner.example%',
+        ];
+        $select = "$sqllike and password <> '" . AUTH_PASSWORD_NOT_CACHED . "'";
+        $DB->set_field_select('user', 'password', AUTH_PASSWORD_NOT_CACHED, $select, $params);
+        upgrade_plugin_savepoint(true, 2021120100, 'cleaner', 'users');
+    }
+
+    return true;
+}
