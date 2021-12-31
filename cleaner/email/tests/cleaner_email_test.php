@@ -104,8 +104,7 @@ class cleaner_email_test extends advanced_testcase {
 
         // Obtain the list of generated users.
         foreach ($this->users as $user) {
-            //$this->assertStringNotContainsString('.test', $user->email);
-            self::assertNotContains('.test', $user->email);
+            $this->assertStringNotContainsString('.test', $user->email);
         }
 
         // Lets clean!
