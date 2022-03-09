@@ -37,7 +37,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
     /**
      * Insert some config make sure they are gone
      */
-    protected function setUp() {
+    protected function setUp(): void {
         parent::setup();
         $this->resetAfterTest(true);
 
@@ -57,7 +57,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
     /**
      * Teardown unit tests.
      */
-    protected function tearDown() {
+    protected function tearDown(): void {
         $this->course = null;
         parent::tearDown();
     }

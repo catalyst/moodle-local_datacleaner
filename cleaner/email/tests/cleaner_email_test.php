@@ -49,7 +49,7 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Create some test users.
      */
-    protected function setUp() {
+    protected function setUp(): void {
         parent::setup();
         $this->resetAfterTest(true);
 
@@ -87,7 +87,7 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Teardown unit tests.
      */
-    protected function tearDown() {
+    protected function tearDown(): void {
         $this->config = null;
         $this->users = null;
         parent::tearDown();
