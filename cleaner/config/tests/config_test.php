@@ -82,8 +82,13 @@ class cleaner_config_test extends advanced_testcase {
 
         $configcleaner = new clean();
         list($where, $params) = $configcleaner->get_where();
-        $this->assertRegExp("/name LIKE ?/", $where);
-        $this->assertRegExp("/value LIKE ?/", $where);
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression("/name LIKE ?/", $where);
+            $this->assertMatchesRegularExpression("/value LIKE ?/", $where);
+        } else {
+            $this->assertRegExp("/name LIKE ?/", $where);
+            $this->assertRegExp("/value LIKE ?/", $where);
+        }
         $this->assertEquals('unittestname1', $params[0]);
         $this->assertEquals('unittestname2', $params[1]);
         $this->assertEquals('unittestname3', $params[2]);
