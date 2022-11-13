@@ -193,4 +193,3 @@ Run the cli script with --help for more options:
 ```sh
 sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cli/clean.php --help
 ```
-
