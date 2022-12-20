@@ -55,7 +55,11 @@ class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
         touch($file);
         self::assertFileExists($file);
         $this->execute(new tempfiles_cleaner(false));
-        self::assertFileNotExists($file);
+        if (method_exists($this, 'assertFileDoesNotExist')) {
+            self::assertFileDoesNotExist($file);
+        } else {
+            self::assertFileNotExists($file);
+        }
     }
 
     public function test_it_removes_all_files_and_subdirs() {
