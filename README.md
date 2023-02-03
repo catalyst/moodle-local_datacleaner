@@ -8,10 +8,11 @@ Moodle DataCleaner is an anonymiser of your Moodle data.
 
 The following maps the plugin version to use depending on your Moodle version.
 
-| Moodle verion     | Branch             |
-| ----------------- | -------------------|
-| Moodle up to 3.9  | master             |
-| Moodle 3.10       | MOODLE_310_STABLE  |
+| Moodle verion         | Branch             |
+| --------------------- | -------------------|
+| Moodle up to 3.9      | master             |
+| Moodle 3.10           | MOODLE_310_STABLE  |
+| Moodle 3.11 and above | MOODLE_311_STABLE  |
 
 The following maps the plugin version to use depending on your Totara version.
 
