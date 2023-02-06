@@ -46,6 +46,11 @@ class clean extends \local_datacleaner\clean {
 
         self::$idstoupdate = self::create_user_id_list_to_update();
 
+        if (empty(self::$idstoupdate)) {
+            echo "No users to update.\n";
+            return;
+        }
+
         if (self::$options['dryrun']) {
             echo "Dry run mode, no records were updated.\n";
             return;
@@ -124,11 +129,6 @@ SQL;
             'picture'      => 0,
             'description'  => '',
             'lastip'       => '',
-            'icq'          => '',
-            'skype'        => '',
-            'yahoo'        => '',
-            'aim'          => '',
-            'msn'          => '',
             'phone1'       => '',
             'phone2'       => '',
             'idnumber'     => '',

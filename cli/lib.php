@@ -98,7 +98,7 @@ function safety_checks($dryrun) {
                 AND u.deleted = 0";
 
     if ($DB->count_records_sql($csql, $params)) {
-        $namefields = "u." . implode(', u.', get_all_user_name_fields());
+        $namefields = "u." . implode(', u.', \core_user\fields::get_name_fields());
 
         $sql = "SELECT u.id, u.username, {$namefields}
                   FROM {user} u

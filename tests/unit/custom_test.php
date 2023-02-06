@@ -35,6 +35,19 @@ defined('MOODLE_INTERNAL') || die();
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_datacleaner_custom_sql_test extends advanced_testcase {
+
+    /**
+     * Initialise a cleaner object to reset static options.
+     *
+     * This prevents impact on other tests which assume default options.
+     *
+     * @return void
+     * @throws coding_exception
+     */
+    public function tearDown(): void {
+        new \cleaner_custom_sql_pre\clean(['verbose' => false, 'dryrun' => false]);
+    }
+
     public function test_executes_sql() {
         global $DB;
 

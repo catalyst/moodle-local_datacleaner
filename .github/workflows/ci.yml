@@ -38,8 +38,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { moodle-branch: 'MOODLE_310_STABLE', php: '7.4', node: '14.15.1', database: 'mariadb' }
-          - { moodle-branch: 'MOODLE_310_STABLE', php: '7.4', node: '14.15.1', database: 'pgsql' }
+          - {moodle-branch: 'MOODLE_311_STABLE', php: '7.3', node: '14.15.1', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_311_STABLE', php: '7.3', node: '14.15.1', database: 'pgsql'}
+          - {moodle-branch: 'MOODLE_400_STABLE', php: '7.3', node: '14.15.1', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_400_STABLE', php: '7.3', node: '14.15.1', database: 'pgsql'}
+          - {moodle-branch: 'MOODLE_401_STABLE', php: '7.4', node: '14.15.1', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_401_STABLE', php: '7.4', node: '14.15.1', database: 'pgsql'}
+          - {moodle-branch: 'MOODLE_401_STABLE', php: '8.0', node: '14.15.1', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_401_STABLE', php: '8.0', node: '14.15.1', database: 'pgsql'}
 
     steps:
       - name: Check out repository code
@@ -58,6 +64,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: pgsql, zip, gd, xmlrpc, soap
           coverage: none
+          ini-values: max_input_vars=5000
 
       - name: Initialise moodle-plugin-ci
         run: |
