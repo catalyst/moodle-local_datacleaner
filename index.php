@@ -53,7 +53,7 @@ if ((!empty($hide) || !empty($show)) && confirm_sesskey()) {
     $state = empty($hide);
 
     if (!isset($plugins[$pluginname])) {
-        print_error('plugindoesnotexist', 'error');
+        throw new \moodle_exception('plugindoesnotexist', 'error');
     }
     set_config('enabled', $state, 'cleaner_' . $pluginname);
 }
@@ -127,4 +127,3 @@ $table->data = $data;
 echo html_writer::table($table);
 
 echo $OUTPUT->footer();
-
