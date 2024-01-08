@@ -127,10 +127,13 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
     }
 
     private function get_page() {
+        global $CFG;
+
         ob_start();
         try {
             (new controller())->index();
             $html = ob_get_contents();
+            $html .= $CFG->closingtags ?? ''; // Fix for MDL-79276, if null then set fallback to empty string.
         } finally {
             ob_end_clean();
         }
