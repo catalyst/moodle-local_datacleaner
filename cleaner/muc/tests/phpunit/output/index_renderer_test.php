@@ -53,6 +53,12 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
         $USER->email = 'moodle26and27@require.this';
     }
 
+    /**
+     * Test controller::index() returns a complete HTML document by default.
+     *
+     * @covers \cleaner_muc\controller::index()
+     * @return void
+     */
     public function test_it_outputs_header_and_footer() {
         $html = $this->get_page();
 
@@ -115,6 +121,12 @@ class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_clea
         $this->resetDebugging(); // This may show some debugging messages because cache definitions changed.
     }
 
+    /**
+     * Test that download view is rendered by controller::index() when action is download.
+     *
+     * @covers \cleaner_muc\controller::index()
+     * @return void
+     */
     public function test_it_downloads_environment_config_file() {
         self::create_muc_config('http://moodle.test/somewhere', 'My Config');
 
