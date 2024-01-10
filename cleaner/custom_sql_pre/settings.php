@@ -29,4 +29,4 @@ if (!$ADMIN->fulltree) {
 
 $settings->add(new admin_setting_configtextarea('cleaner_custom_sql_pre/sql',
             new lang_string('sql', 'cleaner_custom_sql_pre'),
-            new lang_string('sqldesc', 'cleaner_custom_sql_pre'), null, PARAM_RAW));
+            new lang_string('sqldesc', 'cleaner_custom_sql_pre'), '', PARAM_RAW));
