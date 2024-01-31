@@ -15,18 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Upgrade logic.
  *
  * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @copyright  2024 Catalyst IT
+ * @author     Scott Verbeek <scottverbeek@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2022020301;
-$plugin->release   = '2.3.10';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2021051700; // Moodle 3.11 release and upwards.
-$plugin->supports  = [311, 401];
-$plugin->component = 'local_datacleaner';
+/**
+ * Performs data migrations and updates on upgrade.
+ *
+ * @param int $oldversion
+ * @return bool
+ */
+function xmldb_local_datacleaner_upgrade($oldversion = 0): bool{
+    global $DB;
+    $dbman = $DB->get_manager();
+    if ($oldversion < 2022020301) {
+        // Clean up table.
+        $table = new xmldb_table('cleaner_muc_configs');
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2022020301, 'local', 'datacleaner');
+    }
+
+    return true;
+}
