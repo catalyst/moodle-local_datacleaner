@@ -23,6 +23,7 @@
  */
 
 $string['pluginname'] = 'Data cleaner';
+$string['subplugintype_cleaner_plural'] = 'Data Cleaners';
 $string['privacy:metadata'] = 'The local datacleaner plugin does not store any personal data.';
 $string['cachedef_courses'] = 'Course cache';
 $string['cachedef_schema'] = 'Schema cache';
