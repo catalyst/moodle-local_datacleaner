@@ -111,9 +111,10 @@ class clean extends \local_datacleaner\clean {
         }
 
         $query  = "UPDATE {user} SET email = " . $DB->sql_concat_join("''", ['email', "'$suffix'"]);
+        $query .= " WHERE email " . $DB->sql_regex(false) . " '$suffix'";
 
         if (!empty($emailsuffixignore)) {
-            $query .= " WHERE email " . $DB->sql_regex(false) . " '$emailsuffixignore'";
+            $query .= " AND email " . $DB->sql_regex(false) . " '$emailsuffixignore'";
         }
 
         if ($verbose) {
