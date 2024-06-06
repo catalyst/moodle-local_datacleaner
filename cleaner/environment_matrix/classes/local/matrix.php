@@ -69,6 +69,7 @@ class matrix {
      * @return array
      */
     public static function search($search, $configitems = []) {
+        global $DB;
         $result = [];
 
         $adminroot = admin_get_root();
@@ -115,6 +116,42 @@ class matrix {
 
             }
 
+        }
+
+        // Get all configs that match the search term from config_plugins.
+        $likeplugin = $DB->sql_like('plugin', ':likeplugin');
+        $likename = $DB->sql_like('name', ':likename');
+        $notlikename = $DB->sql_like('name', ':notlikename', true, true, true);
+        $likevalue = $DB->sql_like('value', ':likevalue');
+        $nontreefindings = $DB->get_records_sql(
+            "SELECT *
+               FROM {config_plugins}
+              WHERE ({$likeplugin}
+                 OR {$likename}
+                 OR {$likevalue})
+                AND $notlikename",
+            [
+                'likeplugin' => '%' . $DB->sql_like_escape($search) . '%',
+                'likename' => '%' . $DB->sql_like_escape($search) . '%',
+                'likevalue' => '%' . $DB->sql_like_escape($search) . '%',
+                'notlikename' => 'version',
+            ]
+        );
+
+        // Add those to the result array as well.
+        foreach ($nontreefindings as $setting) {
+            $record = new stdClass();
+            $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
+            $record->value = get_config($record->plugin, $setting->name);
+            $record->name = $setting->name;
+            $record->textarea = false;
+            $record->display = true;
+            // Make sure we don't overwrite things that have already been added to the result array
+            // as they might have been created as admin_setting_configtextarea or admin_setting_confightmleditor
+            // and we won't be able to tell that here.
+            if (empty($result[$record->plugin][$record->name])) {
+                $result[$record->plugin][$record->name] = $record;
+            }
         }
 
         return $result;
