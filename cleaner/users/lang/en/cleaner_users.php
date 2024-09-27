@@ -28,3 +28,5 @@ $string['keepsiteadmins'] = 'Keep site admins unmodified';
 $string['keepsiteadminsdesc'] = 'Tick to avoid modifying site administrator accounts and data.';
 $string['keepusernames'] = 'Non site administrator usernames';
 $string['keepusernamesdesc'] = 'A comma separated list of non site administrator usernames that should be untouched.';
+$string['renameusers'] = 'Anonymise users names and surnames';
+$string['renameusersdesc'] = 'Change users names and surnames, ex. "anonfirstname1 anonlastname1", instead of scrambling';
