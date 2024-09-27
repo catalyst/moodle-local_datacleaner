@@ -33,3 +33,6 @@ $settings->add(new admin_setting_configcheckbox('cleaner_users/keepsiteadmins', 
 $settings->add(new admin_setting_configtextarea('cleaner_users/keepusernames',
             new lang_string('keepusernames', 'cleaner_users'),
             new lang_string('keepusernamesdesc', 'cleaner_users'), '', PARAM_RAW));
+
+$settings->add(new admin_setting_configcheckbox('cleaner_users/renameusers', new lang_string('renameusers', 'cleaner_users'),
+            new lang_string('renameusersdesc', 'cleaner_users'), 0));
