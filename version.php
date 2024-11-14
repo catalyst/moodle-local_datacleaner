@@ -28,5 +28,5 @@ $plugin->version   = 2022020301;
 $plugin->release   = '2.3.10';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2021051700; // Moodle 3.11 release and upwards.
-$plugin->supports  = [311, 401];
+$plugin->supports  = [311, 405];
 $plugin->component = 'local_datacleaner';
