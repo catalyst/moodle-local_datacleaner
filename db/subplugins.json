@@ -1,4 +1,7 @@
 {
+    "subplugintypes": {
+        "cleaner": "cleaner"
+    },
     "plugintypes": {
         "cleaner": "local\/datacleaner\/cleaner"
     }
