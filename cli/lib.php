@@ -23,6 +23,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_datacleaner\clean;
+
 /**
  * Print a message to the terminal.
  *
@@ -38,6 +40,7 @@ function print_message($text, $highlight = false) {
     } else {
         echo $text;
     }
+    clean::log($text);
 }
 
 /**

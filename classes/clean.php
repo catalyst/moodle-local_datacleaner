@@ -398,4 +398,43 @@ abstract class clean {
     public static function get_settings_section_url($sectionname) {
         return new \moodle_url('/admin/settings.php', array('section' => $sectionname));
     }
+
+    /**
+     * Log some context of where and why this was run.
+     */
+    public static function debug_info() {
+        global $CFG;
+
+        $context = "Time: " . \userdate(time()) . "\n";
+        $context .= "TZ:   " . $CFG->timezone . "\n";
+        $context .= "Host: " . gethostname() . "\n";
+        $context .= "Moodle User: " . $USER->username . "\n";
+        $context .= "\$CFG->dbhost: " . $CFG->dbhost . "\n";
+        $context .= "\$CFG->dbuser: " . $CFG->dbuser . "\n";
+        $context .= "\$CFG->dataroot: " . $CFG->dataroot . "\n";
+        $context .= "\$CFG->wwwroot: " . $CFG->wwwroot . "\n";
+        $context .= "\$CFG->original_wwwroot: " . $CFG->original_wwwroot . "\n";
+
+        self::log($context);
+
+        // Also set this in the DB.
+        set_config('lastwash', $context, 'local_datacleaner');
+
+    }
+
+    /**
+     * Log details in a variety of places
+     *
+     * @param string
+     */
+    public static function log($string) {
+        global $CFG;
+
+        // Send it to stderr.
+        error_log($string);
+
+        // Stash a copy into sitedir log file.
+        mkdir("$CFG->dataroot/datacleaner");
+        file_put_contents("$CFG->dataroot/datacleaner/clean.log", $string, FILE_APPEND);
+    }
 }
