@@ -22,6 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Remove standard logs';
+$string['pluginname'] = 'Delete standard logs';
 $string['privacy:metadata'] = 'The cleaner logstore standard plugin does not store any personal data.';
 $string['truncate'] = 'Truncate all standard database logs';

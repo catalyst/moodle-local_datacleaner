@@ -225,7 +225,7 @@ class matrix {
     /**
      * Returns a filtered list of environments that has been configured in Environment bar.
      *
-     * When when environments have been removed in the Environment bar config, do not display them here.
+     * When when environments have been deleted in the Environment bar config, do not display them here.
      *
      * @return array|bool
      */

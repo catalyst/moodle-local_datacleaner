@@ -120,7 +120,7 @@ if ($matrix->is_cancelled()) {
 
                 }
 
-                // Else we will reset / remove all the unticked groups.
+                // Else we will reset / delete all the unticked groups.
             } else {
                 foreach ($envs as $envid => $value) {
 

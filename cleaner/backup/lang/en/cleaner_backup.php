@@ -25,4 +25,4 @@
 $string['pluginname'] = 'Delete backup files';
 $string['privacy:metadata'] = 'The Delete backup files plugin does not store any personal data.';
 $string['fastdelete'] = 'Fast delete';
-$string['fastdelete_desc'] = 'Perform a fast delete. This will remove file references from the file table, but will not remove the actual files on disk. This is useful when the filesystem stores files in a remote location, or files are shared between environments.';
+$string['fastdelete_desc'] = 'Perform a fast delete. This will delete file references from the file table, but will not delete the actual files on disk. This is useful when the filesystem stores files in a remote location, or files are shared between environments.';
