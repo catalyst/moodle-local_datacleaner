@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Remove users';
+$string['pluginname'] = 'Delete users';
 $string['privacy:metadata'] = 'The cleaner delete users plugin does not store any personal data.';
 $string['minimumage'] = 'Minimum age';
 $string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';

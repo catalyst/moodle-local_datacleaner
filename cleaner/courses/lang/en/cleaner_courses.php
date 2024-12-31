@@ -22,11 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Remove courses';
+$string['pluginname'] = 'Delete courses';
 $string['privacy:metadata'] = 'The cleaner courses plugin does not store any personal data.';
 $string['category'] = 'Category';
 $string['categories'] = 'Categories';
-$string['categoriesdesc'] = 'Remove courses in the selected categories only.';
+$string['categoriesdesc'] = 'Delete courses in the selected categories only.';
 $string['coursename'] = 'Full name of course to keep';
 $string['courses'] = 'Courses';
 $string['coursesdesc'] = 'Shortname of courses that should never be deleted, separated by a new line.';
