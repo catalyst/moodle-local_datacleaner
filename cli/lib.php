@@ -78,7 +78,7 @@ function safety_checks($dryrun) {
     if (empty($saved)) {
         abort_message(
             $abort,
-            "No wwwroot has been saved yet. This needs to be set explicitly to run",
+            "No \$CFG->original_wwwroot has been saved yet. This needs to be set explicitly to run\nVisit local/datacleaner/ on the production site to auto set this up.",
             true
         );
         $willdie = true;
