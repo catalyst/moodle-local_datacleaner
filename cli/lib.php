@@ -92,43 +92,33 @@ function safety_checks($dryrun) {
     $minutes = $timetoshowusers / 60;
     $now = time();
     $timefrom = $now - $timetoshowusers; // Unlike original code, don't care about caches for this.
-    $params = array('now' => $now, 'timefrom' => $timefrom);
+    $params = array('timefrom' => $timefrom);
 
-    $csql = "SELECT COUNT(u.id)
-               FROM {user} u
-              WHERE u.lastaccess > :timefrom
-                AND u.lastaccess <= :now
-                AND u.deleted = 0";
+    $namefields = "u." . implode(', u.', \core_user\fields::get_name_fields());
 
-    if ($DB->count_records_sql($csql, $params)) {
-        $namefields = "u." . implode(', u.', \core_user\fields::get_name_fields());
+    $sql = "SELECT u.id, u.username, {$namefields}
+              FROM {user} u
+             WHERE u.lastaccess > :timefrom
+               AND u.deleted = 0
+             ORDER BY lastaccess DESC ";
+    $users = $DB->get_records_sql($sql, $params);
 
-        $sql = "SELECT u.id, u.username, {$namefields}
-                  FROM {user} u
-                 WHERE u.lastaccess > :timefrom
-                   AND u.lastaccess <= :now
-                   AND u.deleted = 0
-              GROUP BY u.id
-              ORDER BY lastaccess DESC ";
-        $users = $DB->get_records_sql($sql, $params);
-
-        $message = "The following users have logged in within the last {$minutes} minutes:\n";
-        $nonadmins = 0;
-        foreach ($users as $user) {
-            $message .= ' - ' . fullname($user) . ' (' . $user->username . ')';
-            if (is_siteadmin($user)) {
-                $message .= ' (siteadmin)';
-            } else {
-                $nonadmins++;
-            }
-            $message .= "\n";
+    $message = "The following users have logged in within the last {$minutes} minutes:\n";
+    $nonadmins = 0;
+    foreach ($users as $user) {
+        $message .= ' - ' . fullname($user) . ' (' . $user->username . ')';
+        if (is_siteadmin($user)) {
+            $message .= ' (siteadmin)';
+        } else {
+            $nonadmins++;
         }
+        $message .= "\n";
+    }
 
-        if ($nonadmins) {
-            abort_message($abort, $message);
-            abort_message("There are non site-administrators in the list of recent users.", true);
-            $willdie = true;
-        }
+    if ($nonadmins) {
+        abort_message($abort, $message);
+        abort_message($abort, "There are non site-administrators in the list of recent users.", true);
+        $willdie = true;
     }
 
     // 3. Has cron run recently?

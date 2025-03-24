@@ -434,7 +434,9 @@ abstract class clean {
         error_log($string);
 
         // Stash a copy into sitedir log file.
-        mkdir("$CFG->dataroot/datacleaner");
-        file_put_contents("$CFG->dataroot/datacleaner/clean.log", $string, FILE_APPEND);
+        if ( ! file_exists("{$CFG->dataroot}/datacleaner") ) {
+            mkdir("{$CFG->dataroot}/datacleaner");
+            }
+        file_put_contents("{$CFG->dataroot}/datacleaner/clean.log", $string, FILE_APPEND);
     }
 }
