@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner
+ * Library functions for data cleaner.
+ *
+ * @package    local_datacleaner
  * @copyright  2015 Catalyst IT
  * @author     Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
 
 use local_datacleaner\clean;
 
@@ -78,7 +78,8 @@ function safety_checks($dryrun) {
     if (empty($saved)) {
         abort_message(
             $abort,
-            "No \$CFG->original_wwwroot has been saved yet. This needs to be set explicitly to run\nVisit local/datacleaner/ on the production site to auto set this up.",
+            "No \$CFG->original_wwwroot has been saved yet. This needs to be set explicitly to run\n" .
+            "Visit local/datacleaner/ on the production site to auto set this up.",
             true
         );
         $willdie = true;
@@ -92,7 +93,7 @@ function safety_checks($dryrun) {
     $minutes = $timetoshowusers / 60;
     $now = time();
     $timefrom = $now - $timetoshowusers; // Unlike original code, don't care about caches for this.
-    $params = array('timefrom' => $timefrom);
+    $params = ['timefrom' => $timefrom];
 
     $namefields = "u." . implode(', u.', \core_user\fields::get_name_fields());
 
