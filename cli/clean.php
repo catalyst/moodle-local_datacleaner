@@ -15,8 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * CLI script to perform a data wash.
- *
  * @package    local_datacleaner
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,7 +28,7 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
-    [
+    array(
         'help' => false,
         'force' => false,
         'filter' => false,
@@ -40,11 +38,11 @@ list($options, $unrecognized) = cli_get_params(
         'dryrun' => false,
         'verbose' => false,
         'reset' => false,
-    ],
-    [
+    ),
+    array(
         'h' => 'help',
         'v' => 'verbose',
-    ]
+    )
 );
 
 if ($unrecognized) {
