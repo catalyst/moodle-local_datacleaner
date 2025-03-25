@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(__DIR__ . '/cleaner_muc_testcase.php');
 
 class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_muc_testcase {
-    protected function setUp() {
+    protected function setUp(): void {
         parent::setUp();
         self::setAdminUser();
         $this->resetAfterTest(false);
