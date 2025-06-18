@@ -158,6 +158,7 @@ class clean extends \local_datacleaner\clean {
 
                     // Filename and pathnamehash are staying the same
                     // to ensure the pathnamehash stays unique.
+                    [$contextlevelsql, $contextlevelparams] = $DB->get_in_or_equal($contextlevels);
                     $sql = "UPDATE {files}
                             SET contenthash = ?,
                                 filesize = ?,
@@ -166,13 +167,18 @@ class clean extends \local_datacleaner\clean {
                                 referencefileid = null,
                                 author = null,
                                 source = null
-                            WHERE mimetype = ?";
+                            WHERE mimetype = ?
+                              AND contextid IN (
+                                SELECT id
+                                FROM {context}
+                                WHERE contextlevel " . $contextlevelsql . ")";
                     $params = array();
                     $params[] = $contenthash;
                     $params[] = $filesize;
                     $params[] = $newmimetype;
                     $params[] = $status;
                     $params[] = $mimetype;
+                    $params = array_merge($params, $contextlevelparams);
                     $DB->execute($sql, $params);
                     self::next_step();
                 }
