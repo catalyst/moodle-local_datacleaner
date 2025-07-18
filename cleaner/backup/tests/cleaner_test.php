@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class cleaner_backup_test extends \advanced_testcase {
 
-    public function delete_provider() {
+    public static function delete_provider() {
         // Array of filename, deleted.
         return [
             ['myfile.txt', false],

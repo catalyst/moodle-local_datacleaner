@@ -37,10 +37,10 @@ defined('MOODLE_INTERNAL') || die();
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_datacleaner_table_scrambler_test extends advanced_testcase {
-    public function provider_for_it_creates_sorted_temporary_tables() {
+    public static function provider_for_it_creates_sorted_temporary_tables() {
         return [
             'unrepeated' => [
-                $this->create_test_data_array(),
+                self::create_test_data_array(),
                 [
                     ['id' => '1', 'value' => 'Bill'],
                     ['id' => '2', 'value' => 'David'],
@@ -75,7 +75,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_it_scrambles_names() {
+    public static function provider_for_it_scrambles_names() {
         return [
             ['', [
                 ['id' => '1', 'first' => 'David', 'last' => 'Jones'],
@@ -96,7 +96,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_the_next_prime_after() {
+    public static function provider_for_the_next_prime_after() {
         return [
             [0, 2],
             [1, 2],
@@ -105,7 +105,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_the_prime_factors() {
+    public static function provider_for_the_prime_factors() {
         return [
             [2, 1, [2, 3]],
             [2, 3, [2, 3]],
@@ -216,7 +216,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         global $DB;
 
         if (is_null($data)) {
-            $data = $this->create_test_data_array();
+            $data = self::create_test_data_array();
         }
 
         // Create test table.
@@ -237,7 +237,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         return $table;
     }
 
-    private function create_test_data_array() {
+    private static function create_test_data_array() {
         return [
             ['first' => 'David', 'last' => 'Smith'],
             ['first' => 'Nicholas', 'last' => 'Hoobin'],
