@@ -38,7 +38,7 @@ require_once(__DIR__ . '/../cleaner_muc_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_cleanurls_cleaner_muc_index_page_test extends local_datacleaner_cleaner_muc_testcase {
+class local_cleanurls_cleaner_muc_index_renderer_test extends local_datacleaner_cleaner_muc_testcase {
     protected function setUp() : void {
         global $PAGE, $OUTPUT;
 

@@ -154,7 +154,7 @@ class cleaner_email_test extends advanced_testcase {
      *
      * @return array
      */
-    public function provider_for_cleaner_email_suffix_ignore_pattern() {
+    public static function provider_for_cleaner_email_suffix_ignore_pattern() {
         return [
             ['user@example.com',     'user@example.com.suffix',     '.suffix',   'moodle.com'],
             ['user@email.com',       'user@email.com.suffix',       '.suffix',   'emailsuffix.com'],

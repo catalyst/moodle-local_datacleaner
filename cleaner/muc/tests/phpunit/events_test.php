@@ -37,7 +37,7 @@ class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_
         $this->resetAfterTest(false);
     }
 
-    public function provider_for_test_events_have_the_correct_properties() {
+    public static function provider_for_test_events_have_the_correct_properties() {
         return [
             [muc_config_saved::class, 'c'],
             [muc_config_deleted::class, 'd'],
@@ -70,7 +70,7 @@ class local_cleanurls_cleaner_muc_events_test extends local_datacleaner_cleaner_
         self::assertSame($expected, $actual);
     }
 
-    public function provider_for_test_events_have_the_correct_description() {
+    public static function provider_for_test_events_have_the_correct_description() {
         return [
             [
                 muc_config_saved::class,
