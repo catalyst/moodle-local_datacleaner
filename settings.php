@@ -34,6 +34,14 @@ $ADMIN->add('datacleaner', new admin_externalpage('local_datacleaner',
     get_string('manage', 'local_datacleaner'),
     new moodle_url('/local/datacleaner/index.php')));
 
+
+$general = new admin_settingpage('generalsettings', new lang_string('generalsettings', 'local_datacleaner'));
+
+$general->add(new \local_datacleaner\admin_setting_configencodedtext('local_datacleaner/original_wwwroot',
+    new lang_string('original_wwwroot', 'local_datacleaner'),
+    new lang_string('original_wwwrootdesc', 'local_datacleaner'), $CFG->wwwroot, PARAM_URL));
+$ADMIN->add('datacleaner', $general);
+
 $temp = new admin_settingpage('cascadedeletesettings', new lang_string('cascadedeletesettings', 'local_datacleaner'));
 
 $temp->add(new admin_setting_configtext('local_datacleaner/mismatch_threshold',

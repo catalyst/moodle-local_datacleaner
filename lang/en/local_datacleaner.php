@@ -47,3 +47,8 @@ aren\'t normally there. Prior to creating a rule, it checks how many records wou
 controls the threshold above which the relationship will not be created (which also means records in the target table will not be
 deleted). The threshold is expressed as a percentage of the total number of records involved. If the total number of records in a
  table is less than 100, this value is ignored and any conflicts cause the rule not to be created.';
+$string['generalsettings'] = 'General settings';
+$string['original_wwwroot'] = 'Production Site URL';
+$string['original_wwwrootdesc'] = 'We store the hostname in the cleaning configuration data. If the hostname matches production,
+ DataCleaner will not run. If this data is missing then it will not run.';
+$string['resetbutton'] = 'Reset URL';

@@ -30,8 +30,8 @@
  * @param int $oldversion
  * @return bool
  */
-function xmldb_local_datacleaner_upgrade($oldversion = 0): bool{
-    global $DB;
+function xmldb_local_datacleaner_upgrade($oldversion = 0): bool {
+    global $DB, $CFG;
     $dbman = $DB->get_manager();
     if ($oldversion < 2022020301) {
         // Clean up table.
@@ -41,6 +41,14 @@ function xmldb_local_datacleaner_upgrade($oldversion = 0): bool{
         }
 
         upgrade_plugin_savepoint(true, 2022020301, 'local', 'datacleaner');
+    }
+
+    if ($oldversion < 2022020302) {
+        if (!isset($CFG->original_wwwroot)) {
+            $originalwwwroot = base64_encode($CFG->wwwroot);
+            set_config('original_wwwroot', $originalwwwroot);
+        }
+        upgrade_plugin_savepoint(true, 2022020302, 'local', 'datacleaner');
     }
 
     return true;
