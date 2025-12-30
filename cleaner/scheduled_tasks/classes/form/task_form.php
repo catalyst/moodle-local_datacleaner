@@ -70,7 +70,13 @@ class task_form extends moodleform {
 
             // Key by which returned data is group on in the associative array, must be unique for each task.
             $cbkey = "$class";
-            $rendertasks[] = &$mform->createElement('advcheckbox', $cbkey, '', "$name: Currently $status", ['group' => 1]);
+            $rendertasks[] = &$mform->createElement(
+                'advcheckbox',
+                $cbkey,
+                '',
+                "$name: Currently $status<br><small class='text-dim ml-4'> \\$class</small>",
+                ['group' => 1]
+            );
 
             // We have our current saved settings as the default value.
             $default = 0;
@@ -86,7 +92,7 @@ class task_form extends moodleform {
 
             if (isset($addcomponent[0]) && $component != $nexttaskcomponent) {
                 // if different component to the next, then we add group
-                $mform->addGroup($rendertasks, "$class", "$component", array(' '), false);
+                $mform->addGroup($rendertasks, $class, $component, '<br>', false);
                 $rendertasks = [];
             }
         }
