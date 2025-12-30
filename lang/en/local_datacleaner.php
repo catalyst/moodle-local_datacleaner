@@ -22,36 +22,31 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Data cleaner';
-$string['subplugintype_cleaner'] = 'Data Cleaner';
-$string['subplugintype_cleaner_plural'] = 'Data Cleaners';
-$string['privacy:metadata'] = 'The local datacleaner plugin does not store any personal data.';
 $string['cachedef_courses'] = 'Course cache';
 $string['cachedef_schema'] = 'Schema cache';
+$string['cascadedeletesettings'] = 'Cascade delete settings';
 $string['cleaning'] = 'Cleaning';
-$string['enabledisable'] = 'Enabled';
 $string['disable'] = 'Disable';
 $string['enable'] = 'Enable';
+$string['enabledisable'] = 'Enabled';
 $string['error:explicitconfigphp'] = 'Please set the local_datacleaner_allowexecution in config.php';
+$string['errordeletingdir'] = '-- ERROR -- An error was encountered while deleting the directory: {$a}';
+$string['generalsettings'] = 'General settings';
 $string['info'] = '<p>You can configure what and how data will be cleaned after it is cloned from production. </p><p>After the database and sitedata are cloned into another environment a CLI is run which will perform the cleaning. Several checks are performed to ensure that this cannot be run on the production environment.</p>';
 $string['manage'] = 'Manage cleaning tasks';
-$string['notes'] = 'Notes';
-$string['sortorder'] = 'Sort order';
-$string['noplugins'] = 'No data cleansing plugins found.';
-$string['progress'] = 'Progress';
-$string['errordeletingdir'] = '-- ERROR -- An error was encountered while deleting the directory: {$a}';
-$string['cascadedeletesettings'] = 'Cascade delete settings';
 $string['mismatch_threshold'] = 'Mismatch threshold';
-$string['mismatch_thresholddesc'] = 'The data cleaner uses a heuristic to create cascade delete rules in the database that
-aren\'t normally there. Prior to creating a rule, it checks how many records would violate the potential relationship. This setting
-controls the threshold above which the relationship will not be created (which also means records in the target table will not be
-deleted). The threshold is expressed as a percentage of the total number of records involved. If the total number of records in a
- table is less than 100, this value is ignored and any conflicts cause the rule not to be created.';
-$string['generalsettings'] = 'General settings';
+$string['mismatch_thresholddesc'] = 'The data cleaner uses a heuristic to create cascade delete rules in the database that aren\'t normally there. Prior to creating a rule, it checks how many records would violate the potential relationship. This setting controls the threshold above which the relationship will not be created (which also means records in the target table will not be deleted). The threshold is expressed as a percentage of the total number of records involved. If the total number of records in a  table is less than 100, this value is ignored and any conflicts cause the rule not to be created.';
+$string['noplugins'] = 'No data cleansing plugins found.';
+$string['notes'] = 'Notes';
 $string['original_wwwroot'] = 'Production Site URL';
-$string['original_wwwrootdesc'] = 'We store the hostname in the cleaning configuration data. If the hostname matches production,
- DataCleaner will not run. If this data is missing then it will not run.';
+$string['original_wwwrootdesc'] = 'We store the hostname in the cleaning configuration data. If the hostname matches production,  DataCleaner will not run. If this data is missing then it will not run.';
+$string['pluginname'] = 'Data cleaner';
+$string['privacy:metadata'] = 'The local datacleaner plugin does not store any personal data.';
+$string['progress'] = 'Progress';
 $string['resetbutton'] = 'Reset URL';
+$string['sortorder'] = 'Sort order';
 $string['stage'] = 'Wash stage';
-$string['stageprewash'] = 'Prewash';
 $string['stagepostwash'] = 'Postwash';
+$string['stageprewash'] = 'Prewash';
+$string['subplugintype_cleaner'] = 'Data Cleaner';
+$string['subplugintype_cleaner_plural'] = 'Data Cleaners';
