@@ -84,6 +84,7 @@ $table->head = array(
     get_string('version'),
     get_string('sortorder', 'local_datacleaner'),
     get_string('uninstallplugin', 'core_admin'),
+    get_string('stage', 'local_datacleaner'),
 );
 $table->attributes['class'] = 'admintable generaltable';
 $data = array();
@@ -111,16 +112,19 @@ foreach ($plugins as $plugin) {
         $uninstall = html_writer::link($uninstallurl, get_string('uninstallplugin', 'core_admin'));
     }
 
-    $row = new html_table_row(array(
-                $visible,
-                $plugin->displayname,
-                $settings,
-                $plugin->name,
-                $plugin->versiondb,
-                $plugin->sortorder,
-                $uninstall,
-                // TODO relates to core or plugin?
-    ));
+    $stage = get_string('stage' . ($plugin->sortorder >= 200 ? 'postwash' : 'prewash'), 'local_datacleaner');
+
+    $row = new html_table_row([
+        $visible,
+        $plugin->displayname,
+        $settings,
+        $plugin->name,
+        $plugin->versiondb,
+        $plugin->sortorder,
+        $uninstall,
+        $stage,
+        // TODO relates to core or plugin?
+    ]);
 
     $row->attributes['class'] = $class;
     $data[] = $row;

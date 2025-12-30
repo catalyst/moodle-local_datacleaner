@@ -52,3 +52,6 @@ $string['original_wwwroot'] = 'Production Site URL';
 $string['original_wwwrootdesc'] = 'We store the hostname in the cleaning configuration data. If the hostname matches production,
  DataCleaner will not run. If this data is missing then it will not run.';
 $string['resetbutton'] = 'Reset URL';
+$string['stage'] = 'Wash stage';
+$string['stageprewash'] = 'Prewash';
+$string['stagepostwash'] = 'Postwash';
