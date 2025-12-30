@@ -101,6 +101,7 @@ foreach ($plugins as $plugin) {
     if ($plugin->enabled()) {
         $visible = '<a href="index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
             $OUTPUT->pix_icon('t/hide', $strdisable).'</a>';
+        $class = $plugin->sortorder >= 200 ? 'bg-secondary' : 'bg-warning';
     } else {
         $visible = '<a href="index.php?show='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strenable.'">'.
             $OUTPUT->pix_icon('t/show', $strenable, 'moodle', ['class' => 'dimmed_text']).'</a>';
