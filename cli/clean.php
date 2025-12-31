@@ -27,6 +27,7 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/../lib.php');
 
 use local_datacleaner\clean;
 
@@ -97,6 +98,9 @@ if ($options['force']) {
         print_message("Remaining output shows what will happen if you force execution or deal with safety issues.\n");
     }
 }
+
+// Divert all mtrace into datacleaner logger.
+$CFG->mtrace_wrapper = 'local_datacleaner_mtrace_wrapper';
 
 $plugins = \local_datacleaner\plugininfo\cleaner::get_enabled_plugins_by_sortorder();
 

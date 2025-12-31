@@ -51,3 +51,14 @@ function local_datacleaner_get_categories() {
 
     return $categories;
 }
+
+/**
+ * Function used to handle mtrace into datacleaner logs
+ *
+ * @param string $message Message to output
+ * @param string $eol End of line character
+ */
+function local_datacleaner_mtrace_wrapper(string $message, string $eol = ''): void {
+    echo $message. $eol;
+    \local_datacleaner\clean::log($message . $eol);
+}

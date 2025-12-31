@@ -438,5 +438,11 @@ abstract class clean {
             mkdir("{$CFG->dataroot}/datacleaner");
         }
         file_put_contents("{$CFG->dataroot}/datacleaner/clean.log", $string, FILE_APPEND);
+
+        $time = microtime(true);
+        $when = userdate($time, '%H:%M:%S' . substr(round($time - (int)$time, 3), 1));
+
+        // Copy into the db so we can see it in the refreshed env as well.
+        add_to_config_log($when, '', substr($string, 0, 100), 'local_datacleaner');
     }
 }
