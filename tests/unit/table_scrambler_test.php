@@ -24,6 +24,7 @@
  */
 
 use local_datacleaner\table_scrambler;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -36,11 +37,11 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_datacleaner_table_scrambler_test extends advanced_testcase {
-    public function provider_for_it_creates_sorted_temporary_tables() {
+class table_scrambler_test extends advanced_testcase {
+    public static function provider_for_it_creates_sorted_temporary_tables() {
         return [
             'unrepeated' => [
-                $this->create_test_data_array(),
+                self::create_test_data_array(),
                 [
                     ['id' => '1', 'value' => 'Bill'],
                     ['id' => '2', 'value' => 'David'],
@@ -75,7 +76,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_it_scrambles_names() {
+    public static function provider_for_it_scrambles_names() {
         return [
             ['', [
                 ['id' => '1', 'first' => 'David', 'last' => 'Jones'],
@@ -96,7 +97,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_the_next_prime_after() {
+    public static function provider_for_the_next_prime_after() {
         return [
             [0, 2],
             [1, 2],
@@ -105,7 +106,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_the_prime_factors() {
+    public static function provider_for_the_prime_factors() {
         return [
             [2, 1, [2, 3]],
             [2, 3, [2, 3]],
@@ -114,9 +115,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    /**
-     * @dataProvider provider_for_it_creates_sorted_temporary_tables
-     */
+    #[DataProvider('provider_for_it_creates_sorted_temporary_tables')]
     public function test_it_creates_sorted_temporary_tables($inputdata, $expectedfirst, $expectedlast) {
         global $DB;
         $this->resetAfterTest(true);
@@ -151,9 +150,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertSame(['name', 'address'], $scrambler->get_fields_to_scramble());
     }
 
-    /**
-     * @dataProvider provider_for_it_scrambles_names
-     */
+    #[DataProvider('provider_for_it_scrambles_names')]
     public function test_it_scrambles_names($except, $expected) {
         global $DB;
         $this->resetAfterTest(true);
@@ -196,17 +193,13 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertLessThanOrEqual(127 * 131, $product);
     }
 
-    /**
-     * @dataProvider provider_for_the_next_prime_after
-     */
+    #[DataProvider('provider_for_the_next_prime_after')]
     public function test_the_next_prime_after($number, $expected) {
         $next = table_scrambler::get_prime_after($number);
         self::assertSame($expected, $next);
     }
 
-    /**
-     * @dataProvider provider_for_the_prime_factors
-     */
+    #[DataProvider('provider_for_the_prime_factors')]
     public function test_the_prime_factors($count, $number, $expected) {
         $factors = table_scrambler::get_prime_factors($count, $number);
         self::assertSame($expected, $factors);
@@ -216,7 +209,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         global $DB;
 
         if (is_null($data)) {
-            $data = $this->create_test_data_array();
+            $data = self::create_test_data_array();
         }
 
         // Create test table.
@@ -237,7 +230,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         return $table;
     }
 
-    private function create_test_data_array() {
+    private static function create_test_data_array() {
         return [
             ['first' => 'David', 'last' => 'Smith'],
             ['first' => 'Nicholas', 'last' => 'Hoobin'],
