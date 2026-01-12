@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_datacleaner_custom_sql_test extends advanced_testcase {
+class custom_test extends advanced_testcase {
 
     /**
      * Initialise a cleaner object to reset static options.
