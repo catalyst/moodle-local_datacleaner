@@ -175,7 +175,7 @@ class matrix extends moodleform {
                 foreach ($environments as $eid => $env) {
                     $key = "config[$plugin][$configname][$eid]";
 
-                    $value = empty($item->value) ? '' : $item->value;
+                    $value = is_null($item->value) ? '' : $item->value;
 
                     $params = [];
 
