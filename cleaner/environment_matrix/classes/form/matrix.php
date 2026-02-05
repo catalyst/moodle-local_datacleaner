@@ -253,7 +253,7 @@ class matrix extends moodleform {
 
                     $key = "config[$plugin][$configname][$eid]";
 
-                    $value = empty($item->value) ? '' : $item->value;
+                    $value = is_null($item->value) ? '' : $item->value;
 
                     $params = [];
 
