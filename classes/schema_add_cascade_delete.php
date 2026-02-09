@@ -38,28 +38,28 @@ class schema_add_cascade_delete extends clean {
     /**
      * Unrelated.
      *
-     * @var string
+     * @var array
      */
     protected static $unrelated = [];
 
     /**
      * Depth.
      *
-     * @var string
+     * @var int
      */
     protected static $depth = 0;
 
     /**
      * Num indices.
      *
-     * @var string
+     * @var int
      */
     protected static $numindices = 0;
 
     /**
      * Num cascade deletes.
      *
-     * @var string
+     * @var int
      */
     protected static $numcascadedeletes = 0;
 

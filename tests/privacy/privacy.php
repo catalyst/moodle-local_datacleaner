@@ -100,6 +100,8 @@ echo "\n\n== Done ==\n";
 /**
  * Check if the component implements the given interface.
  *
+ * @param string $component The component name to check.
+ * @param string $interface The fully qualified interface name to check against.
  * @return bool True if the component implements the interface, false otherwise.
  */
 function check_implements($component, $interface) {
