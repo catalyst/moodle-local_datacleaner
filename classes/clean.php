@@ -14,32 +14,63 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_datacleaner;
 
 use core\base;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Base class for data cleaning plugins.
+ *
+ * @package    local_datacleaner
+ * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class clean {
-    private static $tasks = array(); // For storing task start times.
+    /**
+     * Tasks.
+     *
+     * @var array
+     */
+    private static $tasks = []; // For storing task start times.
 
-    protected static $options = array(
+    /**
+     * Options.
+     *
+     * @var array
+     */
+    protected static $options = [
         'verbose' => false,
-        'dryrun' => false
-    );
+        'dryrun' => false,
+    ];
 
+    /**
+     * Needs cascade delete.
+     *
+     * @var bool
+     */
     protected $needscascadedelete = false;
 
+    /**
+     * Step.
+     *
+     * @var int
+     */
     protected static $step = 0;
 
+    /**
+     * Max steps.
+     *
+     * @var int
+     */
     protected static $maxsteps = 0;
 
+    /**
+     * Exec time.
+     *
+     * @var int
+     */
     protected static $exectime = 0;
 
     /**
@@ -47,7 +78,7 @@ abstract class clean {
      *
      * @param array $options Runtime configuration options for the plugin to apply.
      */
-    public function __construct($options = array()) {
+    public function __construct($options = []) {
         if (!is_array($options)) {
             throw new \coding_exception('Options should be an array');
         }
@@ -67,7 +98,7 @@ abstract class clean {
     /**
      * Execute the plugin. Template to be overridden.
      */
-    static public function execute() {
+    public static function execute() {
     }
 
     /**
@@ -105,7 +136,7 @@ abstract class clean {
     /**
      * Print the current status of the task.
      */
-    static protected function update_status() {
+    protected static function update_status() {
 
         $taskname = static::TASK;
         $itemno = static::$step;
@@ -120,7 +151,7 @@ abstract class clean {
 
             $start = self::$tasks[$taskname];
             $elapsed = $now - $start;
-            $timeleft = gmdate("H:i:s", intval($elapsed)).' elapsed.';
+            $timeleft = gmdate("H:i:s", intval($elapsed)) . ' elapsed.';
 
             // Reset the current task starting execution time.
             self::$tasks[$taskname] = time();
@@ -147,7 +178,7 @@ abstract class clean {
      *
      * @param int $maxsteps The number of steps for the task.
      */
-    static protected function new_task($maxsteps) {
+    protected static function new_task($maxsteps) {
         static::$step = 0;
         static::$maxsteps = $maxsteps;
         static::update_status();
@@ -159,7 +190,7 @@ abstract class clean {
      *
      * @param int $increment The amount by which to increase the step number.
      */
-    static protected function next_step($increment = 1) {
+    protected static function next_step($increment = 1) {
         static::$step += $increment;
         static::update_status();
 
@@ -182,7 +213,7 @@ abstract class clean {
     protected static function get_user_criteria($config) {
         global $CFG;
 
-        $criteria = array();
+        $criteria = [];
 
         /* Minimum age? */
         if (isset($config->minimumage)) {
@@ -212,11 +243,11 @@ abstract class clean {
      *
      * @return array $sql, $params The SQL & parameters
      */
-    public static function get_user_where_sql($criteria = array()) {
+    public static function get_user_where_sql($criteria = []) {
         global $DB;
 
         $extrasql = '';
-        $params = array();
+        $params = [];
 
         if (isset($criteria['timestamp'])) {
             $extrasql = ' AND lastaccess < :timestamp ';
@@ -224,8 +255,8 @@ abstract class clean {
         }
 
         if (isset($criteria['ignored_uids'])) {
-            list($newextrasql, $extraparams) = $DB->get_in_or_equal($criteria['ignored_uids'], SQL_PARAMS_NAMED, 'uid', false);
-            $extrasql .= ' AND id '.$newextrasql;
+            [$newextrasql, $extraparams] = $DB->get_in_or_equal($criteria['ignored_uids'], SQL_PARAMS_NAMED, 'uid', false);
+            $extrasql .= ' AND id ' . $newextrasql;
             $params = array_merge($params, $extraparams);
         }
 
@@ -235,8 +266,8 @@ abstract class clean {
                 foreach ($keepusernames as &$name) {
                     $name = clean_param($name, PARAM_USERNAME);
                 }
-                list($newextrasql, $extraparams) = $DB->get_in_or_equal($keepusernames, SQL_PARAMS_NAMED, 'uname', false);
-                $extrasql .= ' AND username '.$newextrasql;
+                [$newextrasql, $extraparams] = $DB->get_in_or_equal($keepusernames, SQL_PARAMS_NAMED, 'uname', false);
+                $extrasql .= ' AND username ' . $newextrasql;
                 $params = array_merge($params, $extraparams);
             }
         }
@@ -246,7 +277,7 @@ abstract class clean {
             $params['deleted'] = $criteria['deleted'];
         }
 
-        return array($extrasql, $params);
+        return [$extrasql, $params];
     }
 
     /**
@@ -256,13 +287,13 @@ abstract class clean {
      *
      * @return int The number of users that meet the criteria.
      */
-    public static function get_user_count($config = array()) {
+    public static function get_user_count($config = []) {
         global $DB;
 
         $criteria = self::get_user_criteria($config);
-        list($where, $whereparams) = self::get_user_where_sql($criteria);
+        [$where, $whereparams] = self::get_user_where_sql($criteria);
 
-        return $DB->count_records_select('user', 'id > 2 '.$where, $whereparams);
+        return $DB->count_records_select('user', 'id > 2 ' . $where, $whereparams);
     }
 
     /**
@@ -274,13 +305,13 @@ abstract class clean {
      *
      * @return array $result An array of user records.
      */
-    public static function get_user_chunk($config = array(), $offset = 0) {
+    public static function get_user_chunk($config = [], $offset = 0) {
         global $DB;
 
         $criteria = self::get_user_criteria($config);
-        list($where, $whereparams) = self::get_user_where_sql($criteria);
+        [$where, $whereparams] = self::get_user_where_sql($criteria);
 
-        $uids = $DB->get_records_select('user', 'id > 2 '.$where, $whereparams, 'id', 'id', $offset, 10000);
+        $uids = $DB->get_records_select('user', 'id > 2 ' . $where, $whereparams, 'id', 'id', $offset, 10000);
         return array_keys($uids);
     }
 
@@ -296,7 +327,7 @@ abstract class clean {
 
         $chunks = array_chunk($ids, 65000);
         foreach ($chunks as &$chunk) {
-            list($sql, $params) = $DB->get_in_or_equal($chunk);
+            [$sql, $params] = $DB->get_in_or_equal($chunk);
             $DB->delete_records_list($table, $field, $params);
         }
     }
@@ -305,10 +336,10 @@ abstract class clean {
      * Get the criteria for the list of courses.
      */
     protected static function get_courses_criteria($config) {
-        $criteria = array();
+        $criteria = [];
 
         if (isset($config->minimumage)) {
-            $criteria = array();
+            $criteria = [];
             $criteria['timestamp'] = time() - ($config->minimumage * 24 * 60 * 60);
         }
 
@@ -328,15 +359,15 @@ abstract class clean {
      * @param  array $criteria An array of criteria to apply.
      * @return array $result   The array of matching course objects.
      */
-    protected static function get_courses($criteria = array()) {
+    protected static function get_courses($criteria = []) {
         global $DB;
 
         $extrasql = '';
-        $params = array();
+        $params = [];
 
         // If no criteria are selected, clean nothing rather than everything.
         if (empty($criteria)) {
-            return array();
+            return [];
         }
 
         if (isset($criteria['timestamp'])) {
@@ -345,18 +376,18 @@ abstract class clean {
         }
 
         if (isset($criteria['categories'])) {
-            list($sql, $sqlparams) = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
-            $extrasql .= ' AND category '.$sql;
+            [$sql, $sqlparams] = $DB->get_in_or_equal(explode(",", $criteria['categories']), SQL_PARAMS_NAMED, 'crit_');
+            $extrasql .= ' AND category ' . $sql;
             $params = array_merge($params, $sqlparams);
         }
 
         if (isset($criteria['courses'])) {
-            list($sql, $sqlparams) = $DB->get_in_or_equal(explode("\n", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
-            $extrasql .= ' AND shortname '.$sql;
+            [$sql, $sqlparams] = $DB->get_in_or_equal(explode("\n", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
+            $extrasql .= ' AND shortname ' . $sql;
             $params = array_merge($params, $sqlparams);
         }
 
-        return $DB->get_records_select_menu('course', 'id > 1 '.$extrasql, $params, '', 'id, id');
+        return $DB->get_records_select_menu('course', 'id > 1 ' . $extrasql, $params, '', 'id, id');
     }
 
     /**
@@ -396,7 +427,7 @@ abstract class clean {
      * @return \moodle_url
      */
     public static function get_settings_section_url($sectionname) {
-        return new \moodle_url('/admin/settings.php', array('section' => $sectionname));
+        return new \moodle_url('/admin/settings.php', ['section' => $sectionname]);
     }
 
     /**
@@ -419,19 +450,17 @@ abstract class clean {
 
         // Also set this in the DB.
         set_config('lastwash', $context, 'local_datacleaner');
-
     }
 
     /**
      * Log details in a variety of places
      *
-     * @param string
+     * @param string $string
      */
     public static function log($string) {
         global $CFG;
 
-        // Send it to stderr.
-        error_log($string);
+        mtrace($string);
 
         // Stash a copy into sitedir log file.
         if (!file_exists("{$CFG->dataroot}/datacleaner")) {

@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings for the custom sql post cleaner.
+ *
  * @package    cleaner_custom_sql_post
- * @copyright  2019 Catalyst IT
- * @author     Srdjan Janković <srdjan@catalyst.net.nz>
+ * @copyright   2019 Srdjan Janković <srdjan@catalyst.net.nz>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,6 +28,12 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configtextarea('cleaner_custom_sql_post/sql',
-            new lang_string('sql', 'cleaner_custom_sql_post'),
-            new lang_string('sqldesc', 'cleaner_custom_sql_post'), '', PARAM_RAW));
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_custom_sql_post/sql',
+        new lang_string('sql', 'cleaner_custom_sql_post'),
+        new lang_string('sqldesc', 'cleaner_custom_sql_post'),
+        '',
+        PARAM_RAW
+    )
+);

@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_scheduled_tasks
- * @copyright  2019 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_scheduled_tasks;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for scheduled tasks.
+ *
+ * @package    cleaner_scheduled_tasks
+ * @copyright  2019 Kristian Ringer <kristianringer@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
-
     /**
      * Get the settings section url.
      * @return \moodle_url the settings section URL
@@ -35,9 +35,9 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Disable the scheduled tasks that we don't want.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         global $DB;
         $dryrun = self::$options['dryrun'];
 
@@ -47,7 +47,7 @@ class clean extends \local_datacleaner\clean {
 
         $count = count($disabledtasks);
         $increment = 1;
-        $taskstoupdate = array();
+        $taskstoupdate = [];
 
         if ($count == 0) {
             mtrace("No tasks selected to disable, skipping this task");
@@ -79,7 +79,7 @@ class clean extends \local_datacleaner\clean {
             }
         }
         if ($taskstoupdate) {
-            list($sql, $params) = $DB->get_in_or_equal($taskstoupdate);
+            [$sql, $params] = $DB->get_in_or_equal($taskstoupdate);
             $DB->set_field_select('task_scheduled', 'disabled', 1, "id $sql", $params);
         }
     }

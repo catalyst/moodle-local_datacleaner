@@ -18,8 +18,7 @@
  * Library functions for data cleaner.
  *
  * @package    local_datacleaner
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -145,4 +144,3 @@ function safety_checks($dryrun) {
 
     return $willdie;    /* For dryrun */
 }
-

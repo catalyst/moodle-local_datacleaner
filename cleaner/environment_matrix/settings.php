@@ -18,11 +18,9 @@
  * Settings for Environment matrix.
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
@@ -34,8 +32,10 @@ if (!$hassiteconfig) { // Needs this condition or there is error on login page.
     return;
 }
 
-$externalpage = new admin_externalpage('cleaner_environment_matrix',
+$externalpage = new admin_externalpage(
+    'cleaner_environment_matrix',
     get_string('pluginname', 'cleaner_environment_matrix'),
-    new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php'));
+    new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php')
+);
 
 $ADMIN->add('datacleaner', $externalpage);

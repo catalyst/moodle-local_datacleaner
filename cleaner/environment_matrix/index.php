@@ -18,11 +18,9 @@
  * Settings for Environment matrix.
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
@@ -66,7 +64,6 @@ $matrix = new \cleaner_environment_matrix\form\matrix($post, $customdata);
 if ($matrix->is_cancelled()) {
     redirect($post);
 } else if ($data = $matrix->get_data()) {
-
     $select = $DB->sql_compare_text('config') . ' = ' . $DB->sql_compare_text(':config');
     $select .= ' AND ' . $DB->sql_compare_text('plugin') . ' = ' . $DB->sql_compare_text(':plugin');
     $select .= ' AND envid = :envid';
@@ -76,11 +73,9 @@ if ($matrix->is_cancelled()) {
 
     foreach ($selected as $plugin => $configs) {
         foreach ($configs as $name => $ticked) {
-
             $envs = [];
             if (!empty($config[$plugin])) {
                 if (!empty($config[$plugin][$name])) {
-
                     // This stores the configuration values for posted environments data.
                     $envs = $config[$plugin][$name];
                 }
@@ -89,7 +84,6 @@ if ($matrix->is_cancelled()) {
             // The checkbox has been ticked. Update this field for all environments.
             if ($ticked == '1') {
                 foreach ($envs as $envid => $value) {
-
                     // Do not save the production envid data to the system.
                     if ($envid == '-1') {
                         continue;
@@ -117,13 +111,11 @@ if ($matrix->is_cancelled()) {
                         $entry['id'] = $record->id;
                         $DB->update_record('cleaner_environment_matrixd', $entry);
                     }
-
                 }
 
                 // Else we will reset / delete all the unticked groups.
             } else {
                 foreach ($envs as $envid => $value) {
-
                     $entry = [
                         'plugin' => $plugin,
                         'config' => $name,

@@ -14,16 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Environment matrix edit form.
- *
- * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-
 namespace cleaner_environment_matrix\form;
 
 use html_writer;
@@ -40,8 +30,7 @@ require_once($CFG->libdir . '/formslib.php');
  * A form to edit the environment matrix.
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class matrix extends moodleform {
@@ -128,7 +117,7 @@ class matrix extends moodleform {
         $searchgroup[] = &$mform->createElement('text', 'search', '', $params);
         $searchgroup[] = &$mform->createElement('submit', 'searchbutton', $searchstring, null);
         $mform->setType('search', PARAM_TEXT);
-        $mform->addGroup($searchgroup, 'searchgroup', '' , ' ', false);
+        $mform->addGroup($searchgroup, 'searchgroup', '', ' ', false);
     }
 
     /**
@@ -149,7 +138,7 @@ class matrix extends moodleform {
 
             $searchtitle = [];
             $searchtitle[] = &$mform->createElement('static', 'stitle', 'stitle', $header);
-            $mform->addGroup($searchtitle, 'searchtitle', '' , ' ', false);
+            $mform->addGroup($searchtitle, 'searchtitle', '', ' ', false);
 
             // Add an environment header group.
             $mform->addGroup($environmentheader, 'group_header1', '', ' ', false);
@@ -158,7 +147,6 @@ class matrix extends moodleform {
         // Display the configured items associated to each environment.
         foreach ($searchitems as $plugin => $items) {
             foreach ($items as $configname => $item) {
-
                 // This item exists in the saved config items array, do not display it here.
                 if (!$item->display) {
                     continue;
@@ -203,11 +191,8 @@ class matrix extends moodleform {
                 }
 
                 $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
-
             }
-
         }
-
     }
 
     /**
@@ -226,7 +211,7 @@ class matrix extends moodleform {
 
             $existingtitle = [];
             $existingtitle[] = &$mform->createElement('static', 'etitle', 'etitle', $header);
-            $mform->addGroup($existingtitle, 'existingtitle', '' , ' ', false);
+            $mform->addGroup($existingtitle, 'existingtitle', '', ' ', false);
 
             // Add an environment header group.
             $mform->addGroup($environmentheader, 'group_header2', '', ' ', false);
@@ -242,7 +227,6 @@ class matrix extends moodleform {
                 $mform->setDefault($cbkey, 1);
 
                 foreach ($environments as $eid => $env) {
-
                     // Check to see if the item exists in the list of environments.
                     if (array_key_exists($eid, $items)) {
                         $item = $items[$eid];
@@ -277,7 +261,6 @@ class matrix extends moodleform {
 
                 $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
             }
-
         }
     }
 
@@ -291,12 +274,11 @@ class matrix extends moodleform {
         $configitems = $this->_customdata['configitems'];
 
         if (!empty($configitems) || !empty($searchitems)) {
-            $buttonarray = array();
+            $buttonarray = [];
             $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
             $buttonarray[] = &$mform->createElement('cancel');
-            $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+            $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
             $mform->closeHeaderBefore('buttonar');
         }
-
     }
 }

@@ -14,25 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_delete_users
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_delete_users;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for delete users.
+ *
+ * @package    cleaner_delete_users
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     *
+     * @var string
+     */
     const TASK = 'Removing old users';
+
+    /**
+     * Needs cascade delete.
+     *
+     * @var string
+     */
     protected $needscascadedelete = true;
 
     /**
-     * Do the hard work of cleaning up users.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         global $DB;
 
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
@@ -51,7 +62,7 @@ class clean extends \local_datacleaner\clean {
             self::new_task($numusers);
             $users = self::get_user_chunk($config);
             while (!empty($users)) {
-                list($sql, $params) = $DB->get_in_or_equal($users);
+                [$sql, $params] = $DB->get_in_or_equal($users);
                 $DB->delete_records_select('user', 'id ' . $sql, $params);
                 self::next_step(count($users));
                 $users = self::get_user_chunk($config);

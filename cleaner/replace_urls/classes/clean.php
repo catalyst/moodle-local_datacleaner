@@ -14,28 +14,50 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_replace_urls
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_replace_urls;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for URLs.
+ *
+ * @package    cleaner_replace_urls
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     *
+     * @var string
+     */
     const TASK = 'Replacing URLs';
 
-    static protected $config;
-    static protected $tables = array();
-    static protected $skiptables = array();
+    /**
+     * Config.
+     *
+     * @var mixed
+     */
+    protected static $config;
+
+    /**
+     * Tables.
+     *
+     * @var array
+     */
+    protected static $tables = [];
+
+    /**
+     * Skiptables.
+     *
+     * @var array
+     */
+    protected static $skiptables = [];
 
     /**
      * Constructor.
      */
-    public function __construct($options = array()) {
+    public function __construct($options = []) {
         parent::__construct($options);
         self::$config = get_config('cleaner_replace_urls');
         self::$skiptables = self::get_skiptables(self::$config);
@@ -63,7 +85,7 @@ class clean extends \local_datacleaner\clean {
     private static function get_tables($skiptables) {
         global $DB;
 
-        $finaltables = array();
+        $finaltables = [];
 
         if (!$tables = $DB->get_tables()) {
             return $finaltables;
@@ -85,7 +107,7 @@ class clean extends \local_datacleaner\clean {
      * @return array
      */
     private static function get_skiptables($config) {
-        $skiptables = array();
+        $skiptables = [];
         if (isset($config->skiptables)) {
             $skiptables = array_map('trim', explode(",", $config->skiptables));
         }
@@ -114,21 +136,18 @@ class clean extends \local_datacleaner\clean {
             \core_php_time_limit::raise();
         }
 
-        $replacing = array();
+        $replacing = [];
 
         foreach (self::$tables as $table) {
-
             if ($columns = $DB->get_columns($table)) {
-                $wysiwyg = array();
+                $wysiwyg = [];
 
                 foreach ($columns as $column) {
-
                     // Clean all columns in tables with the name 'config'.
                     if (self::$config->cleanconfig) {
                         if (strpos($table, 'config') !== false) {
                             $replacing[$table][$column->name] = $column;
                         }
-
                     }
 
                     // Clean all columns of type 'text' or 'varchar'.
@@ -142,7 +161,6 @@ class clean extends \local_datacleaner\clean {
                     if (self::$config->cleanwysiwyg) {
                         foreach ($columns as $column) {
                             if (preg_match('/(.*)format$/', $column->name, $matches)) {
-
                                 if (!empty($matches[1])) {
                                     $wysiwyg[$column->name] = $matches[1];
                                 }
@@ -158,7 +176,6 @@ class clean extends \local_datacleaner\clean {
                         $replacing[$table][$column->name] = $column;
                     }
                 }
-
             } // End db get columns on table.
         } // End foreach tables.
 
@@ -181,29 +198,28 @@ class clean extends \local_datacleaner\clean {
      * Replaces URLs using block_XXXX_global_db_replace function.
      * It's pretty much a copy of core db_replace() function from lib/adminlib.php
      */
-    static private function blocks_replace() {
+    private static function blocks_replace() {
         global $CFG;
 
         $blocks = \core_component::get_plugin_list('block');
-        $blockfunctions = array();
+        $blockfunctions = [];
 
         foreach ($blocks as $blockname => $fullblock) {
             if ($blockname === 'NEWBLOCK') {
                 continue;
             }
 
-            if (!is_readable($fullblock.'/lib.php')) {
+            if (!is_readable($fullblock . '/lib.php')) {
                 continue;
             }
 
-            $function = 'block_'.$blockname.'_global_db_replace';
-            include_once($fullblock.'/lib.php');
+            $function = 'block_' . $blockname . '_global_db_replace';
+            include_once($fullblock . '/lib.php');
             if (!function_exists($function)) {
                 continue;
             }
 
             $blockfunctions[] = $function;
-
         }
 
         self::new_task(count($blockfunctions));
@@ -217,13 +233,12 @@ class clean extends \local_datacleaner\clean {
         }
 
         purge_all_caches();
-
     }
 
     /**
-     * Executes clean.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         if (self::$options['dryrun']) {
             $count = count(self::$tables);
             if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {

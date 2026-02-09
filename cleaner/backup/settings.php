@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings.
+ * Settings for the backup cleaner.
  *
  * @package    cleaner_backup
  * @copyright  2020 Peter Burnett <peterburnett@catalyst-au.net>
@@ -28,6 +28,11 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_backup/fastdelete',
-            new lang_string('fastdelete', 'cleaner_backup'),
-            new lang_string('fastdelete_desc', 'cleaner_backup'), 0));
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_backup/fastdelete',
+        new lang_string('fastdelete', 'cleaner_backup'),
+        new lang_string('fastdelete_desc', 'cleaner_backup'),
+        0
+    )
+);

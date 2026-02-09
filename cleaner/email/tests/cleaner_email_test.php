@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Testcase for cleaner_email
- *
- * @package    cleaner_email
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 use cleaner_email\clean;
 
 defined('MOODLE_INTERNAL') || die();
@@ -31,12 +22,10 @@ defined('MOODLE_INTERNAL') || die();
  * Testcase for cleaner_email
  *
  * @package    cleaner_email
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cleaner_email_test extends advanced_testcase {
-
     /** @var stdClass $config */
     private $config;
 
@@ -49,8 +38,8 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Create some test users.
      */
-    protected function setUp() : void {
-        parent::setup();
+    protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest(true);
 
         for ($i = 0; $i < self::MAX_USERS; $i++) {
@@ -87,7 +76,7 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Teardown unit tests.
      */
-    protected function tearDown() : void {
+    protected function tearDown(): void {
         $this->config = null;
         $this->users = null;
         parent::tearDown();
@@ -154,14 +143,14 @@ class cleaner_email_test extends advanced_testcase {
      *
      * @return array
      */
-    public function provider_for_cleaner_email_suffix_ignore_pattern() {
+    public function provider_for_cleaner_email_suffix_ignore_pattern(): array {
         return [
-            ['user@example.com',     'user@example.com.suffix',     '.suffix',   'moodle.com'],
-            ['user@email.com',       'user@email.com.suffix',       '.suffix',   'emailsuffix.com'],
-            ['user@email+alias.com', 'user@email+alias.com.suffix', '.suffix',   'email+alias'],
-            ['user@email+alias.com', 'user@email+alias.com',       ' .nosuffix', 'email[\+]alias'],
-            ['user@email+alias.com', 'user@email+alias.com',        '.nosuffix', 'email.alias'],
-            ['user@example.com',     'user@example.com',            '.nosuffix', 'example.com'],
+            ['user@example.com', 'user@example.com.suffix', '.suffix', 'moodle.com'],
+            ['user@email.com', 'user@email.com.suffix', '.suffix', 'emailsuffix.com'],
+            ['user@email+alias.com', 'user@email+alias.com.suffix', '.suffix', 'email+alias'],
+            ['user@email+alias.com', 'user@email+alias.com', ' .nosuffix', 'email[\+]alias'],
+            ['user@email+alias.com', 'user@email+alias.com', '.nosuffix', 'email.alias'],
+            ['user@example.com', 'user@example.com', '.nosuffix', 'example.com'],
         ];
     }
 }

@@ -18,13 +18,15 @@
  * Upgrade script for cleaner_users_upgrade.
  *
  * @package    cleaner_users
- * @author     Kevin Pham <kevinpham@catalyst-au.net>
- * @copyright  Catalyst IT, 2021
+ * @copyright  2021 Kevin Pham <kevinpham@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Upgrade script for cleaner_users_upgrade.
+ */
 function xmldb_cleaner_users_upgrade($oldversion) {
     global $DB;
 
