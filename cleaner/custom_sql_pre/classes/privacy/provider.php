@@ -13,31 +13,29 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/**
- * Privacy provider.
- *
- * @package   cleaner_custom_sql_pre
- * @author    Srdjan Janković (srdjan@catalyst.net.nz)
- * @copyright 2019 Catalyst IT
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+
 namespace cleaner_custom_sql_pre\privacy;
 defined('MOODLE_INTERNAL') || die;
 use core_privacy\local\metadata\null_provider;
 use core_privacy\local\legacy_polyfill;
+
 /**
- * Class provider
- * @package cleaner_environment_matrix\privacy
+ * Privacy provider.
+ *
+ * @package   cleaner_custom_sql_pre
+ * @copyright 2019 Srdjan Janković <srdjan@catalyst.net.nz>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements null_provider {
     use legacy_polyfill;
+
     /**
      * Get the language string identifier with the component's language
      * file to explain why this plugin stores no data.
      *
      * @return  string
      */
-    public static function _get_reason() {
+    public static function get_reason(): string {
         return 'privacy:metadata';
     }
 }

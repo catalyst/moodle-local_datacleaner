@@ -14,16 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Cleaner.
- *
- * @package    cleaner_email
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-
 namespace cleaner_email;
 
 use stdClass;
@@ -31,22 +21,20 @@ use stdClass;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Cleaner.
+ * Data cleaner class for email.
  *
  * @package    cleaner_email
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class clean extends \local_datacleaner\clean {
-
     /** The task name */
     const TASK = 'Email cleaner';
 
     /**
-     * Do the work.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
 
         $config = get_config('cleaner_email');
         $dryrun = (bool)self::$options['dryrun'];

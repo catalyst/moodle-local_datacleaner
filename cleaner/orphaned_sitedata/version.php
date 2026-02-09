@@ -18,8 +18,7 @@
  * Version details.
  *
  * @package    cleaner_orphaned_sitedata
- * @author     Ghada El-Zoghbi <ghada@catalyst-au.net>
- * @copyright  2015 Catalyst IT
+ * @copyright  2015 Ghada El-Zoghbi <ghada@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

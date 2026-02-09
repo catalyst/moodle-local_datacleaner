@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings for the core cleaner.
+ *
  * @package    cleaner_core
- * @copyright  2015 Catalyst IT
- * @author     Ghada El-Zoghbi <ghada@catalyst-au.net>
+ * @copyright  2015 Ghada El-Zoghbi <ghada@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,7 +28,11 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_core/deletemucfile',
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_core/deletemucfile',
         new lang_string('deletemucfile', 'cleaner_core'),
-        new lang_string('deletemucfiledesc', 'cleaner_core'), 1));
-
+        new lang_string('deletemucfiledesc', 'cleaner_core'),
+        1
+    )
+);

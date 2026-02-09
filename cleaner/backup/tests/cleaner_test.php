@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace cleaner_backup\tests;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Tests for the cleaner.
  *
@@ -21,13 +25,11 @@
  * @copyright  2020 Peter Burnett <peterburnett@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace cleaner_backup\tests;
-
-defined('MOODLE_INTERNAL') || die();
-
 class cleaner_backup_test extends \advanced_testcase {
-
-    public function delete_provider() {
+    /**
+     * Delete provider.
+     */
+    public function delete_provider(): array {
         // Array of filename, deleted.
         return [
             ['myfile.txt', false],
@@ -41,6 +43,7 @@ class cleaner_backup_test extends \advanced_testcase {
     }
 
     /**
+     * Test delete backups.
      * @dataProvider delete_provider
      */
     public function test_delete_backups($filename, $deleted) {
@@ -58,7 +61,7 @@ class cleaner_backup_test extends \advanced_testcase {
             'filearea' => 'backup',
             'itemid' => 0,
             'filepath' => '/',
-            'filename' => $filename
+            'filename' => $filename,
         ], 'content');
 
         \cleaner_backup\clean::delete_backups();
@@ -82,7 +85,7 @@ class cleaner_backup_test extends \advanced_testcase {
             'filearea' => 'backup',
             'itemid' => 0,
             'filepath' => '/',
-            'filename' => $filename
+            'filename' => $filename,
         ], 'content');
 
         set_config('fastdelete', 1, 'cleaner_backup');

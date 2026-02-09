@@ -18,8 +18,7 @@
  * Install script for databases.
  *
  * @package   local_datacleaner
- * @author    Dustin Huynh <dustinhuynh@catalyst-au.net>
- * @copyright 2025, Catalyst IT
+ * @copyright 2025 Dustin Huynh <dustinhuynh@catalyst-au.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 function xmldb_local_datacleaner_install() {

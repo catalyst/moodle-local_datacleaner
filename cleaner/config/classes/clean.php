@@ -14,18 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_config
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_config;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for config.
+ *
+ * @package    cleaner_config
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     */
     const TASK = 'Removing config settings';
 
     /**
@@ -40,7 +43,7 @@ class clean extends \local_datacleaner\clean {
         $where = '';
         $params = [];
 
-        $names = isset($config->names) ? explode("\n", $config->names) : array();
+        $names = isset($config->names) ? explode("\n", $config->names) : [];
         foreach ($names as $name) {
             $name = trim($name);
             if (empty($name)) {
@@ -52,7 +55,7 @@ class clean extends \local_datacleaner\clean {
             $where .= " name LIKE ?";
             $params[] = $name;
         }
-        $values = isset($config->vals) ? explode("\n", $config->vals) : array();
+        $values = isset($config->vals) ? explode("\n", $config->vals) : [];
         foreach ($values as $val) {
             $val = trim($val);
             if (empty($val)) {
@@ -69,12 +72,12 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Do the hard work of removing config settings.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         global $DB;
 
-        list($where, $params) = self::get_where();
+        [$where, $params] = self::get_where();
 
         if ($where) {
             self::new_task(2);

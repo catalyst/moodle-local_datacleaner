@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * backup_cleaner test class.
- *
- * @package     backup_cleaner_test
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_orphaned_sitedata\tests\unit;
 
 use cleaner_orphaned_sitedata\backup_cleaner;
@@ -30,27 +21,29 @@ use cleaner_orphaned_sitedata\backup_cleaner;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->libdir.'/adminlib.php');
-require_once(__DIR__.'/orphaned_sitedata_testcase.php');
+require_once($CFG->libdir . '/adminlib.php');
+require_once(__DIR__ . '/orphaned_sitedata_testcase.php');
 
 /**
  * backup_cleaner test class.
  *
- * @package     backup_cleaner_test
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT
+ * @package     cleaner_orphaned_sitedata
+ * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class backup_cleaner_test extends orphaned_sitedata_testcase {
+    /**
+     * The list of files that existed before the test started.
+     * @var array
+     */
     private $initialfiles;
 
-    public function setUp() : void {
+    public function setUp(): void {
         parent::setUp();
         $this->initialfiles = $this->get_files();
     }
 
-    public function tearDown() : void {
+    public function tearDown(): void {
         $this->initialfiles = null;
         parent::tearDown();
     }
@@ -89,7 +82,7 @@ class backup_cleaner_test extends orphaned_sitedata_testcase {
     private function get_files() {
         global $DB;
         $found = $DB->get_records_select('files', "filename <> '.'", null, 'id ASC');
-        array_walk($found, function(&$value) {
+        array_walk($found, function (&$value) {
             $value = $value->filename;
         });
         return $found;

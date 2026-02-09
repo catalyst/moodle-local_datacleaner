@@ -15,8 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Privacy test script.
+ *
  * @package   local_datacleaner
- * @copyright Moodle
+ * @copyright 2018 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -95,6 +97,11 @@ foreach ($list->good as $component) {
 
 echo "\n\n== Done ==\n";
 
+/**
+ * Check if the component implements the given interface.
+ *
+ * @return bool True if the component implements the interface, false otherwise.
+ */
 function check_implements($component, $interface) {
     $manager = new \core_privacy\manager();
     $rc = new \ReflectionClass(\core_privacy\manager::class);

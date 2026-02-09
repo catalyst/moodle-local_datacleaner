@@ -18,18 +18,17 @@
  * Cache definitions.
  *
  * @package    local_datacleaner
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$definitions = array(
-    'courses' => array(
+$definitions = [
+    'courses' => [
         'mode' => cache_store::MODE_APPLICATION,
-    ),
-    'schema' => array(
+    ],
+    'schema' => [
         'mode' => cache_store::MODE_APPLICATION,
-    )
-);
+    ],
+];

@@ -30,29 +30,44 @@ if (!$hassiteconfig) { // Needs this condition or there is error on login page.
 
 $ADMIN->add('localplugins', new admin_category('datacleaner', get_string('pluginname', 'local_datacleaner')));
 
-$ADMIN->add('datacleaner', new admin_externalpage('local_datacleaner',
-    get_string('manage', 'local_datacleaner'),
-    new moodle_url('/local/datacleaner/index.php')));
+$ADMIN->add(
+    'datacleaner',
+    new admin_externalpage(
+        'local_datacleaner',
+        get_string('manage', 'local_datacleaner'),
+        new moodle_url('/local/datacleaner/index.php')
+    )
+);
 
 
 $general = new admin_settingpage('generalsettings', new lang_string('generalsettings', 'local_datacleaner'));
 
-$general->add(new \local_datacleaner\admin_setting_configencodedtext('local_datacleaner/original_wwwroot',
-    new lang_string('original_wwwroot', 'local_datacleaner'),
-    new lang_string('original_wwwrootdesc', 'local_datacleaner'), $CFG->wwwroot, PARAM_URL));
+$general->add(
+    new \local_datacleaner\admin_setting_configencodedtext(
+        'local_datacleaner/original_wwwroot',
+        new lang_string('original_wwwroot', 'local_datacleaner'),
+        new lang_string('original_wwwrootdesc', 'local_datacleaner'),
+        $CFG->wwwroot,
+        PARAM_URL
+    )
+);
 $ADMIN->add('datacleaner', $general);
 
 $temp = new admin_settingpage('cascadedeletesettings', new lang_string('cascadedeletesettings', 'local_datacleaner'));
 
-$temp->add(new admin_setting_configtext('local_datacleaner/mismatch_threshold',
-    new lang_string('mismatch_threshold', 'local_datacleaner'),
-    new lang_string('mismatch_thresholddesc', 'local_datacleaner'), '5', PARAM_INT));
+$temp->add(
+    new admin_setting_configtext(
+        'local_datacleaner/mismatch_threshold',
+        new lang_string('mismatch_threshold', 'local_datacleaner'),
+        new lang_string('mismatch_thresholddesc', 'local_datacleaner'),
+        '5',
+        PARAM_INT
+    )
+);
 $ADMIN->add('datacleaner', $temp);
 
 $plugins = \local_datacleaner\plugininfo\cleaner::get_plugins_by_sortorder();
 foreach ($plugins as $plugin) {
-
     $pagename = 'cleaner_' . $plugin->name . '_settings';
     $plugin->load_settings($ADMIN, 'datacleaner', $hassiteconfig);
 }
-

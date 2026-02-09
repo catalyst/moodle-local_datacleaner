@@ -14,20 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_logstore_standard
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_logstore_standard;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for logstore standard.
+ *
+ * @package    cleaner_logstore_standard
+ * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task description.
+     *
+     * @var string
+     */
     const TASK = 'Truncating standard logs';
 
-    static public function execute() {
+    /**
+     * Execute the cleaning process.
+     */
+    public static function execute() {
 
         global $DB;
 

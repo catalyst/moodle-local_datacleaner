@@ -14,22 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_users
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_users;
 
 use local_datacleaner\table_scrambler;
 
 defined('MOODLE_INTERNAL') || die();
 
-require(__DIR__.'/../../../classes/table_scrambler.php');
+require(__DIR__ . '/../../../classes/table_scrambler.php');
 
+/**
+ * Data cleaner class for users.
+ *
+ * @package    cleaner_users
+ * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     */
     const TASK = 'Scrambling user data';
+
+    /**
+     * A prefix to use for all usernames.
+     *
+     * @var string
+     */
     const USERNAME_PREFIX = 'user_';
 
     /**
@@ -39,6 +49,9 @@ class clean extends \local_datacleaner\clean {
      */
     protected static $idstoupdate;
 
+    /**
+     * Execute the cleaning process.
+     */
     public static function execute() {
         if (!isset(self::$options['dryrun'])) {
             cli_error("Missing options information, cannot continue.");
@@ -61,15 +74,18 @@ class clean extends \local_datacleaner\clean {
         self::scramble_fields();
     }
 
+    /**
+     * Get the list of user IDs to update, based on the criteria defined in the settings.
+     */
     private static function create_user_id_list_to_update() {
         global $DB;
 
         echo "Fetching users to update...\n";
 
         $criteria = self::get_user_criteria(get_config('cleaner_users'));
-        list($where, $whereparams) = self::get_user_where_sql($criteria);
+        [$where, $whereparams] = self::get_user_where_sql($criteria);
 
-        $ids = $DB->get_records_select('user', 'id > 2 '.$where, $whereparams, 'id', 'id');
+        $ids = $DB->get_records_select('user', 'id > 2 ' . $where, $whereparams, 'id', 'id');
         self::debug(sprintf("* Users to update: %d\n", count($ids)));
 
         $ids = array_keys($ids);
@@ -86,7 +102,7 @@ class clean extends \local_datacleaner\clean {
 
         echo "Updating all usernames...\n";
 
-        $where = 'id IN ('.self::$idstoupdate.')';
+        $where = 'id IN (' . self::$idstoupdate . ')';
         $prefix = self::USERNAME_PREFIX;
         $sql = <<<SQL
 UPDATE {user}
@@ -96,6 +112,9 @@ SQL;
         $DB->execute($sql);
     }
 
+    /**
+     * Scramble all other fields.
+     */
     private static function scramble_fields() {
         $fieldset = [
             'main names'  => ['firstname', 'lastname'],
@@ -112,6 +131,9 @@ SQL;
         }
     }
 
+    /**
+     * Set fields to fixed values.
+     */
     private static function set_fixed_fields() {
         global $DB;
 
@@ -134,7 +156,7 @@ SQL;
             'idnumber'     => '',
         ];
 
-        $select = 'id IN ('.self::$idstoupdate.')';
+        $select = 'id IN (' . self::$idstoupdate . ')';
         foreach ($fields as $field => $value) {
             self::debug("* Erasing contents for: {$field} ...\n");
             $DB->set_field_select('user', $field, $value, $select);

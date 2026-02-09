@@ -14,23 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_sitedata
- * @copyright  2015 Ghada El-Zoghbi <ghada@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_sitedata;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/moodlelib.php');
+require_once($CFG->libdir . '/moodlelib.php');
 require_once($CFG->dirroot . '/local/datacleaner/cleaner/sitedata/classes/supported_file_types.php');
 
+/**
+ * Data cleaner class for sitedata.
+ *
+ * @package    cleaner_sitedata
+ * @copyright  2015 Ghada El-Zoghbi <ghada@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task name.
+     */
     const TASK = 'Replace sitedata files';
 
-    static public function execute() {
+    /**
+     * Execute the cleaning process.
+     */
+    public static function execute() {
         global $DB, $CFG;
 
         // Update the database record with the placeholder file details.
@@ -39,19 +46,19 @@ class clean extends \local_datacleaner\clean {
         $config = get_config('cleaner_sitedata');
 
         $allfiletypes = isset($config->allfiletypes) && $config->allfiletypes == 1 ? true : false;
-        $filetypes = isset($config->filetypes) && !empty($config->filetypes) ? explode(',', $config->filetypes) : array();
+        $filetypes = isset($config->filetypes) && !empty($config->filetypes) ? explode(',', $config->filetypes) : [];
 
         // If no contextlevels selected, default to USER.
         $allcontextlevels = isset($config->allcontextlevels) && $config->allcontextlevels == 1 ? true : false;
         $correctcontextlevels = isset($config->contextlevels) && !empty($config->contextlevels);
-        $contextlevels = !empty($correctcontextlevels) ? explode(',', $config->contextlevels) : array(CONTEXT_USER);
+        $contextlevels = !empty($correctcontextlevels) ? explode(',', $config->contextlevels) : [CONTEXT_USER];
 
         $sql = "SELECT f.mimetype, count(1) As total
                 FROM {files} f
                 INNER JOIN {context} c on f.contextid = c.id";
 
-        $wherearray = array();
-        $params = array();
+        $wherearray = [];
+        $params = [];
         if ($allcontextlevels == false) {
             if (empty($contextlevels)) {
                 // They don't want to delete anything. This shouldn't happen as we default to USER.
@@ -73,7 +80,7 @@ class clean extends \local_datacleaner\clean {
             } else {
                 // Replace specific file types.
                 $wherearray[] = "f.mimetype IN (" . implode(',', array_fill(0, count($filetypes), '?')) . ")";
-                $params = array_merge($params , $filetypes);
+                $params = array_merge($params, $filetypes);
             }
         }
 
@@ -90,11 +97,10 @@ class clean extends \local_datacleaner\clean {
         $filetypes = new cleaner_sitedata_supported_file_types();
 
         if (self::$options['dryrun']) {
-
             if ($count > 0) {
                 foreach ($results as $result) {
                     $mimetype = $result->mimetype;
-                    list($newmimetype, $placeholderfilename) = $filetypes->get_placeholder_file_name_for_type($mimetype);
+                    [$newmimetype, $placeholderfilename] = $filetypes->get_placeholder_file_name_for_type($mimetype);
 
                     $extensions = $filetypes->get_file_extension_for_type($mimetype);
                     $info = new \stdClass();
@@ -112,18 +118,15 @@ class clean extends \local_datacleaner\clean {
             } else {
                 printf("\n\r " . get_string('nothingtoupdate', 'cleaner_sitedata') . "\n");
             }
-
         } else {
-
             if ($count > 0) {
-
                 self::new_task($count);
                 // Instantiate once - i.e. not inside the foreach loop.
                 $fs = get_file_storage();
 
                 foreach ($results as $result) {
                     $mimetype = $result->mimetype;
-                    list($newmimetype, $placeholderfilename) = $filetypes->get_placeholder_file_name_for_type($mimetype);
+                    [$newmimetype, $placeholderfilename] = $filetypes->get_placeholder_file_name_for_type($mimetype);
                     $extensions = $filetypes->get_file_extension_for_type($mimetype);
 
                     // Display the information we are about to replace
@@ -146,7 +149,7 @@ class clean extends \local_datacleaner\clean {
 
                     try {
                         // Copy the file to sitedata.
-                        list($contenthash, $filesize, $newfile) = $fs->add_file_to_pool($source);
+                        [$contenthash, $filesize, $newfile] = $fs->add_file_to_pool($source);
                     } catch (\Exception $e) {
                         printf("\r " . get_string('filecopyerror', 'cleaner_sitedata') . "\n");
                         self::next_step();
@@ -167,7 +170,7 @@ class clean extends \local_datacleaner\clean {
                                 author = null,
                                 source = null
                             WHERE mimetype = ?";
-                    $params = array();
+                    $params = [];
                     $params[] = $contenthash;
                     $params[] = $filesize;
                     $params[] = $newmimetype;
@@ -176,14 +179,11 @@ class clean extends \local_datacleaner\clean {
                     $DB->execute($sql, $params);
                     self::next_step();
                 }
-
             } else {
                 printf("\n\r " . get_string('nothingtoupdate', 'cleaner_sitedata') . "\n");
             }
         }
 
         printf("\n");
-
     }
-
 }

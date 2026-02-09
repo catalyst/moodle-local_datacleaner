@@ -14,23 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Unit tests for cleaner_config
- *
- * @package     local_datacleaner
- * @subpackage  cleaner_config
- * @author      Marcus Boon<marcus@catalyst-au.net>
- */
-
 use cleaner_config\clean;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
 /**
- * Tests
+ * Unit tests for cleaner_config
+ *
+ * @package    cleaner_config
+ * @copyright  2016 Marcus Boon <marcus@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cleaner_config_test extends advanced_testcase {
-
     /** @var Column names */
     private $names;
 
@@ -40,14 +35,14 @@ class cleaner_config_test extends advanced_testcase {
     /**
      * Insert some config make sure they are gone
      */
-    protected function setUp() : void {
-        parent::setup();
+    protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest(true);
 
-        $this->names = array('unittestname1', 'unittestname2', 'unittestname3');
+        $this->names = ['unittestname1', 'unittestname2', 'unittestname3'];
         $confignames = implode("\n", $this->names);
 
-        $this->values = array('unittestvalsA', 'unittestvalsB');
+        $this->values = ['unittestvalsA', 'unittestvalsB'];
         $configvalues = implode("\n", $this->values);
 
         // Set config for the config cleaner.
@@ -56,18 +51,18 @@ class cleaner_config_test extends advanced_testcase {
 
         // Set some dummy config so that we can clean it up later.
         foreach ($this->names as $name) {
-            set_config($name, $name.'value');
+            set_config($name, $name . 'value');
         }
 
         foreach ($this->values as $value) {
-            set_config($value.'name', $value);
+            set_config($value . 'name', $value);
         }
     }
 
     /**
      * Teardown unit tests.
      */
-    protected function tearDown() : void {
+    protected function tearDown(): void {
         $this->names = null;
         $this->values = null;
         parent::tearDown();
@@ -81,7 +76,7 @@ class cleaner_config_test extends advanced_testcase {
         $this->resetAfterTest(true);
 
         $configcleaner = new clean();
-        list($where, $params) = $configcleaner->get_where();
+        [$where, $params] = $configcleaner->get_where();
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             $this->assertMatchesRegularExpression("/name LIKE ?/", $where);
             $this->assertMatchesRegularExpression("/value LIKE ?/", $where);
@@ -117,5 +112,4 @@ class cleaner_config_test extends advanced_testcase {
         $this->assertEquals(0, $namesafter);
         $this->assertEquals(0, $valsafter);
     }
-
 }

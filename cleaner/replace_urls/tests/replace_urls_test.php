@@ -14,31 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Unit tests for replace_urls
- *
- * @package     local_datacleaner
- * @subpackage  cleaner_replace_urls
- * @author      Marcus Boon<marcus@catalyst-au.net>
- */
-
 use cleaner_replace_urls\clean;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
 
 /**
- * Tests
+ * Unit tests for replace_urls
+ *
+ * @package    cleaner_replace_urls
+ * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cleaner_replace_urls_test extends advanced_testcase {
-
     /** @var Course values */
     private $course;
 
     /**
      * Insert some config make sure they are gone
      */
-    protected function setUp() : void {
-        parent::setup();
+    protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest(true);
 
         // Set config for original and new site
@@ -47,17 +42,16 @@ class cleaner_replace_urls_test extends advanced_testcase {
         set_config('cleantext', 1, 'cleaner_replace_urls');
 
         // create a course to test
-        $coursearray = array(
+        $coursearray = [
             'fullname' => get_config('cleaner_replace_urls', 'origsiteurl'),
-        );
+        ];
         $this->course = $this->getDataGenerator()->create_course($coursearray);
-
     }
 
     /**
      * Teardown unit tests.
      */
-    protected function tearDown() : void {
+    protected function tearDown(): void {
         $this->course = null;
         parent::tearDown();
     }
@@ -80,7 +74,6 @@ class cleaner_replace_urls_test extends advanced_testcase {
         $namesafter = $DB->get_record_sql('SELECT fullname FROM {course} WHERE id=:name', ['name' => $this->course->id]);
 
         $this->assertEquals(get_config('cleaner_replace_urls', 'newsiteurl'), $namesafter->fullname);
-
     }
 
     /**
@@ -101,6 +94,5 @@ class cleaner_replace_urls_test extends advanced_testcase {
         $namesafter = $DB->get_record_sql('SELECT fullname FROM {course} WHERE id=:name', ['name' => $this->course->id]);
 
         $this->assertEquals($CFG->wwwroot, $namesafter->fullname);
-
     }
 }

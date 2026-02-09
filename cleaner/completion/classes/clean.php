@@ -14,23 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace cleaner_completion;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
- * Completion cleaner.
+ * Data cleaner class for completion.
  *
  * @package    cleaner_completion
  * @copyright  2015 Dmitrii Metelkin <dmitriim@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace cleaner_completion;
-
-defined('MOODLE_INTERNAL') || die();
-
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     */
     const TASK = 'Removing completion';
 
-    static protected $courses = array();
-    static protected $config;
+    /**
+     * Courses.
+     *
+     * @var string
+     */
+    protected static $courses = [];
+
+    /**
+     * Config.
+     *
+     * @var string
+     */
+    protected static $config;
 
     /**
      * Constructor.
@@ -48,11 +61,11 @@ class clean extends \local_datacleaner\clean {
      *
      * @param array $courses A list of courses to delete completion for.
      */
-    static public function delete_course_completion($courses = array()) {
+    public static function delete_course_completion($courses = []) {
         global $DB;
 
         if (!empty(self::$config->deletecoursecompletion)) {
-            list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
+            [$sql, $params] = $DB->get_in_or_equal(array_keys($courses));
             if (self::$options['dryrun']) {
                 $coursecompletion = $DB->get_records_select('course_completion_crit_compl', 'course ' . $sql, $params, false, 'id');
                 echo "\nWould delete " . count($coursecompletion) . " course completion records for "
@@ -69,30 +82,36 @@ class clean extends \local_datacleaner\clean {
      *
      * @param array $courses A list of courses to delete activity completion for.
      */
-    static public function delete_activity_completion($courses = array()) {
+    public static function delete_activity_completion($courses = []) {
         global $DB;
 
         if (!empty(self::$config->deleteactivitycompletion)) {
-            list($sql, $params) = $DB->get_in_or_equal(array_keys($courses));
+            [$sql, $params] = $DB->get_in_or_equal(array_keys($courses));
 
             if (!empty(self::$options['dryrun'])) {
-                $coursecompletion = $DB->get_records_select('course_modules_completion',
-                        "coursemoduleid IN (SELECT id FROM {course_modules} WHERE course $sql)",
-                        $params, false, 'id');
+                $coursecompletion = $DB->get_records_select(
+                    'course_modules_completion',
+                    "coursemoduleid IN (SELECT id FROM {course_modules} WHERE course $sql)",
+                    $params,
+                    false,
+                    'id'
+                );
                 echo "\nWould delete " . count($coursecompletion) . " activity completion records for " .
                         count($courses) . " courses. \n";
             } else {
-                $DB->delete_records_select('course_modules_completion',
-                        "coursemoduleid IN (SELECT id FROM {course_modules} WHERE course $sql)",
-                        $params);
+                $DB->delete_records_select(
+                    'course_modules_completion',
+                    "coursemoduleid IN (SELECT id FROM {course_modules} WHERE course $sql)",
+                    $params
+                );
             }
         }
     }
 
     /**
-     * Do the work of deleting completion.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         $numcourses = count(self::$courses);
 
         if (!$numcourses) {
