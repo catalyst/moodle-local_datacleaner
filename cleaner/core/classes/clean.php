@@ -14,24 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_core
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_core;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for core.
+ *
+ * @package    cleaner_core
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     */
     const TASK = 'Removing config settings';
 
     /**
-     * Do the work of truncating any unneeded tables.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         global $DB, $CFG;
 
         // Get the settings.
@@ -43,7 +46,7 @@ class clean extends \local_datacleaner\clean {
         $mucdirectory = $CFG->dataroot . '/muc';
 
         $tables = $DB->get_tables();
-        $tablelist = array();
+        $tablelist = [];
 
         foreach ($tables as $table) {
             switch ($table) {
@@ -59,10 +62,12 @@ class clean extends \local_datacleaner\clean {
                     $tablelist[] = $table;
                     break;
                 default:
-                    if (substr($table, 0, 5) == 'back_' ||
+                    if (
+                        substr($table, 0, 5) == 'back_' ||
                         substr($table, 0, 6) == 'stats_' ||
                         substr($table, 0, 9) == 'sessions_' ||
-                        substr($table, 0, 13) == 'webdav_locks_') {
+                        substr($table, 0, 13) == 'webdav_locks_'
+                    ) {
                         $tablelist[] = $table;
                     }
             }
@@ -76,7 +81,6 @@ class clean extends \local_datacleaner\clean {
                 // There's only one file here.
                 printf("\n\r " . get_string('woulddeletemuc', 'cleaner_core') . "\n");
             }
-
         } else {
             // This always gets run.
             printf("\n\r " . get_string('willtruncatetables', 'cleaner_core', count($tablelist)) . "\n");
@@ -90,10 +94,8 @@ class clean extends \local_datacleaner\clean {
                     printf("\r " . get_string('errordeletingdir', 'local_datacleaner', $mucdirectory) . "\n");
                 }
             }
-
         }
 
         printf("\n");
-
     }
 }

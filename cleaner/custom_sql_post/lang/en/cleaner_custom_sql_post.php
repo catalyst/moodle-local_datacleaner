@@ -18,8 +18,7 @@
  * Language strings
  *
  * @package    cleaner_custom_sql_post
- * @copyright  2019 Catalyst IT
- * @author     Srdjan Janković <srdjan@catalyst.net.nz>
+ * @copyright  2019 Srdjan Janković <srdjan@catalyst.net.nz>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

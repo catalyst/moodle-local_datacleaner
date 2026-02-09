@@ -23,16 +23,16 @@
  */
 
 define('CLI_SCRIPT', true);
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->libdir.'/adminlib.php');
+require(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
+require_once($CFG->libdir . '/clilib.php');
+require_once($CFG->libdir . '/adminlib.php');
 require_once(dirname(__FILE__) . '/lib.php');
 require_once(dirname(__FILE__) . '/../lib.php');
 
 use local_datacleaner\clean;
 
 // Now get cli options.
-list($options, $unrecognized) = cli_get_params(
+[$options, $unrecognized] = cli_get_params(
     [
         'help' => false,
         'force' => false,
@@ -76,11 +76,13 @@ Example:
 \$sudo -u www-data /usr/bin/php local/datacleaner/cli/clean.php --run
 ";
 
-if (!$options['run'] &&
+if (
+    !$options['run'] &&
     !$options['run-pre-wash'] &&
     !$options['run-post-wash'] &&
     !$options['filter'] &&
-    !$options['dryrun']) {
+    !$options['dryrun']
+) {
     echo $help;
     die;
 }

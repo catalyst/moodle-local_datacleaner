@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Testcase for table_scrambler
- *
- * @package     local_datacleaner
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 use local_datacleaner\table_scrambler;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -32,13 +23,11 @@ defined('MOODLE_INTERNAL') || die();
  * Testcase for table_scrambler
  *
  * @package     local_datacleaner
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class table_scrambler_test extends advanced_testcase {
-    public static function provider_for_it_creates_sorted_temporary_tables() {
+    public static function provider_for_it_creates_sorted_temporary_tables(): array {
         return [
             'unrepeated' => [
                 self::create_test_data_array(),
@@ -76,7 +65,7 @@ class table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public static function provider_for_it_scrambles_names() {
+    public static function provider_for_it_scrambles_names(): array {
         return [
             ['', [
                 ['id' => '1', 'first' => 'David', 'last' => 'Jones'],
@@ -97,7 +86,7 @@ class table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public static function provider_for_the_next_prime_after() {
+    public static function provider_for_the_next_prime_after(): array {
         return [
             [0, 2],
             [1, 2],
@@ -106,7 +95,7 @@ class table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public static function provider_for_the_prime_factors() {
+    public static function provider_for_the_prime_factors(): array {
         return [
             [2, 1, [2, 3]],
             [2, 3, [2, 3]],
@@ -205,6 +194,9 @@ class table_scrambler_test extends advanced_testcase {
         self::assertSame($expected, $factors);
     }
 
+    /**
+     * Creates the test data table and fills it with the provided data.
+     */
     private function create_test_data($data = null) {
         global $DB;
 

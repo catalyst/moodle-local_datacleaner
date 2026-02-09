@@ -18,11 +18,9 @@
  * Language en for 'cleaner_environment_matrix'
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 $string['button_search'] = 'Search';
 $string['existing_configuration'] = 'Existing configuration';

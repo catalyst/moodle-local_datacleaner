@@ -14,22 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_tasklogs
- * @copyright  2025 Brendan Heywood <brendan@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_tasklogs;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for task logs.
+ *
+ * @package    cleaner_tasklogs
+ * @copyright  2025 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
-
     /**
-     * Removes all task logs
-     *
-     * @var string
+     * Execute the cleaning process.
      */
     public static function execute() {
         global $DB;
@@ -40,8 +38,6 @@ class clean extends \local_datacleaner\clean {
         } else {
             $DB->delete_records('task_log');
             echo "Deleted all task logs.\n";
-
         }
     }
-
 }

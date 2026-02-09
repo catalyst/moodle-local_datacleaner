@@ -14,23 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_orphaned_sitedata
- * @author     Ghada El-Zoghbi <ghada@catalyst-au.net>
- * @copyright  2015 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_orphaned_sitedata;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/moodlelib.php');
+require_once($CFG->libdir . '/moodlelib.php');
 
+/**
+ * Data cleaner class for orphaned sitedata.
+ *
+ * @package    cleaner_orphaned_sitedata
+ * @copyright  2015 Ghada El-Zoghbi <ghada@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task name.
+     */
     const TASK = 'Delete orphaned sitedata files';
 
-    static public function execute() {
+    /**
+     * Execute the cleaning process.
+     */
+    public static function execute() {
         $config = get_config('cleaner_orphaned_sitedata');
         $dryrun = (bool)self::$options['dryrun'];
 
@@ -46,9 +52,9 @@ class clean extends \local_datacleaner\clean {
             if (!isset($config->$option) || !$config->$option) {
                 continue;
             }
-            self::debug($cleaner.' starting...');
+            self::debug($cleaner . ' starting...');
             (new $cleaner($dryrun))->execute();
-            self::debug($cleaner.' finished!');
+            self::debug($cleaner . ' finished!');
             self::debugmemory();
         }
     }

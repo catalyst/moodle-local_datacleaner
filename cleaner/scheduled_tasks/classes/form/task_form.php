@@ -14,12 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package     cleaner_scheduled_tasks
- * @copyright   2019 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_scheduled_tasks\form;
 use html_writer;
 use moodleform;
@@ -29,7 +23,17 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once("{$CFG->libdir}/formslib.php");
 
+/**
+ * Form for cleaner scheduled tasks settings.
+ *
+ * @package     cleaner_scheduled_tasks
+ * @copyright   2019 Kristian Ringer <kristianringer@catalyst-au.net>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class task_form extends moodleform {
+    /**
+     * Defines the form.
+     */
     protected function definition() {
         $mform = $this->_form;
         $tasks = $this->_customdata;
@@ -43,7 +47,7 @@ class task_form extends moodleform {
 
         $headerarray = [];
         $headerarray[] = &$mform->createElement('static', 'stitle', 'stitle', "$header $headersubtitle");
-        $mform->addGroup($headerarray, 'header_array', '' , ' ', false);
+        $mform->addGroup($headerarray, 'header_array', '', ' ', false);
 
         // Header for each column
         $mform->addElement('static', 'description', 'Component', 'Task Name');
@@ -58,7 +62,6 @@ class task_form extends moodleform {
 
         // Now create an element for each task.
         foreach ($tasks as $key => $task) {
-
             // Group everything by component here
             $class = get_class($task);
             $component = $task->get_component();
@@ -101,10 +104,10 @@ class task_form extends moodleform {
         $this->add_checkbox_controller(1, null, null, 0);
 
         // Display save and cancel buttons at bottom of the form
-        $buttonarray = array();
+        $buttonarray = [];
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'cb_header']);
         $buttonarray[] = &$mform->createElement('cancel');
-        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
         $mform->closeHeaderBefore('buttonar');
     }
 }

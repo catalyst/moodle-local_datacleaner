@@ -14,23 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace cleaner_backup;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
- * Completion cleaner.
+ * Data cleaner class for backup.
  *
  * @package    cleaner_backup
  * @copyright  2020 Peter Burnett <peterburnett@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace cleaner_backup;
-
-defined('MOODLE_INTERNAL') || die();
-
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     */
     const TASK = 'Deleting course backups';
 
     /**
-     * Execute the cleaner.
+     * Execute the cleaning process.
      */
     public static function execute() {
         self::new_task(1);
@@ -38,6 +40,9 @@ class clean extends \local_datacleaner\clean {
         self::next_step();
     }
 
+    /**
+     * Delete backup files.
+     */
     public static function delete_backups() {
         global $DB;
         $storage = get_file_storage();

@@ -14,28 +14,53 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    local_datacleaner
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_datacleaner;
 
 use core\base;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Add cascade delete constraints to the database schema based on field names.
+ *
+ * @package    local_datacleaner
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class schema_add_cascade_delete extends clean {
-    protected static $constraintremovalqueries = array();
+    /**
+     * Constraint removal queries.
+     *
+     * @var array
+     */
+    protected static $constraintremovalqueries = [];
 
-    protected static $unrelated = array();
+    /**
+     * Unrelated.
+     *
+     * @var array
+     */
+    protected static $unrelated = [];
 
+    /**
+     * Depth.
+     *
+     * @var int
+     */
     protected static $depth = 0;
 
+    /**
+     * Num indices.
+     *
+     * @var int
+     */
     protected static $numindices = 0;
 
+    /**
+     * Num cascade deletes.
+     *
+     * @var int
+     */
     protected static $numcascadedeletes = 0;
 
     /**
@@ -45,7 +70,7 @@ class schema_add_cascade_delete extends clean {
      * xmldb_structure object with xmldb_table from these files.
      * @return xmldb_structure schema from install.xml files
      */
-    static private function get_xml_schema() {
+    private static function get_xml_schema() {
         global $CFG;
 
         $cache = \cache::make('local_datacleaner', 'schema');
@@ -55,14 +80,14 @@ class schema_add_cascade_delete extends clean {
             return $schema;
         }
 
-        require_once($CFG->libdir.'/adminlib.php');
+        require_once($CFG->libdir . '/adminlib.php');
 
         $schema = new \xmldb_structure('export');
         $schema->setVersion($CFG->version);
         $dbdirs = get_db_directories();
         foreach ($dbdirs as $dbdir) {
-            $xmldbfile = new \xmldb_file($dbdir.'/install.xml');
-            if (!$xmldbfile->fileExists() or !$xmldbfile->loadXMLStructure()) {
+            $xmldbfile = new \xmldb_file($dbdir . '/install.xml');
+            if (!$xmldbfile->fileExists() || !$xmldbfile->loadXMLStructure()) {
                 continue;
             }
             $structure = $xmldbfile->getStructure();
@@ -84,9 +109,9 @@ class schema_add_cascade_delete extends clean {
      *
      * @param string $query The string to save
      */
-    static private function add_constraint_removal_query($query) {
+    private static function add_constraint_removal_query($query) {
         if (empty(self::$constraintremovalqueries)) {
-            register_shutdown_function(array('local_datacleaner\schema_add_cascade_delete', 'revert'));
+            register_shutdown_function(['local_datacleaner\schema_add_cascade_delete', 'revert']);
         }
         self::$constraintremovalqueries[] = $query;
     }
@@ -97,8 +122,8 @@ class schema_add_cascade_delete extends clean {
      * @param string $parent The parent table name
      * @return array The list of base field names to consider
      */
-    static private function get_checks_for_parent_table($parent) {
-        $checks = array($parent);
+    private static function get_checks_for_parent_table($parent) {
+        $checks = [$parent];
 
         // Additional table names to try. Eg. an assignment[id|instance|_id] field will be tested against assign.
         switch ($parent) {
@@ -140,9 +165,10 @@ class schema_add_cascade_delete extends clean {
      *
      * @return bool Whether the fieldname matches the checks.
      */
-    static private function will_use_table($checks, $fieldname) {
+    private static function will_use_table($checks, $fieldname) {
         foreach ($checks as $test) {
-            if ($fieldname == $test || $fieldname == "{$test}id" || $fieldname == "{$test}instance" ||
+            if (
+                $fieldname == $test || $fieldname == "{$test}id" || $fieldname == "{$test}instance" ||
                 $fieldname == "{$test}_id"
             ) {
                 return true;
@@ -162,7 +188,7 @@ class schema_add_cascade_delete extends clean {
      *
      * @return bool Whether a relationship was added.
      */
-    static private function try_add_cascade_delete($parent, $tablename, $fieldname, $indexname) {
+    private static function try_add_cascade_delete($parent, $tablename, $fieldname, $indexname) {
         global $DB;
 
         try {
@@ -175,7 +201,8 @@ class schema_add_cascade_delete extends clean {
                 $conflicts = $DB->count_records_sql(
                     "SELECT COUNT('x') FROM {{$tablename}}
                     LEFT JOIN {{$parent}} ON {{$tablename}}.{$fieldname} = {{$parent}}.id
-                    WHERE {{$parent}}.id IS NULL");
+                    WHERE {{$parent}}.id IS NULL"
+                );
                 if ($conflicts) {
                     self::debug("Getting total number of records in {$tablename}.\r");
                     $total = $DB->count_records($tablename);
@@ -183,18 +210,19 @@ class schema_add_cascade_delete extends clean {
                         self::debug("Deleting {$conflicts} of {$total} records from {$tablename} that don't match {$parent} ... ");
                         $DB->execute(
                             "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
-                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
+                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)"
+                        );
                     } else {
                         if ($conflicts < $total) {
                             $percentage = round($conflicts * 100 / $total, 2);
                             if ($total < 100) {
-                                $lessthan100 = "Since the total number of records is less than 100, the system is erring on the".
+                                $lessthan100 = "Since the total number of records is less than 100, the system is erring on the" .
                                                " side of caution. ";
                             } else {
                                 $lessthan100 = '';
                             }
-                            self::debug("{$conflicts}/{$total} records ({$percentage}%) from the {$fieldname} field in ".
-                                        "{$tablename} don't match {$parent} ids. ".
+                            self::debug("{$conflicts}/{$total} records ({$percentage}%) from the {$fieldname} field in " .
+                                        "{$tablename} don't match {$parent} ids. " .
                                         "{$lessthan100}Assuming this is not really a candidate for referential integrity.\n");
                         }
                         return false;
@@ -203,7 +231,8 @@ class schema_add_cascade_delete extends clean {
             } else {
                 $DB->execute(
                     "DELETE FROM {{$tablename}} WHERE NOT EXISTS (
-                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)");
+                        SELECT 1 FROM {{$parent}} WHERE {{$tablename}}.{$fieldname} = {{$parent}}.id)"
+                );
             }
             self::debug("Adding cascade delete to {$tablename}, field {$fieldname} for deletions from table {$parent} ... ");
             $DB->execute("ALTER TABLE {{$tablename}}
@@ -240,8 +269,8 @@ class schema_add_cascade_delete extends clean {
      * @param string $param The parent table for which we're seeking children.
      * @param array $schema The database schema
      */
-    static public function execute($parent = 'user', $schema = null) {
-        static $visited = array();
+    public static function execute($parent = 'user', $schema = null) {
+        static $visited = [];
         global $DB;
 
         self::$depth++;
@@ -285,7 +314,7 @@ class schema_add_cascade_delete extends clean {
         }
 
         $checks = self::get_checks_for_parent_table($parent);
-        $torecurseinto = array();
+        $torecurseinto = [];
 
         // Iterate over tables in the schema ...
         foreach ($schema->getTables() as $table) {
@@ -301,7 +330,7 @@ class schema_add_cascade_delete extends clean {
                 $willuse = self::will_use_table($checks, $fieldname);
 
                 if ($willuse) {
-                    self::debug(($willuse ? 'X ' : '  ')." {$parent}: {$fieldname} in {$tablename}\n");
+                    self::debug(($willuse ? 'X ' : '  ') . " {$parent}: {$fieldname} in {$tablename}\n");
 
                     unset(self::$unrelated[$tablename]);
 
@@ -347,7 +376,7 @@ class schema_add_cascade_delete extends clean {
             }
 
             if (self::$options['dryrun'] && (self::$numindices || self::$numcascadedeletes)) {
-                echo "Would attempt to add ".self::$numindices." indices and ".self::$numcascadedeletes.
+                echo "Would attempt to add " . self::$numindices . " indices and " . self::$numcascadedeletes .
                      " cascade deletes flowing from table '{$parent}'.\n";
             }
         }
@@ -356,7 +385,7 @@ class schema_add_cascade_delete extends clean {
     /**
      * Remove cascade deletion from courseIDs.
      */
-    static public function revert() {
+    public static function revert() {
         global $DB;
 
         self::debug("Removing cascade deletions and indices that were added.\n");
@@ -365,6 +394,6 @@ class schema_add_cascade_delete extends clean {
             $DB->execute($query);
         }
 
-        self::$constraintremovalqueries = array();
+        self::$constraintremovalqueries = [];
     }
 }

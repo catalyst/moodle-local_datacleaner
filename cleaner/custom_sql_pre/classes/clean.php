@@ -14,24 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_custom_sql_pre
- * @copyright  2019 Catalyst IT
- * @author     Srdjan Janković <srdjan@catalyst.net.nz>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_custom_sql_pre;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for custom sql pre.
+ *
+ * @package    cleaner_custom_sql_pre
+ * @copyright  2019 Srdjan Janković <srdjan@catalyst.net.nz>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     */
     const TASK = 'Custom SQL query in pre phase';
 
     /**
-     * Execute custom tasks
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         global $DB;
 
         $dryrun = (bool)self::$options['dryrun'];

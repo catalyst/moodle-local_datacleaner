@@ -14,16 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Used to scramble fields from different rows in a table.
- * For more information please visit {@link https://github.com/catalyst/moodle-local_datacleaner/issues/17}
- *
- * @package     local_datacleaner
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_datacleaner;
 
 defined('MOODLE_INTERNAL') || die();
@@ -35,11 +25,13 @@ use xmldb_table;
  * Class table_scrambler
  *
  * @package     local_datacleaner
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class table_scrambler {
+    /**
+     * Temporary table name prefix.
+     */
     const TEMPORARY_TABLE_NAME_PREFIX = 'tmp_';
 
     /**
@@ -56,7 +48,7 @@ class table_scrambler {
                 return $primes[$i];
             }
         }
-        throw new invalid_parameter_exception('Cannot find the next prime after ['.$number.'].');
+        throw new invalid_parameter_exception('Cannot find the next prime after [' . $number . '].');
     }
 
     /**
@@ -128,6 +120,9 @@ class table_scrambler {
     /** @var xmldb_table[] */
     private $temporarytables = [];
 
+    /**
+     * Creates the temporary tables with the values to be used for scrambling.
+     */
     public function create_temporary_tables() {
         global $DB;
         $recordcount = $DB->count_records($this->tabletoscramble);
@@ -139,6 +134,9 @@ class table_scrambler {
         }
     }
 
+    /**
+     * Drops the temporary tables.
+     */
     public function drop_temporary_tables() {
         global $DB;
         foreach ($this->temporarytables as $table) {
@@ -156,6 +154,8 @@ class table_scrambler {
     }
 
     /**
+     * Gets the fields to scramble.
+     *
      * @return string[]
      */
     public function get_fields_to_scramble() {
@@ -163,6 +163,8 @@ class table_scrambler {
     }
 
     /**
+     * Gets the table to scramble.
+     *
      * @return string
      */
     public function get_table() {
@@ -179,6 +181,8 @@ class table_scrambler {
     }
 
     /**
+     * Creates a temporary table with the values to be used for scrambling.
+     *
      * @param int $index
      */
     private function create_temporary_table($index) {
@@ -186,7 +190,7 @@ class table_scrambler {
         $dbmanager = $DB->get_manager();
 
         $field = $this->fieldstoscramble[$index];
-        $name = self::TEMPORARY_TABLE_NAME_PREFIX.$field;
+        $name = self::TEMPORARY_TABLE_NAME_PREFIX . $field;
 
         // We could use prime number for this field instead, but it would change the algorithm expected output.
         // See https://github.com/catalyst/moodle-local_datacleaner/issues/17 for more information.
@@ -220,13 +224,16 @@ SQL;
         $DB->execute($sql);
     }
 
+    /**
+     * Scrambles the data.
+     */
     private function scramble() {
         global $DB;
 
         $sets = [];
         for ($i = 0; $i < count($this->fieldstoscramble); $i++) {
             $field = $this->fieldstoscramble[$i];
-            $name = self::TEMPORARY_TABLE_NAME_PREFIX.$field;
+            $name = self::TEMPORARY_TABLE_NAME_PREFIX . $field;
             $prime = $this->primefactors[$i];
             $sets[] = "{$field} = COALESCE((SELECT value FROM {{$name}} tmp_{$field}
                                 WHERE tmp_{$field}.id = ((original.id % {$prime}) + 1)), '')";

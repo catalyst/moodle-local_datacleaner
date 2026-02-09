@@ -15,9 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ *
+ * Datacleaner library file of related Moodle functions.
+ *
+ * @package    local_datacleaner
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -59,6 +61,6 @@ function local_datacleaner_get_categories() {
  * @param string $eol End of line character
  */
 function local_datacleaner_mtrace_wrapper(string $message, string $eol = ''): void {
-    echo $message. $eol;
+    echo $message . $eol;
     \local_datacleaner\clean::log($message . $eol);
 }

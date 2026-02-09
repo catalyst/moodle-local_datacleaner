@@ -17,7 +17,7 @@
 /**
  *
  * @package    cleaner_scheduled_tasks
- * @copyright  2019 Catalyst IT
+ * @copyright  2019 Kristian Ringer <kristianringer@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -52,7 +52,6 @@ if ($taskform->is_cancelled()) {
     $scheduledtasks = $DB->get_records_select_menu('task_scheduled', '', [], 'id', 'classname, id');
 
     foreach ($taskdata as $key => $taskenabled) {
-
         if (!isset($scheduledtasks["\\$key"])) {
             continue;
         }
@@ -66,7 +65,7 @@ if ($taskform->is_cancelled()) {
             continue;
         } else if (!$record && $taskenabled == 1) {
             // The record doesn't exist, but it should because we selected it, insert it
-            $taskinsert = new stdClass;
+            $taskinsert = new stdClass();
             $taskinsert->taskscheduledid = $scheduledtasks["\\$key"];
             $taskinsert->lastmodified = time();
 

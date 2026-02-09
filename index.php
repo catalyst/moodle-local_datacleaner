@@ -15,14 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ *
+ * Datacleaner index file, used to display the admin page for datacleaner.
+ *
  * @package    local_datacleaner
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('../../config.php');
-require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/tablelib.php');
+require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->libdir . '/tablelib.php');
 
 admin_externalpage_setup('local_datacleaner');
 
@@ -76,7 +79,7 @@ if (!$plugins) {
 // Print the table of all subplugins.
 
 $table = new html_table();
-$table->head = array(
+$table->head = [
     get_string('enabledisable', 'local_datacleaner'),
     get_string('name'),
     get_string('settings'),
@@ -85,13 +88,12 @@ $table->head = array(
     get_string('sortorder', 'local_datacleaner'),
     get_string('uninstallplugin', 'core_admin'),
     get_string('stage', 'local_datacleaner'),
-);
+];
 $table->attributes['class'] = 'admintable generaltable';
-$data = array();
+$data = [];
 
 
 foreach ($plugins as $plugin) {
-
     $settings = $plugin->get_settings_section_url();
     if (!is_null($settings)) {
         $settings = html_writer::link($settings, $strsettings);
@@ -99,17 +101,17 @@ foreach ($plugins as $plugin) {
 
     $class = '';
     if ($plugin->enabled()) {
-        $visible = '<a href="index.php?hide='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strdisable.'">'.
-            $OUTPUT->pix_icon('t/hide', $strdisable).'</a>';
+        $visible = '<a href="index.php?hide=' . $plugin->name . '&amp;sesskey=' . sesskey() . '" title="' . $strdisable . '">' .
+            $OUTPUT->pix_icon('t/hide', $strdisable) . '</a>';
         $class = $plugin->sortorder >= 200 ? 'bg-secondary' : 'bg-warning';
     } else {
-        $visible = '<a href="index.php?show='.$plugin->name.'&amp;sesskey='.sesskey().'" title="'.$strenable.'">'.
-            $OUTPUT->pix_icon('t/show', $strenable, 'moodle', ['class' => 'dimmed_text']).'</a>';
+        $visible = '<a href="index.php?show=' . $plugin->name . '&amp;sesskey=' . sesskey() . '" title="' . $strenable . '">' .
+            $OUTPUT->pix_icon('t/show', $strenable, 'moodle', ['class' => 'dimmed_text']) . '</a>';
         $class = 'dimmed_text';
     }
 
     $uninstall = '';
-    if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('cleaner_'.$plugin->name, 'manage')) {
+    if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('cleaner_' . $plugin->name, 'manage')) {
         $uninstall = html_writer::link($uninstallurl, get_string('uninstallplugin', 'core_admin'));
     }
 
@@ -134,4 +136,3 @@ $table->data = $data;
 echo html_writer::table($table);
 
 echo $OUTPUT->footer();
-

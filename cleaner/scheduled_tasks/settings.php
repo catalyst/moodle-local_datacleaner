@@ -15,10 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings for the scheduled tasks cleaner.
+ *
  * @package    cleaner_scheduled_tasks
- * @subpackage  local_datacleaner
- * @copyright  2019 Catalyst IT
- * @var $ADMIN  admin_root
+ * @copyright  2019 Kristian Ringer <kristianringer@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;

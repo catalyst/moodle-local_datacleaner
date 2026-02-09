@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings.
+ * Settings for the completion cleaner.
  *
  * @package    cleaner_completion
  * @copyright  2015 Dmitrii Metelkin <dmitriim@catalyst-au.net>
@@ -28,13 +28,23 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_completion/deleteactivitycompletion',
-            new lang_string('deleteactivitycompletion', 'cleaner_completion'),
-            new lang_string('deleteactivitycompletiondesc', 'cleaner_completion'), 1));
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_completion/deleteactivitycompletion',
+        new lang_string('deleteactivitycompletion', 'cleaner_completion'),
+        new lang_string('deleteactivitycompletiondesc', 'cleaner_completion'),
+        1
+    )
+);
 
-$settings->add(new admin_setting_configcheckbox('cleaner_completion/deletecoursecompletion',
-            new lang_string('deletecoursecompletion', 'cleaner_completion'),
-            new lang_string('deletecoursecompletiondesc', 'cleaner_completion'), 1));
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_completion/deletecoursecompletion',
+        new lang_string('deletecoursecompletion', 'cleaner_completion'),
+        new lang_string('deletecoursecompletiondesc', 'cleaner_completion'),
+        1
+    )
+);
 
 require_once($CFG->dirroot . '/local/datacleaner/lib.php');
 require_once($CFG->dirroot . '/course/externallib.php');
@@ -47,8 +57,8 @@ if (!isset($CFG->slasharguments)) {
 }
 $categories = local_datacleaner_get_categories();
 
-$defaultcategories = array();
-$categoriesbyname = array();
+$defaultcategories = [];
+$categoriesbyname = [];
 
 foreach ($categories as $category) {
     $categoriesbyname[$category['id']] = $category['name'];
@@ -56,27 +66,29 @@ foreach ($categories as $category) {
 }
 asort($categoriesbyname, SORT_LOCALE_STRING);
 
-$settings->add(new admin_setting_configmulticheckbox(
-            'cleaner_completion/categories',
-            new lang_string('categories', 'cleaner_completion'),
-            new lang_string('categoriesdesc', 'cleaner_completion'),
-            $defaultcategories,
-            $categoriesbyname
-            ));
+$settings->add(
+    new admin_setting_configmulticheckbox(
+        'cleaner_completion/categories',
+        new lang_string('categories', 'cleaner_completion'),
+        new lang_string('categoriesdesc', 'cleaner_completion'),
+        $defaultcategories,
+        $categoriesbyname,
+    )
+);
 
 $table = new html_table();
-$table->data = array();
-$table->head = array(
+$table->data = [];
+$table->head = [
     get_string('coursename', 'cleaner_completion'),
     get_string('category', 'cleaner_completion'),
-);
+];
 
 $config = get_config('cleaner_completion');
 
 if (isset($config->courses)) {
     $shortnames = explode("\n", $config->courses);
 } else {
-    $shortnames = array();
+    $shortnames = [];
 }
 $where = '';
 foreach ($shortnames as $name) {
@@ -98,16 +110,34 @@ if ($where) {
                                             WHERE ($where)
                                             ORDER BY c.fullname, ca.name");
     foreach ($itemstoignore as $r) {
-        $courselink = html_writer::link(new moodle_url('/course/view.php',
-                            array('id' => $r->id)), $r->fullname, array('title' => 'View course'));
-        $categorylink = html_writer::link(new moodle_url('/course/management.php',
-                            array('categoryid' => $r->category)), $r->name, array('title' => 'View category'));
-        $table->data[] = array($courselink, $categorylink);
+        $courselink = html_writer::link(
+            new moodle_url(
+                '/course/view.php',
+                ['id' => $r->id]
+            ),
+            $r->fullname,
+            ['title' => 'View course'],
+        );
+        $categorylink = html_writer::link(
+            new moodle_url(
+                '/course/management.php',
+                ['categoryid' => $r->category]
+            ),
+            $r->name,
+            ['title' => 'View category'],
+        );
+        $table->data[] = [$courselink, $categorylink];
     }
 }
 
-$settings->add(new admin_setting_configtextarea(
-    'cleaner_completion/courses',
-    new lang_string('courses', 'cleaner_completion'),
-    new lang_string('coursesdesc', 'cleaner_completion') . "<br>\n" . html_writer::table($table),
-    "", PARAM_RAW, 60, 5));
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_completion/courses',
+        new lang_string('courses', 'cleaner_completion'),
+        new lang_string('coursesdesc', 'cleaner_completion') . "<br>\n" . html_writer::table($table),
+        "",
+        PARAM_RAW,
+        60,
+        5
+    )
+);

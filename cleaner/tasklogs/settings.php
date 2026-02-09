@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings for the task logs cleaner.
+ *
  * @package    cleaner_tasklogs
- * @copyright  2025 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ * @copyright  2025 Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,4 +27,3 @@ defined('MOODLE_INTERNAL') || die;
 if (!$ADMIN->fulltree) {
     return;
 }
-

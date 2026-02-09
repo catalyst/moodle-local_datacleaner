@@ -18,11 +18,9 @@
  * Upgrade logic.
  *
  * @package    local_datacleaner
- * @copyright  2024 Catalyst IT
- * @author     Scott Verbeek <scottverbeek@catalyst-au.net>
+ * @copyright  2024 Scott Verbeek <scottverbeek@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 /**
  * Performs data migrations and updates on upgrade.

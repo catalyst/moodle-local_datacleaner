@@ -14,28 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Testcase for cleaner_custom_sql_*
- *
- * @package     local_datacleaner
- * @author      Srdjan Janković <srdjan@catalyst.net.nz>
- * @copyright   2019 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Testcase for cleaner_custom_sql_*
  *
  * @package     local_datacleaner
- * @author      Srdjan Janković <srdjan@catalyst.net.nz>
- * @copyright   2019 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @copyright   2019 Srdjan Janković <srdjan@catalyst.net.nz>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class custom_test extends advanced_testcase {
-
     /**
      * Initialise a cleaner object to reset static options.
      *
@@ -46,6 +34,8 @@ class custom_test extends advanced_testcase {
      */
     public function tearDown(): void {
         new \cleaner_custom_sql_pre\clean(['verbose' => false, 'dryrun' => false]);
+
+        parent::tearDown();
     }
 
     public function test_executes_sql() {
