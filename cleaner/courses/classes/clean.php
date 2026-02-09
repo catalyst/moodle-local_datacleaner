@@ -34,14 +34,14 @@ class clean extends \local_datacleaner\clean {
     /**
      * Needs cascade delete.
      *
-     * @var string
+     * @var bool
      */
     protected $needscascadedelete = true;
 
     /**
      * Courses.
      *
-     * @var string
+     * @var array
      */
     protected static $courses = [];
 
