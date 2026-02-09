@@ -14,30 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Cleaner.
- *
- * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-
 namespace cleaner_environment_matrix;
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
-require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 /**
- * Clean class for Environment matrix.
+ * Data cleaner class for environment matrix.
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class clean extends \local_datacleaner\clean {
@@ -53,9 +42,9 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Do the work.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
         global $CFG;
 
         $dryrun = (bool)self::$options['dryrun'];
@@ -69,7 +58,6 @@ class clean extends \local_datacleaner\clean {
         self::new_task(1);
 
         foreach ($environments as $environment) {
-
             // This should only match once.
             if ($environment->wwwroot == $CFG->wwwroot) {
                 // Lets clean up the rest of the data.
@@ -79,13 +67,12 @@ class clean extends \local_datacleaner\clean {
                     if (!$dryrun) {
                         local\matrix::purge_data_except_environment($environment->id);
                     }
-
                 }
 
                 // Obtain the data for this environment only.
                 $matrixdata = local\matrix::get_matrix_data($environment);
 
-                // Set Admin User for admin_write_settings perms
+                // Set Admin User for admin_write_settings perms.
                 \core\session\manager::set_user(get_admin());
 
                 // Process settings.
@@ -96,7 +83,7 @@ class clean extends \local_datacleaner\clean {
                         // set_config requires a null 'plugin' value when updating core configuration values.
                         $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
 
-                        // First, set config in database
+                        // First, set config in database.
                         if ($verbose) {
                             mtrace("set_config('{$config->config}', '{$config->value}')");
                         }
@@ -104,49 +91,47 @@ class clean extends \local_datacleaner\clean {
                             set_config($config->config, $config->value, $config->plugin);
                         }
 
-                        // Generate an admin settings tree
+                        // Generate an admin settings tree.
                         $admintree = admin_get_root(true);
 
-                        // Get strings in nicer format for reuse
+                        // Get strings in nicer format for reuse.
                         $configname = $config->config;
                         $pluginname = $config->plugin;
-                        $elementname = $pluginname.$configname;
+                        $elementname = $pluginname . $configname;
 
-                        // Search the admintree for configname
+                        // Search the admintree for configname.
                         $nodes = $admintree->search($configname);
                         $relevantobject = '';
 
-                        // Iterate through tree for specific page and elementname
+                        // Iterate through tree for specific page and elementname.
                         foreach ($nodes as $node) {
                             if ($node->page instanceof \admin_settingpage && isset($node->page->settings->$elementname)) {
-                                // Should only ever be reached once, so break loop
+                                // Should only ever be reached once, so break loop.
                                 $relevantobject = $node->page->settings->$elementname;
                                 break;
                             }
                         }
 
-                        // Now perform any additional validation
+                        // Now perform any additional validation.
                         if ($verbose) {
-                            // Show the additional write_settings
+                            // Show the additional write_settings.
                             mtrace("{$config->plugin}:{$relevantobject->name}->write_setting('{$config->value}')");
                         }
                         if ($relevantobject != '' && $relevantobject->plugin == $pluginname) {
-                            // Get setting object back out of config control
+                            // Get setting object back out of config control.
                             $settings = $relevantobject->get_setting();
-                            // Reset to fire additional validation/actions
+                            // Reset to fire additional validation/actions.
                             $errors = $relevantobject->write_setting($settings);
-                            // log any errors that might have been thrown
+                            // Log any errors that might have been thrown.
                             if ($errors != '') {
                                 mtrace($errors);
                             }
                         }
                     }
-
                 }
 
                 break;
             }
-
         }
 
         self::next_step();

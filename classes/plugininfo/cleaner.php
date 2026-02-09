@@ -14,20 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_datacleaner\plugininfo;
 
 use core\plugininfo\base;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Cleaner plugin info class.
+ *
+ * @package    local_datacleaner
+ * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class cleaner extends base {
-
     /**
      * Whether the subplugin is enabled.
      *
@@ -42,7 +42,7 @@ class cleaner extends base {
      *
      * @return array Enabled plugins, sorted by sortorder
      */
-    static public function get_plugins_by_sortorder() {
+    public static function get_plugins_by_sortorder() {
 
         $fileinfo = \core_plugin_manager::instance()->get_present_plugins('cleaner');
         $plugins = \core_plugin_manager::instance()->get_plugins_of_type('cleaner');
@@ -52,7 +52,7 @@ class cleaner extends base {
                 $plugin->sortorder = $fileinfo[$name]->sortorder;
             }
         }
-        usort($plugins, function($a, $b) {
+        usort($plugins, function ($a, $b) {
             return $a->sortorder - $b->sortorder;
         });
 
@@ -64,12 +64,12 @@ class cleaner extends base {
      *
      * @return array Enabled plugins, sorted by sort order
      */
-    static public function get_enabled_plugins_by_sortorder() {
+    public static function get_enabled_plugins_by_sortorder() {
 
         $plugins = self::get_plugins_by_sortorder();
 
         // Filter only enabled ones.
-        $plugins = array_filter($plugins, function($plugin) {
+        $plugins = array_filter($plugins, function ($plugin) {
             return $plugin->enabled();
         });
 
@@ -107,7 +107,7 @@ class cleaner extends base {
             return;
         }
 
-        if (!$hassiteconfig or !file_exists($this->full_path('settings.php'))) {
+        if (!$hassiteconfig || !file_exists($this->full_path('settings.php'))) {
             return;
         }
 
@@ -117,8 +117,14 @@ class cleaner extends base {
         include($this->full_path('settings.php')); // This may also set $settings to null.
 
         if ($settings) {
-            $settings->add(new \admin_setting_configcheckbox('cleaner_' . $this->name . '/enabled',
-                new \lang_string('enabledisable', 'local_datacleaner'), null, 0));
+            $settings->add(
+                new \admin_setting_configcheckbox(
+                    'cleaner_' . $this->name . '/enabled',
+                    new \lang_string('enabledisable', 'local_datacleaner'),
+                    null,
+                    0
+                )
+            );
 
             $ADMIN->add($parentnodename, $settings);
         }
@@ -152,6 +158,4 @@ class cleaner extends base {
         }
         return null;
     }
-
 }
-

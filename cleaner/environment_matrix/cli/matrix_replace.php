@@ -18,24 +18,25 @@
  * Settings for Environment matrix.
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define('CLI_SCRIPT', true);
 require_once(__DIR__ . '/../../../../../config.php');
-require_once($CFG->libdir.'/clilib.php');
+require_once($CFG->libdir . '/clilib.php');
 
 // Now get cli options.
-list($options, $unrecognized) = cli_get_params(
-    array(
+[$options, $unrecognized] = cli_get_params(
+    [
         'help' => false,
         'run' => false,
         'verbose' => false,
         'reset' => false,
-    ),
-    array('h' => 'help')
+    ],
+    [
+        'h' => 'help',
+    ]
 );
 
 if ($unrecognized) {

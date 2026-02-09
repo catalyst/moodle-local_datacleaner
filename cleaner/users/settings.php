@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_courses
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ * Settings for the users cleaner.
+ *
+ * @package    cleaner_users
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,9 +28,21 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_users/keepsiteadmins', new lang_string('keepsiteadmins', 'cleaner_users'),
-            new lang_string('keepsiteadminsdesc', 'cleaner_users'), 1));
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_users/keepsiteadmins',
+        new lang_string('keepsiteadmins', 'cleaner_users'),
+        new lang_string('keepsiteadminsdesc', 'cleaner_users'),
+        1
+    )
+);
 
-$settings->add(new admin_setting_configtextarea('cleaner_users/keepusernames',
-            new lang_string('keepusernames', 'cleaner_users'),
-            new lang_string('keepusernamesdesc', 'cleaner_users'), '', PARAM_RAW));
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_users/keepusernames',
+        new lang_string('keepusernames', 'cleaner_users'),
+        new lang_string('keepusernamesdesc', 'cleaner_users'),
+        '',
+        PARAM_RAW
+    )
+);

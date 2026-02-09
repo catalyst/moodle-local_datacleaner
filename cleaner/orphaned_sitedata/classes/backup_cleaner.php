@@ -14,36 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * backup_cleaner class.
- *
- * @package     cleaner_orphaned_sitedata
- * @author      Ghada El-Zoghbi <ghada@catalyst-au.net>
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_orphaned_sitedata;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * backup_cleaner class.
+ * Data cleaner class for orphaned sitedata.
  *
  * @package     cleaner_orphaned_sitedata
- * @author      Ghada El-Zoghbi <ghada@catalyst-au.net>
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @copyright   2016 Ghada El-Zoghbi <ghada@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_cleaner {
+    /**
+     * Dry run.
+     *
+     * @var mixed
+     */
     private $dryrun;
 
+    /**
+     * Constructor.
+     *
+     * @param mixed $dryrun
+     */
     public function __construct($dryrun) {
         $this->dryrun = $dryrun;
     }
 
+    /**
+     * Execute the cleaning process.
+     */
     public function execute() {
         $count = $this->get_backups_files_count();
         clean::println(
@@ -68,17 +69,22 @@ class backup_cleaner {
         global $DB;
 
         $sql = $this->get_backup_files_sql(
-            'SELECT f.id, f.filesize, f.filepath, f.filename, f.contextid, f.component, f.filearea, f.itemid');
+            'SELECT f.id, f.filesize, f.filepath, f.filename, f.contextid, f.component, f.filearea, f.itemid'
+        );
         $results = $DB->get_recordset_sql($sql);
         $filestorage = get_file_storage();
 
         foreach ($results as $file) {
-            clean::debug(sprintf("[%05d] #%10d (%9s): %s%s",
-                                 $countdown,
-                                 $file->id,
-                                 display_size($file->filesize),
-                                 $file->filepath,
-                                 $file->filename));
+            clean::debug(
+                sprintf(
+                    "[%05d] #%10d (%9s): %s%s",
+                    $countdown,
+                    $file->id,
+                    display_size($file->filesize),
+                    $file->filepath,
+                    $file->filename
+                )
+            );
             $countdown--;
 
             $fileref = $filestorage->get_file(
@@ -91,7 +97,7 @@ class backup_cleaner {
             );
 
             if (!$fileref) {
-                cli_error('Cannot find and delete: '.$fileref);
+                cli_error('Cannot find and delete: ' . $fileref);
             }
 
             if (!$this->dryrun) {
@@ -100,13 +106,24 @@ class backup_cleaner {
         }
     }
 
+    /**
+     * Get the SQL query for retrieving backup files.
+     *
+     * @param string $select The SELECT clause of the SQL query.
+     * @return string The complete SQL query for retrieving backup files.
+     */
     private function get_backup_files_sql($select) {
         return "$select
                 FROM {files} f
                 INNER JOIN {context} c on f.contextid = c.id
-                WHERE f.filename<>'.' AND f.component = 'backup' AND c.contextlevel = ".CONTEXT_COURSE;
+                WHERE f.filename<>'.' AND f.component = 'backup' AND c.contextlevel = " . CONTEXT_COURSE;
     }
 
+    /**
+     * Get the count of backup files.
+     *
+     * @return int The count of backup files.
+     */
     private function get_backups_files_count() {
         global $DB;
         $sql = $this->get_backup_files_sql('SELECT COUNT(f.contenthash) AS count');

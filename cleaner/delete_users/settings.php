@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings for the delete users cleaner.
+ *
  * @package    cleaner_delete_users
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham <nigelc@catalyst-au.net>
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,14 +28,31 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configtext('cleaner_delete_users/minimumage',
-            new lang_string('minimumage', 'cleaner_delete_users'),
-            new lang_string('minimumagedesc', 'cleaner_delete_users'), 365, PARAM_INT));
+$settings->add(
+    new admin_setting_configtext(
+        'cleaner_delete_users/minimumage',
+        new lang_string('minimumage', 'cleaner_delete_users'),
+        new lang_string('minimumagedesc', 'cleaner_delete_users'),
+        365,
+        PARAM_INT
+    )
+);
 
-$settings->add(new admin_setting_configcheckbox('cleaner_delete_users/keepsiteadmins',
-            new lang_string('keepsiteadmins', 'cleaner_delete_users'),
-            new lang_string('keepsiteadminsdesc', 'cleaner_delete_users'), 1));
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_delete_users/keepsiteadmins',
+        new lang_string('keepsiteadmins', 'cleaner_delete_users'),
+        new lang_string('keepsiteadminsdesc', 'cleaner_delete_users'),
+        1
+    )
+);
 
-$settings->add(new admin_setting_configtext('cleaner_delete_users/keepusernames',
-            new lang_string('keepusernames', 'cleaner_delete_users'),
-            new lang_string('keepusernamesdesc', 'cleaner_delete_users'), '', PARAM_RAW));
+$settings->add(
+    new admin_setting_configtext(
+        'cleaner_delete_users/keepusernames',
+        new lang_string('keepusernames', 'cleaner_delete_users'),
+        new lang_string('keepusernamesdesc', 'cleaner_delete_users'),
+        '',
+        PARAM_RAW
+    )
+);

@@ -16,17 +16,14 @@
 
 namespace local_datacleaner;
 
-
 /**
  * The text setting where input is encoded before save.
  *
  * @package   local_datacleaner
- * @author    Dustin Huynh <dustinhuynh@catalyst-au.net>
- * @copyright 2025, Catalyst IT
+ * @copyright 2025 Dustin Huynh <dustinhuynh@catalyst-au.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class admin_setting_configencodedtext extends \admin_setting_configtext {
-
     /**
      * Return the setting
      *
@@ -61,7 +58,8 @@ class admin_setting_configencodedtext extends \admin_setting_configtext {
         global $CFG;
         $elementid = $this->get_id();
         $textbox = parent::output_html($data, $query);
-        $resetbutton = \html_writer::tag('button',
+        $resetbutton = \html_writer::tag(
+            'button',
             get_string('resetbutton', 'local_datacleaner'),
             [
                 'type' => 'button',

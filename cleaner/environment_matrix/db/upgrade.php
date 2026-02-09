@@ -18,17 +18,17 @@
  * Upgrade script for clener_environment_matrix
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
 /**
+ * Upgrade function for cleaner_environment_matrix.
+ *
  * @param int $oldversion the version we are upgrading from
  * @return bool result
  */
@@ -38,7 +38,6 @@ function xmldb_cleaner_environment_matrix_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2017053000) {
-
         // Define field textarea to be added to cleaner_environment_matrixd.
         $table = new xmldb_table('cleaner_environment_matrixd');
         $field = new xmldb_field('textarea', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'value');

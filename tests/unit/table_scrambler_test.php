@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Testcase for table_scrambler
- *
- * @package     local_datacleaner
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 use local_datacleaner\table_scrambler;
 
 defined('MOODLE_INTERNAL') || die();
@@ -31,13 +22,11 @@ defined('MOODLE_INTERNAL') || die();
  * Testcase for table_scrambler
  *
  * @package     local_datacleaner
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class local_datacleaner_table_scrambler_test extends advanced_testcase {
-    public function provider_for_it_creates_sorted_temporary_tables() {
+    public function provider_for_it_creates_sorted_temporary_tables(): array {
         return [
             'unrepeated' => [
                 $this->create_test_data_array(),
@@ -75,7 +64,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_it_scrambles_names() {
+    public function provider_for_it_scrambles_names(): array {
         return [
             ['', [
                 ['id' => '1', 'first' => 'David', 'last' => 'Jones'],
@@ -96,7 +85,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_the_next_prime_after() {
+    public function provider_for_the_next_prime_after(): array {
         return [
             [0, 2],
             [1, 2],
@@ -105,7 +94,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         ];
     }
 
-    public function provider_for_the_prime_factors() {
+    public function provider_for_the_prime_factors(): array {
         return [
             [2, 1, [2, 3]],
             [2, 3, [2, 3]],
@@ -115,6 +104,9 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
     }
 
     /**
+     *
+     * Tests that the temporary tables are created with the correct data, sorted and without duplicates.
+     *
      * @dataProvider provider_for_it_creates_sorted_temporary_tables
      */
     public function test_it_creates_sorted_temporary_tables($inputdata, $expectedfirst, $expectedlast) {
@@ -152,6 +144,9 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
     }
 
     /**
+     *
+     * Tests that the names are scrambled, except the ones with the provided ids.
+     *
      * @dataProvider provider_for_it_scrambles_names
      */
     public function test_it_scrambles_names($except, $expected) {
@@ -197,6 +192,9 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
     }
 
     /**
+     *
+     * Tests that the next prime after a number is correct.
+     *
      * @dataProvider provider_for_the_next_prime_after
      */
     public function test_the_next_prime_after($number, $expected) {
@@ -205,6 +203,9 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
     }
 
     /**
+     *
+     * Tests that the prime factors returned are correct.
+     *
      * @dataProvider provider_for_the_prime_factors
      */
     public function test_the_prime_factors($count, $number, $expected) {
@@ -212,6 +213,9 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         self::assertSame($expected, $factors);
     }
 
+    /**
+     * Creates the test data table and fills it with the provided data.
+     */
     private function create_test_data($data = null) {
         global $DB;
 
@@ -237,7 +241,12 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         return $table;
     }
 
-    private function create_test_data_array() {
+    /**
+     * Creates the test data array.
+     *
+     * @return array
+     */
+    private function create_test_data_array(): array {
         return [
             ['first' => 'David', 'last' => 'Smith'],
             ['first' => 'Nicholas', 'last' => 'Hoobin'],

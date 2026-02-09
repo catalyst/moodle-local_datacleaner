@@ -14,24 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package    cleaner_delete_users
- * @copyright  2015 Catalyst IT
- * @author     Nigel Cunningham
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_grades;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Data cleaner class for grades.
+ *
+ * @package    cleaner_grades
+ * @copyright  2015 Nigel Cunningham <nigelc@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean extends \local_datacleaner\clean {
+    /**
+     * Task.
+     *
+     * @var string
+     */
     const TASK = 'Removing grades';
 
     /**
-     * Do the hard work of cleaning up users.
+     * Execute the cleaning process.
      */
-    static public function execute() {
+    public static function execute() {
 
         global $DB;
 

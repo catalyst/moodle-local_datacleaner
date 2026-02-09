@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings for the site data cleaner.
+ *
  * @package    cleaner_sitedata
- * @copyright  2015 Catalyst IT
- * @author     Tim Price <timprice@catalyst-au.net>
+ * @copyright  2015 Tim Price <timprice@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,32 +30,52 @@ if (!$ADMIN->fulltree) {
 
 require_once($CFG->dirroot . '/local/datacleaner/cleaner/sitedata/classes/supported_file_types.php');
 
-$settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allfiletypes',
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_sitedata/allfiletypes',
         new lang_string('allfiletypes', 'cleaner_sitedata'),
-        new lang_string('allfiletypesdesc', 'cleaner_sitedata'), 0));
+        new lang_string('allfiletypesdesc', 'cleaner_sitedata'),
+        0
+    )
+);
 
 $filetypes = new cleaner_sitedata\cleaner_sitedata_supported_file_types();
 $supportedfiletypes = $filetypes->get_supported_file_types();
 
 if ($supportedfiletypes) {
-
-    $settings->add(new admin_setting_configmultiselect('cleaner_sitedata/filetypes',
-        new lang_string('filetypes', 'cleaner_sitedata'),
-        new lang_string('filetypesdesc', 'cleaner_sitedata'),
-        array(),
-        $supportedfiletypes));
+    $settings->add(
+        new admin_setting_configmultiselect(
+            'cleaner_sitedata/filetypes',
+            new lang_string('filetypes', 'cleaner_sitedata'),
+            new lang_string('filetypesdesc', 'cleaner_sitedata'),
+            [],
+            $supportedfiletypes
+        )
+    );
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_sitedata/allcontextlevels',
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_sitedata/allcontextlevels',
         new lang_string('allcontextlevels', 'cleaner_sitedata'),
-        new lang_string('allcontextlevelsdesc', 'cleaner_sitedata'), 0));
+        new lang_string('allcontextlevelsdesc', 'cleaner_sitedata'),
+        0
+    )
+);
 
-$settings->add(new admin_setting_configmultiselect('cleaner_sitedata/contextlevels',
+$settings->add(
+    new admin_setting_configmultiselect(
+        'cleaner_sitedata/contextlevels',
         new lang_string('contextlevels', 'cleaner_sitedata'),
-        new lang_string('contextlevelsdesc', 'cleaner_sitedata'), array(CONTEXT_USER),
-        array(CONTEXT_SYSTEM    => 'System',
-              CONTEXT_USER      => 'User',
-              CONTEXT_COURSECAT => 'Course category',
-              CONTEXT_COURSE    => 'Course',
-              CONTEXT_MODULE    => 'Module',
-              CONTEXT_BLOCK     => 'Block')));
+        new lang_string('contextlevelsdesc', 'cleaner_sitedata'),
+        [CONTEXT_USER],
+        [
+            CONTEXT_SYSTEM    => 'System',
+            CONTEXT_USER      => 'User',
+            CONTEXT_COURSECAT => 'Course category',
+            CONTEXT_COURSE    => 'Course',
+            CONTEXT_MODULE    => 'Module',
+            CONTEXT_BLOCK     => 'Block',
+        ]
+    )
+);

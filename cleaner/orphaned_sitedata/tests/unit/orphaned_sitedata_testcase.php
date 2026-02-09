@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * orphaned_sitedata testcase.
- *
- * @package     cache_cleaner_test
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cleaner_orphaned_sitedata\tests\unit;
 
 use advanced_testcase;
@@ -33,18 +24,19 @@ use stored_file;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 /**
  * orphaned_sitedata testcase.
  *
- * @package     cache_cleaner_test
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT
+ * @package     cleaner_orphaned_sitedata
+ * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @SuppressWarnings(public) Allow as many methods as needed.
  */
 class orphaned_sitedata_testcase extends advanced_testcase {
+    /**
+     * Executes test.
+     */
     protected function execute($cleaner) {
         ob_start();
         $cleaner->execute();
@@ -53,6 +45,9 @@ class orphaned_sitedata_testcase extends advanced_testcase {
         return $output;
     }
 
+    /**
+     * Creates a file with the given component, filepath and filename.
+     */
     protected function create_file($component, $filepath, $filename) {
         $syscontext = context_course::instance(1);
         $filerecord = [
@@ -67,6 +62,9 @@ class orphaned_sitedata_testcase extends advanced_testcase {
         return $fs->create_file_from_string($filerecord, 'backup data');
     }
 
+    /**
+     * Checks if the file is readable.
+     */
     protected function file_is_readable(stored_file $file) {
         if (class_exists('file_system')) {
             $filestorage = get_file_storage();

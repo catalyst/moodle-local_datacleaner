@@ -14,16 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Environment matrix class.
- *
- * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-
 namespace cleaner_environment_matrix\local;
 
 use admin_setting_confightmleditor;
@@ -42,8 +32,7 @@ if (!defined('MOODLE_INTERNAL')) {
  * Environment matrix class.
  *
  * @package    cleaner_environment_matrix
- * @author     Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright  2017 Catalyst IT
+ * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class matrix {
@@ -79,7 +68,6 @@ class matrix {
             $settings = $found->settings;
 
             foreach ($settings as $setting) {
-
                 // Prevent heading types from populating the list. There is nothing to configure.
                 if ($setting instanceof admin_setting_heading) {
                     continue;
@@ -98,8 +86,10 @@ class matrix {
                 $record->display = true;
 
                 // Identify that this is a text area, during search.
-                if ($setting instanceof admin_setting_configtextarea ||
-                    $setting instanceof admin_setting_confightmleditor) {
+                if (
+                    $setting instanceof admin_setting_configtextarea ||
+                    $setting instanceof admin_setting_confightmleditor
+                ) {
                     $record->textarea = true;
                 }
 
@@ -113,9 +103,7 @@ class matrix {
                 }
 
                 $result[$record->plugin][$record->name] = $record;
-
             }
-
         }
 
         // Get all configs that match the search term from config_plugins.
@@ -243,19 +231,15 @@ class matrix {
         $display = [];
 
         foreach ($environments as $env) {
-
             foreach ($records as $key => $record) {
-
                 if ($record->wwwroot == $env->matchpattern) {
                     $display[$key] = $records[$key];
                 }
-
             }
         }
 
         // $records now contains the tables display
         return $display;
-
     }
 
     /**
@@ -279,7 +263,6 @@ class matrix {
 
         foreach ($records as $record) {
             if (\local_envbar\local\envbarlib::getprodwwwroot() === $CFG->wwwroot) {
-
                 // Create a copy of the record that will be displayed in the first column.
                 $prodrecord = clone $record;
                 $prodrecord->value = get_config($record->plugin, $record->config);

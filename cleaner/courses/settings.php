@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings for the courses cleaner.
+ *
  * @package    cleaner_courses
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,9 +31,15 @@ if (!$ADMIN->fulltree) {
 require_once($CFG->dirroot . '/local/datacleaner/lib.php');
 require_once($CFG->dirroot . '/course/externallib.php');
 
-$settings->add(new admin_setting_configtext('cleaner_courses/minimumage',
-            new lang_string('minimumage', 'cleaner_courses'),
-            new lang_string('minimumagedesc', 'cleaner_courses'), 365, PARAM_INT));
+$settings->add(
+    new admin_setting_configtext(
+        'cleaner_courses/minimumage',
+        new lang_string('minimumage', 'cleaner_courses'),
+        new lang_string('minimumagedesc', 'cleaner_courses'),
+        365,
+        PARAM_INT
+    )
+);
 
 // Categories of courses to delete.
 // If $CFG->slasharguments is not set at all, this will trigger a warning in PHP unit testing
@@ -41,8 +49,8 @@ if (!isset($CFG->slasharguments)) {
 }
 $categories = local_datacleaner_get_categories();
 
-$defaultcategories = array();
-$categoriesbyname = array();
+$defaultcategories = [];
+$categoriesbyname = [];
 
 foreach ($categories as $category) {
     $categoriesbyname[$category['id']] = $category['name'];
@@ -50,27 +58,29 @@ foreach ($categories as $category) {
 }
 asort($categoriesbyname, SORT_LOCALE_STRING);
 
-$settings->add(new admin_setting_configmulticheckbox(
-            'cleaner_courses/categories',
-            new lang_string('categories', 'cleaner_courses'),
-            new lang_string('categoriesdesc', 'cleaner_courses'),
-            $defaultcategories,
-            $categoriesbyname
-            ));
+$settings->add(
+    new admin_setting_configmulticheckbox(
+        'cleaner_courses/categories',
+        new lang_string('categories', 'cleaner_courses'),
+        new lang_string('categoriesdesc', 'cleaner_courses'),
+        $defaultcategories,
+        $categoriesbyname
+    )
+);
 
 $table = new html_table();
-$table->data = array();
-$table->head = array(
+$table->data = [];
+$table->head = [
     get_string('coursename', 'cleaner_courses'),
     get_string('category', 'cleaner_courses'),
-);
+];
 
 $config = get_config('cleaner_courses');
 
 if (isset($config->courses)) {
     $shortnames = explode("\n", $config->courses);
 } else {
-    $shortnames = array();
+    $shortnames = [];
 }
 $where = '';
 foreach ($shortnames as $name) {
@@ -92,12 +102,18 @@ if ($where) {
                                             WHERE ($where)
                                             ORDER BY c.fullname, ca.name");
     foreach ($itemstoignore as $r) {
-        $table->data[] = array($r->fullname, $r->name);
+        $table->data[] = [$r->fullname, $r->name];
     }
 }
 
-$settings->add(new admin_setting_configtextarea(
-    'cleaner_courses/courses',
-    new lang_string('courses', 'cleaner_courses'),
-    new lang_string('coursesdesc', 'cleaner_courses') . "<br>\n" . html_writer::table($table),
-    "", PARAM_RAW, 60, 5));
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_courses/courses',
+        new lang_string('courses', 'cleaner_courses'),
+        new lang_string('coursesdesc', 'cleaner_courses') . "<br>\n" . html_writer::table($table),
+        "",
+        PARAM_RAW,
+        60,
+        5
+    )
+);

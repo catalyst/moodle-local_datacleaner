@@ -14,35 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * tempfiles_cleaner class.
- *
- * @package     cleaner_orphaned_sitedata
- * @author      Ghada El-Zoghbi <ghada@catalyst-au.net>
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 namespace cleaner_orphaned_sitedata;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * tempfiles_cleaner class.
+ * Data cleaner class for orphaned sitedata.
  *
  * @package     cleaner_orphaned_sitedata
- * @author      Ghada El-Zoghbi <ghada@catalyst-au.net>
- * @author      Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright   2016 Catalyst IT Australia {@link http://www.catalyst-au.net}
+ * @copyright   2016 Ghada El-Zoghbi <ghada@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tempfiles_cleaner {
+    /**
+     * Dry run.
+     *
+     * @var mixed
+     */
     private $dryrun;
 
+    /**
+     * Constructor.
+     *
+     * @param mixed $dryrun
+     */
     public function __construct($dryrun) {
         $this->dryrun = $dryrun;
     }
 
+    /**
+     * Execute the cleaning process.
+     */
     public function execute() {
         global $CFG;
         $tempdirectory = $CFG->tempdir;
