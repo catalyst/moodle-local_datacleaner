@@ -85,11 +85,11 @@ class clean extends \local_datacleaner\clean {
 
         if (self::$options['dryrun']) {
             $count = $DB->count_records_sql(
-                "SELECT COUNT('x') FROM {context}
-                                LEFT JOIN {course}
-                                        ON {context}.instanceid = {course}.id
-                                    WHERE contextlevel = 50
-                                    AND {course}.id IS NULL"
+                "SELECT COUNT('x')
+                   FROM {context}
+              LEFT JOIN {course} ON {context}.instanceid = {course}.id
+                  WHERE contextlevel = 50
+                    AND {course}.id IS NULL"
             );
             echo "\nWould delete " . $count . " context records that are currently lacking matching courses " .
                     "and those from courses to be deleted.\n";
