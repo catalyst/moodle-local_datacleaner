@@ -91,7 +91,7 @@ foreach ($shortnames as $name) {
     if (empty($name)) {
         continue;
     }
-    $placeholders[] = "shortname LIKE ?";
+    $placeholders[] = "shortname = ?";
     $params[] = $name;
 }
 
