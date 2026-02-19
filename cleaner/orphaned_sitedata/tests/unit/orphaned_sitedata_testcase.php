@@ -36,6 +36,9 @@ require_once($CFG->libdir . '/adminlib.php');
 class orphaned_sitedata_testcase extends advanced_testcase {
     /**
      * Executes test.
+     *
+     * @param object $cleaner Cleaner instance.
+     * @return string Output from execution.
      */
     protected function execute($cleaner) {
         ob_start();
@@ -47,6 +50,11 @@ class orphaned_sitedata_testcase extends advanced_testcase {
 
     /**
      * Creates a file with the given component, filepath and filename.
+     *
+     * @param string $component The component name.
+     * @param string $filepath The folder path (e.g., '/').
+     * @param string $filename The name of the file to create.
+     * @return stored_file The created file object.
      */
     protected function create_file($component, $filepath, $filename) {
         $syscontext = context_course::instance(1);
@@ -64,6 +72,9 @@ class orphaned_sitedata_testcase extends advanced_testcase {
 
     /**
      * Checks if the file is readable.
+     *
+     * @param stored_file $file The file to check.
+     * @return bool True if readable, false otherwise.
      */
     protected function file_is_readable(stored_file $file) {
         if (class_exists('file_system')) {

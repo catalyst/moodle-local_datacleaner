@@ -56,6 +56,8 @@ class clean extends \local_datacleaner\clean {
 
     /**
      * Constructor.
+     *
+     * @param array $options Optional initialization options.
      */
     public function __construct($options = []) {
         parent::__construct($options);

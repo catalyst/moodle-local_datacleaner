@@ -35,7 +35,8 @@ class clean extends \local_datacleaner\clean {
 
     /**
      * Get the settings section url.
-     * @return \moodle_url the settings section URL
+     * @param string $name Section name.
+     * @return \moodle_url The URL of the settings section.
      */
     public static function get_settings_section_url($name) {
         return new \moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');

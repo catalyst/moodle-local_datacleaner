@@ -26,6 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Upgrade script for cleaner_users_upgrade.
+ *
+ * @param int $oldversion The currently installed version.
+ * @return bool True on success.
  */
 function xmldb_cleaner_users_upgrade($oldversion) {
     global $DB;

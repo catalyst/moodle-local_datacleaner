@@ -108,6 +108,11 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
      * Tests that the temporary tables are created with the correct data, sorted and without duplicates.
      *
      * @dataProvider provider_for_it_creates_sorted_temporary_tables
+     *
+     * @param array $inputdata Input records for the test table.
+     * @param array $expectedfirst Expected data in the temporary first name table.
+     * @param array $expectedlast Expected data in the temporary last name table.
+     * @return void
      */
     public function test_it_creates_sorted_temporary_tables($inputdata, $expectedfirst, $expectedlast) {
         global $DB;
@@ -145,9 +150,13 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
 
     /**
      *
-     * Tests that the names are scrambled, except the ones with the provided ids.
+     * Tests that the names are scrambled only for the records with the provided ids.
      *
      * @dataProvider provider_for_it_scrambles_names
+     *
+     * @param string|null $except Comma-separated list of IDs to scramble; if null or empty, all IDs are scrambled.
+     * @param array $expected Expected table data after scrambling.
+     * @return void
      */
     public function test_it_scrambles_names($except, $expected) {
         global $DB;
@@ -161,7 +170,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         }
         $scrambler->execute();
 
-        // Check if it was properly screambled.
+        // Check if it was properly scrambled.
         $scrambled = $DB->get_records('test_names', null, 'id ASC');
         self::assertCount(count($expected), $scrambled);
         for ($i = 0; $i < count($expected); $i++) {
@@ -196,6 +205,10 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
      * Tests that the next prime after a number is correct.
      *
      * @dataProvider provider_for_the_next_prime_after
+     *
+     * @param int $number Input number.
+     * @param int $expected Expected next prime.
+     * @return void
      */
     public function test_the_next_prime_after($number, $expected) {
         $next = table_scrambler::get_prime_after($number);
@@ -207,6 +220,11 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
      * Tests that the prime factors returned are correct.
      *
      * @dataProvider provider_for_the_prime_factors
+     *
+     * @param int $count Number of factors to generate.
+     * @param int $number Number to factorize.
+     * @param int[] $expected Expected array of prime factors.
+     * @return void
      */
     public function test_the_prime_factors($count, $number, $expected) {
         $factors = table_scrambler::get_prime_factors($count, $number);
@@ -215,6 +233,9 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
 
     /**
      * Creates the test data table and fills it with the provided data.
+     *
+     * @param array|null $data Optional array of records to insert.
+     * @return xmldb_table The created test table.
      */
     private function create_test_data($data = null) {
         global $DB;

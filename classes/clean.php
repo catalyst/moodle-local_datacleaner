@@ -208,6 +208,7 @@ abstract class clean {
     /**
      * Build an array of criteria from the module config.
      *
+     * @param object $config Module configuration object.
      * @return array $criteria Criteria to pass to the where fragment generator.
      */
     protected static function get_user_criteria($config) {
@@ -297,13 +298,11 @@ abstract class clean {
     }
 
     /**
-     * Get an array of user objects meeting the criteria provided - possibly not all of them.
+     * Returns a paginated chunk of user IDs that match the given configuration criteria.
      *
-     * @param array $config An array of plugin configuration settings to apply.
-     * @param string $sort A SQL ORDER BY parameter.
-     * @param string $fields A command separated list of fields to return.
-     *
-     * @return array $result An array of user records.
+     * @param object $config Plugin configuration settings.
+     * @param int $offset Offset for pagination.
+     * @return int[] Array of user IDs.
      */
     public static function get_user_chunk($config = [], $offset = 0) {
         global $DB;
@@ -334,6 +333,9 @@ abstract class clean {
 
     /**
      * Get the criteria for the list of courses.
+     *
+     * @param object $config Configuration object.
+     * @return array Criteria array.
      */
     protected static function get_courses_criteria($config) {
         $criteria = [];
@@ -423,7 +425,7 @@ abstract class clean {
 
     /**
      * Get the settings section url.
-     * @param string
+     * @param string $sectionname The settings section name.
      * @return \moodle_url
      */
     public static function get_settings_section_url($sectionname) {
