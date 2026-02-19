@@ -267,7 +267,7 @@ class schema_add_cascade_delete extends clean {
      * Add cascade deletion to courseIDs.
      *
      * @param string $parent The parent table to process.
-     * @param \schema|null $schema Optional database schema object.
+     * @param \xmldb_structure|null $schema Optional database schema object.
      * @return void
      */
     public static function execute($parent = 'user', $schema = null) {

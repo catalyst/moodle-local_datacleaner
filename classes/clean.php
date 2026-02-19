@@ -333,6 +333,7 @@ abstract class clean {
 
     /**
      * Get the criteria for the list of courses.
+     *
      * @param object $config Configuration object.
      * @return array Criteria array.
      */

@@ -150,11 +150,11 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
 
     /**
      *
-     * Tests that the names are scrambled, except the ones with the provided ids.
+     * Tests that the names are scrambled only for the records with the provided ids.
      *
      * @dataProvider provider_for_it_scrambles_names
      *
-     * @param int[] $except IDs to exclude from scrambling.
+     * @param string|null $except Comma-separated list of IDs to scramble; if null or empty, all IDs are scrambled.
      * @param array $expected Expected table data after scrambling.
      * @return void
      */
@@ -170,7 +170,7 @@ class local_datacleaner_table_scrambler_test extends advanced_testcase {
         }
         $scrambler->execute();
 
-        // Check if it was properly screambled.
+        // Check if it was properly scrambled.
         $scrambled = $DB->get_records('test_names', null, 'id ASC');
         self::assertCount(count($expected), $scrambled);
         for ($i = 0; $i < count($expected); $i++) {
