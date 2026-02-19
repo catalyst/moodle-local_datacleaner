@@ -63,7 +63,8 @@ class backup_cleaner {
     /**
      * Delete backup files if not dryrun.
      *
-     * @param $countdown
+     * @param int $countdown Counter for logging purposes.
+     * @return void
      */
     private function delete_backup_files($countdown) {
         global $DB;

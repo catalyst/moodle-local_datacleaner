@@ -36,6 +36,8 @@ class admin_setting_configencodedtext extends \admin_setting_configtext {
 
     /**
      * Write the setting
+     * @param mixed $data The submitted value.
+     * @return string Empty string on success, error message otherwise.
      */
     public function write_setting($data) {
         global $CFG;
@@ -52,6 +54,8 @@ class admin_setting_configencodedtext extends \admin_setting_configtext {
 
     /**
      * Return an XHTML string for the setting
+     * @param mixed $data The current value.
+     * @param string $query Search query.
      * @return string Returns an XHTML string
      */
     public function output_html($data, $query = '') {

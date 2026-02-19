@@ -34,7 +34,7 @@ class clean extends \local_datacleaner\clean {
     /**
      * Courses.
      *
-     * @var string
+     * @var array
      */
     protected static $courses = [];
 
@@ -47,6 +47,8 @@ class clean extends \local_datacleaner\clean {
 
     /**
      * Constructor.
+     *
+     * @param array $options Initialization options.
      */
     public function __construct($options) {
         parent::__construct($options);

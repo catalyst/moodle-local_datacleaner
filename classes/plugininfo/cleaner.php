@@ -95,7 +95,9 @@ class cleaner extends base {
     /**
      * Include the settings.php file from sub plugins if they provide it.
      * This is a copy of very similar implementations from various other subplugin areas.
-     *
+     * @param \part_of_admin_tree $adminroot Admin settings root.
+     * @param string $parentnodename Parent admin node name.
+     * @param bool $hassiteconfig Whether user can configure site.
      * @return \moodle_url
      */
     public function load_settings(\part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig) {

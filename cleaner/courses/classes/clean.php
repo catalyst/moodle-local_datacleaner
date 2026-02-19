@@ -47,6 +47,8 @@ class clean extends \local_datacleaner\clean {
 
     /**
      * Constructor.
+     *
+     * @param array $options Optional initialization options.
      */
     public function __construct($options = []) {
         parent::__construct($options);
@@ -64,6 +66,9 @@ class clean extends \local_datacleaner\clean {
      *
      * delete_course is far too slow. This plugin gets around this by using the XML schema
      * info to set up cascade deletion, use it to delete the affected courses and then revert the schema changes.
+     *
+     * @param int[] $courses Array of course IDs to delete.
+     * @return void
      */
     public static function delete_courses($courses = []) {
         global $DB;

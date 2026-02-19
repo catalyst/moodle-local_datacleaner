@@ -45,6 +45,10 @@ class cleaner_backup_test extends \advanced_testcase {
     /**
      * Test delete backups.
      * @dataProvider delete_provider
+     *
+     * @param string $filename Name of the file to test.
+     * @param bool $deleted Expected deletion result.
+     * @return void
      */
     public function test_delete_backups($filename, $deleted) {
         global $DB;
