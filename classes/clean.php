@@ -300,7 +300,7 @@ abstract class clean {
     /**
      * Returns a paginated chunk of user IDs that match the given configuration criteria.
      *
-     * @param array $config Plugin configuration settings.
+     * @param object $config Plugin configuration settings.
      * @param int $offset Offset for pagination.
      * @return int[] Array of user IDs.
      */
