@@ -36,6 +36,7 @@ require_once($CFG->libdir . '/adminlib.php');
 class orphaned_sitedata_testcase extends advanced_testcase {
     /**
      * Executes test.
+     *
      * @param object $cleaner Cleaner instance.
      * @return string Output from execution.
      */

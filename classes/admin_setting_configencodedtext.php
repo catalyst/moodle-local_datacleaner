@@ -36,6 +36,7 @@ class admin_setting_configencodedtext extends \admin_setting_configtext {
 
     /**
      * Write the setting
+     *
      * @param mixed $data The submitted value.
      * @return string Empty string on success, error message otherwise.
      */
@@ -54,6 +55,7 @@ class admin_setting_configencodedtext extends \admin_setting_configtext {
 
     /**
      * Return an XHTML string for the setting
+     *
      * @param mixed $data The current value.
      * @param string $query Search query.
      * @return string Returns an XHTML string
