@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 class clean extends \local_datacleaner\clean {
     /**
      * Get the settings section url.
+     * @param string $name Section name.
      * @return \moodle_url the settings section URL
      */
     public static function get_settings_section_url($name) {

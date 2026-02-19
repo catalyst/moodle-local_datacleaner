@@ -64,6 +64,9 @@ function abort_message($prefix, $text, $highlight = false) {
  * Safety checks.
  *
  * Make sure it's safe for us to continue. Don't wash prod!
+ *
+ * @param bool $dryrun If true, just reports potential issues without aborting.
+ * @return bool True if it is unsafe to proceed.
  */
 function safety_checks($dryrun) {
     global $CFG, $DB;
