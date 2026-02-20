@@ -266,8 +266,9 @@ class schema_add_cascade_delete extends clean {
     /**
      * Add cascade deletion to courseIDs.
      *
-     * @param string $param The parent table for which we're seeking children.
-     * @param array $schema The database schema
+     * @param string $parent The parent table to process.
+     * @param \schema|null $schema Optional database schema object.
+     * @return void
      */
     public static function execute($parent = 'user', $schema = null) {
         static $visited = [];
