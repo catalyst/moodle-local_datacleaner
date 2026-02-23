@@ -462,7 +462,7 @@ abstract class clean {
     public static function log($string) {
         global $CFG;
 
-        mtrace($string);
+        debugging($string, DEBUG_DEVELOPER);
 
         // Stash a copy into sitedir log file.
         if (!file_exists("{$CFG->dataroot}/datacleaner")) {
