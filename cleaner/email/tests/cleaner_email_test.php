@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use cleaner_email\clean;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -114,8 +115,8 @@ class cleaner_email_test extends advanced_testcase {
      * @param string $suffix
      * @param string $ignorepattern
      *
-     * @dataProvider provider_for_cleaner_email_suffix_ignore_pattern
      */
+    #[DataProvider('provider_for_cleaner_email_suffix_ignore_pattern')]
     public function test_cleaner_email_suffix_ignore_pattern($input, $expected, $suffix, $ignorepattern) {
         global $DB;
 
@@ -143,7 +144,7 @@ class cleaner_email_test extends advanced_testcase {
      *
      * @return array
      */
-    public function provider_for_cleaner_email_suffix_ignore_pattern(): array {
+    public static function provider_for_cleaner_email_suffix_ignore_pattern(): array {
         return [
             ['user@example.com', 'user@example.com.suffix', '.suffix', 'moodle.com'],
             ['user@email.com', 'user@email.com.suffix', '.suffix', 'emailsuffix.com'],
