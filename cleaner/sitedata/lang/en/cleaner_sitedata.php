@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Cleanup sitedata';
-
 $string['allcontextlevels'] = 'All context levels';
 $string['allcontextlevelsdesc'] = 'Replace all files in every context level, with a generic default';
 $string['allfiletypes'] = 'All file types';
@@ -36,6 +34,7 @@ $string['filecopyerror'] = '-- ERROR -- An error was encountered while copying t
 $string['filetypes'] = 'File types';
 $string['filetypesdesc'] = 'Files of only the selected types will be replaced (if All file types is not set).';
 $string['nothingtoupdate'] = 'Nothing to update.';
+$string['pluginname'] = 'Cleanup sitedata';
 $string['privacy:metadata'] = 'The cleaner sitedata plugin does not store any personal data.';
 
 $string['willreplace'] = 'Will update {$a->total} record(s) in files table.

@@ -16,8 +16,6 @@
 
 namespace cleaner_logstore_standard;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for logstore standard.
  *

@@ -17,6 +17,7 @@
 namespace cleaner_orphaned_sitedata\tests\unit;
 
 use cleaner_orphaned_sitedata\backup_cleaner;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,6 +32,7 @@ require_once(__DIR__ . '/orphaned_sitedata_testcase.php');
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(backup_cleaner::class)]
 final class backup_cleaner_test extends orphaned_sitedata_testcase {
     /**
      * The list of files that existed before the test started.
@@ -48,16 +50,25 @@ final class backup_cleaner_test extends orphaned_sitedata_testcase {
         parent::tearDown();
     }
 
+    /**
+     * Tests that backup_cleaner can be instantiated.
+     */
     public function test_it_exists(): void {
         $cleaner = new backup_cleaner(true);
         self::assertNotNull($cleaner);
     }
 
+    /**
+     * Tests that nothing happens when no backup files exist.
+     */
     public function test_it_does_nothing_if_no_backup_files_exist(): void {
         $this->execute(new backup_cleaner(true));
         self::assertSame($this->initialfiles, $this->get_files());
     }
 
+    /**
+     * Tests that backup files are removed.
+     */
     public function test_it_removes_backup_files(): void {
         $this->resetAfterTest(true);
         $file = $this->create_backup_file('test_it_removes_backup_files.backup');
@@ -66,6 +77,9 @@ final class backup_cleaner_test extends orphaned_sitedata_testcase {
         self::assertFalse($this->file_is_readable($file));
     }
 
+    /**
+     * Tests that backup files are not removed in dry run mode.
+     */
     public function test_it_does_not_remove_backup_files_in_dry_run(): void {
         $this->resetAfterTest(true);
         $file = $this->create_backup_file('test_it_does_not_remove_backup_files_in_dry_run.backup');
@@ -74,11 +88,22 @@ final class backup_cleaner_test extends orphaned_sitedata_testcase {
         self::assertTrue($this->file_is_readable($file));
     }
 
+    /**
+     * Creates a backup test file in the backup filearea.
+     *
+     * @param string $filename The filename to create.
+     * @return stored_file The created file object.
+     */
     public function create_backup_file($filename) {
         $file = $this->create_file('backup', '/somebackups/', $filename);
         return $file;
     }
 
+    /**
+     * Returns all filenames currently stored in the files table.
+     *
+     * @return array Array of filenames keyed by record ID.
+     */
     private function get_files() {
         global $DB;
         $found = $DB->get_records_select('files', "filename <> '.'", null, 'id ASC');

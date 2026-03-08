@@ -18,8 +18,6 @@ namespace cleaner_orphaned_sitedata;
 
 use cache_helper;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for orphaned sitedata.
  *
