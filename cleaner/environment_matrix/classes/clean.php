@@ -74,6 +74,9 @@ class clean extends \local_datacleaner\clean {
                 // Set Admin User for admin_write_settings perms.
                 \core\session\manager::set_user(get_admin());
 
+                // Build admin tree once for all setting lookups.
+                $admintree = admin_get_root(true);
+
                 // Process settings.
                 foreach ($matrixdata as $plugin => $items) {
                     foreach ($items as $name => $env) {
@@ -89,9 +92,6 @@ class clean extends \local_datacleaner\clean {
                         if (!$dryrun) {
                             set_config($config->config, $config->value, $config->plugin);
                         }
-
-                        // Generate an admin settings tree.
-                        $admintree = admin_get_root(true);
 
                         // Get strings in nicer format for reuse.
                         $configname = $config->config;
