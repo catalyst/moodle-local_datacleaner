@@ -41,6 +41,8 @@ $temp->add(new admin_setting_configtext('local_datacleaner/mismatch_threshold',
     new lang_string('mismatch_thresholddesc', 'local_datacleaner'), '5', PARAM_INT));
 $ADMIN->add('datacleaner', $temp);
 
+require_once(__DIR__ . '/classes/admin_setting_sql_textarea.php');
+
 $plugins = \local_datacleaner\plugininfo\cleaner::get_plugins_by_sortorder();
 foreach ($plugins as $plugin) {
 

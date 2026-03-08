@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace cleaner_custom_sql_post;
+namespace local_datacleaner;
 
 /**
  * A textarea admin setting that auto-sizes to fit its content.
@@ -22,7 +22,7 @@ namespace cleaner_custom_sql_post;
  * Rows are computed from the stored value on page load, and a small
  * inline script keeps the height in sync as the user types.
  *
- * @package    cleaner_custom_sql_post
+ * @package    local_datacleaner
  * @author     Brendan Heywood <brendan@catalyst-au.net>
  * @copyright  2026 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
