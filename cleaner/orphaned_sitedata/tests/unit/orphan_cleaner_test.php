@@ -31,12 +31,12 @@ require_once(__DIR__ . '/orphaned_sitedata_testcase.php');
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class orphan_cleaner_test extends orphaned_sitedata_testcase {
-    public function test_it_exists() {
+final class orphan_cleaner_test extends orphaned_sitedata_testcase {
+    public function test_it_exists(): void {
         self::assertNotNull(new orphan_cleaner(true));
     }
 
-    public function test_it_removes_orphaned_files() {
+    public function test_it_removes_orphaned_files(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -50,7 +50,7 @@ class orphan_cleaner_test extends orphaned_sitedata_testcase {
         self::assertFalse($this->file_is_readable($file));
     }
 
-    public function test_it_does_not_remove_orphaned_files_in_dry_run() {
+    public function test_it_does_not_remove_orphaned_files_in_dry_run(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -64,7 +64,7 @@ class orphan_cleaner_test extends orphaned_sitedata_testcase {
         self::assertTrue($this->file_is_readable($file));
     }
 
-    public function test_it_does_not_remove_non_orphaned_files() {
+    public function test_it_does_not_remove_non_orphaned_files(): void {
         $this->resetAfterTest(true);
 
         $file = $this->create_test_file('test_it_does_not_remove_non_orphaned_files.test');

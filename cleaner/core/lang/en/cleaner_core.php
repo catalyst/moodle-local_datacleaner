@@ -22,14 +22,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['deletemucfile'] = 'Delete muc file';
+$string['deletemucfiledesc'] = 'Delete the muc configuration file.';
 $string['pluginname'] = 'Cleanup core';
 $string['privacy:metadata'] = 'The cleaner core plugin does not store any personal data.';
 
-$string['deletemucfile'] = 'Delete muc file';
-$string['deletemucfiledesc'] = 'Delete the muc configuration file.';
 
-$string['woulddeletemuc'] = 'Would delete muc file.';
 $string['willdeletemuc'] = 'Will delete muc file.';
+$string['willtruncatetables'] = 'Will truncate {$a} tables.';
+$string['woulddeletemuc'] = 'Would delete muc file.';
 
 $string['wouldtruncatetables'] = 'Would truncate {$a} tables.';
-$string['willtruncatetables'] = 'Will truncate {$a} tables.';

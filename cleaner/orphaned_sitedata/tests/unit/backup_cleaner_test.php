@@ -31,7 +31,7 @@ require_once(__DIR__ . '/orphaned_sitedata_testcase.php');
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class backup_cleaner_test extends orphaned_sitedata_testcase {
+final class backup_cleaner_test extends orphaned_sitedata_testcase {
     /**
      * The list of files that existed before the test started.
      * @var array
@@ -48,17 +48,17 @@ class backup_cleaner_test extends orphaned_sitedata_testcase {
         parent::tearDown();
     }
 
-    public function test_it_exists() {
+    public function test_it_exists(): void {
         $cleaner = new backup_cleaner(true);
         self::assertNotNull($cleaner);
     }
 
-    public function test_it_does_nothing_if_no_backup_files_exist() {
+    public function test_it_does_nothing_if_no_backup_files_exist(): void {
         $this->execute(new backup_cleaner(true));
         self::assertSame($this->initialfiles, $this->get_files());
     }
 
-    public function test_it_removes_backup_files() {
+    public function test_it_removes_backup_files(): void {
         $this->resetAfterTest(true);
         $file = $this->create_backup_file('test_it_removes_backup_files.backup');
         self::assertTrue($this->file_is_readable($file));
@@ -66,7 +66,7 @@ class backup_cleaner_test extends orphaned_sitedata_testcase {
         self::assertFalse($this->file_is_readable($file));
     }
 
-    public function test_it_does_not_remove_backup_files_in_dry_run() {
+    public function test_it_does_not_remove_backup_files_in_dry_run(): void {
         $this->resetAfterTest(true);
         $file = $this->create_backup_file('test_it_does_not_remove_backup_files_in_dry_run.backup');
         self::assertTrue($this->file_is_readable($file));

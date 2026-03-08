@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cleaner_email_test extends advanced_testcase {
+final class cleaner_email_test extends advanced_testcase {
     /** @var stdClass $config */
     private $config;
 
@@ -56,7 +56,7 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Test appending the suffix
      */
-    public function test_cleaner_email_suffix_append() {
+    public function test_cleaner_email_suffix_append(): void {
         global $DB;
 
         // Obtain the list of generated users.
@@ -86,7 +86,7 @@ class cleaner_email_test extends advanced_testcase {
     /**
      * Test appending the suffix and ignoring a basic pattern.
      */
-    public function test_cleaner_email_suffix_ignore() {
+    public function test_cleaner_email_suffix_ignore(): void {
         global $DB;
 
         // Prevent emails of this pattern to have the suffix.
@@ -117,7 +117,7 @@ class cleaner_email_test extends advanced_testcase {
      *
      */
     #[DataProvider('provider_for_cleaner_email_suffix_ignore_pattern')]
-    public function test_cleaner_email_suffix_ignore_pattern($input, $expected, $suffix, $ignorepattern) {
+    public function test_cleaner_email_suffix_ignore_pattern($input, $expected, $suffix, $ignorepattern): void {
         global $DB;
 
         $this->config->emailsuffix = $suffix;

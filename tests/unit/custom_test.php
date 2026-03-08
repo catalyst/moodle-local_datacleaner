@@ -23,7 +23,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2019 Srdjan Janković <srdjan@catalyst.net.nz>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class custom_test extends advanced_testcase {
+final class custom_test extends advanced_testcase {
     /**
      * Initialise a cleaner object to reset static options.
      *
@@ -38,7 +38,7 @@ class custom_test extends advanced_testcase {
         parent::tearDown();
     }
 
-    public function test_executes_sql() {
+    public function test_executes_sql(): void {
         global $DB;
 
         $this->resetAfterTest(true);
