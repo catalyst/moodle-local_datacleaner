@@ -1,4 +1,4 @@
-![Build Status](https://github.com/catalyst/moodle-local_datacleaner//actions/workflows/ci.yml/badge.svg?branch=MOODLE_310_STABLE)
+![Build Status](https://github.com/catalyst/moodle-local_datacleaner/actions/workflows/ci.yml/badge.svg?branch=MOODLE_500_STABLE)
 
 # DataCleaner Moodle Module
 
