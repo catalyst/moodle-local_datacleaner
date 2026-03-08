@@ -19,8 +19,6 @@ namespace cleaner_orphaned_sitedata;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for orphaned sitedata.
  *

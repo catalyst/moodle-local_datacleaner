@@ -16,8 +16,6 @@
 
 namespace cleaner_grades;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for grades.
  *
