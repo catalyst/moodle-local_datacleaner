@@ -28,12 +28,23 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
+if (class_exists('\local_envbar\local\envbarlib')) {
+    $prodwwwroot = \local_envbar\local\envbarlib::getprodwwwroot();
+    $settings->add(
+        new admin_setting_heading(
+            'cleaner_replace_urls/envbar_heading',
+            '',
+            get_string('urlsfromenvbar', 'cleaner_replace_urls', $prodwwwroot)
+        )
+    );
+}
+
 $settings->add(
     new admin_setting_configtext(
         'cleaner_replace_urls/origsiteurl',
         new lang_string('origsiteurl', 'cleaner_replace_urls'),
         new lang_string('origsiteurldesc', 'cleaner_replace_urls'),
-        'http://',
+        '',
         PARAM_URL
     )
 );
@@ -43,7 +54,7 @@ $settings->add(
         'cleaner_replace_urls/newsiteurl',
         new lang_string('newsiteurl', 'cleaner_replace_urls'),
         new lang_string('newsiteurldesc', 'cleaner_replace_urls'),
-        'http://localhost',
+        '',
         PARAM_URL
     )
 );
@@ -76,7 +87,7 @@ $settings->add(
         'cleaner_replace_urls/cleanwysiwyg',
         new lang_string('cleanwysiwyg', 'cleaner_replace_urls'),
         new lang_string('cleanwysiwygdesc', 'cleaner_replace_urls'),
-        0
+        1
     )
 );
 
@@ -85,6 +96,6 @@ $settings->add(
         'cleaner_replace_urls/cleantext',
         new lang_string('cleantext', 'cleaner_replace_urls'),
         new lang_string('cleantextdesc', 'cleaner_replace_urls'),
-        0
+        1
     )
 );

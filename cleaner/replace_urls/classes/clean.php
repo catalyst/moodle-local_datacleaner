@@ -66,10 +66,23 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Set wwwroot as newsiteurl if not provided
+     * Set URLs from envbar or config, falling back to sensible defaults.
+     *
+     * If local_envbar is installed, the production URL is read from its config
+     * and the new site URL is the current wwwroot — no manual configuration needed.
      */
     private static function set_newsiteurl() {
         global $CFG;
+
+        if (class_exists('\local_envbar\local\envbarlib')) {
+            if (empty(self::$config->origsiteurl)) {
+                self::$config->origsiteurl = \local_envbar\local\envbarlib::getprodwwwroot();
+            }
+            if (empty(self::$config->newsiteurl)) {
+                self::$config->newsiteurl = $CFG->wwwroot;
+            }
+            return;
+        }
 
         if (empty(self::$config->newsiteurl)) {
             self::$config->newsiteurl = $CFG->wwwroot;
@@ -239,12 +252,41 @@ class clean extends \local_datacleaner\clean {
      * Execute the cleaning process.
      */
     public static function execute() {
-        if (self::$options['dryrun']) {
-            $count = count(self::$tables);
-            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
-                mtrace("Would replace URLs in {$count} tables.");
-            }
-        } else {
+        $orig    = self::$config->origsiteurl;
+        $new     = self::$config->newsiteurl;
+        $count   = count(self::$tables);
+        $verbose = (bool)self::$options['verbose'];
+        $dryrun  = (bool)self::$options['dryrun'];
+
+        if (empty($orig)) {
+            mtrace("ERROR: origsiteurl is not set. Configure it at the Replace URLs settings page or install local_envbar.");
+            return;
+        }
+
+        if (empty($new)) {
+            mtrace("ERROR: newsiteurl is not set.");
+            return;
+        }
+
+        $willconfig  = !empty(self::$config->cleanconfig);
+        $willtext    = !empty(self::$config->cleantext);
+        $willwysiwyg = !empty(self::$config->cleanwysiwyg);
+
+        if (!$willconfig && !$willtext && !$willwysiwyg) {
+            mtrace("WARNING: No replacement targets enabled. Enable 'Replace in config tables', 'Replace in text/varchar' or 'Replace in wysiwyg' in settings.");
+            return;
+        }
+
+        $prefix = $dryrun ? 'Would replace' : 'Replacing';
+        mtrace("{$prefix} '{$orig}' => '{$new}' in {$count} tables.");
+
+        if ($verbose) {
+            mtrace("  config tables:   " . ($willconfig  ? 'YES' : 'NO'));
+            mtrace("  text/varchar:    " . ($willtext    ? 'YES' : 'NO'));
+            mtrace("  wysiwyg fields:  " . ($willwysiwyg ? 'YES' : 'NO'));
+        }
+
+        if (!$dryrun) {
             self::db_replace();
             self::blocks_replace();
         }
