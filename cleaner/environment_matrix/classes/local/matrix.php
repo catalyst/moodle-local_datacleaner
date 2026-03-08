@@ -134,8 +134,8 @@ class matrix {
             $record->name = $setting->name;
             $record->textarea = false;
             $record->display = true;
-            // Make sure we don't overwrite things that have already been added to the result array
-            // as they might have been created as admin_setting_configtextarea or admin_setting_confightmleditor
+            // Make sure we don't overwrite things that have already been added to the result array,
+            // as they might have been created as admin_setting_configtextarea or admin_setting_confightmleditor,
             // and we won't be able to tell that here.
             if (empty($result[$record->plugin][$record->name])) {
                 $result[$record->plugin][$record->name] = $record;
