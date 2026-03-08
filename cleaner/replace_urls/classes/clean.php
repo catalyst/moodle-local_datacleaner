@@ -192,12 +192,18 @@ class clean extends \local_datacleaner\clean {
             } // End db get columns on table.
         } // End foreach tables.
 
+        $maxwidth = 0;
         foreach ($replacing as $table => $columns) {
-            self::new_task(count($columns));
+            foreach ($columns as $column) {
+                $maxwidth = max($maxwidth, strlen("{$table}::{$column->name}"));
+            }
+        }
+
+        self::new_task(count($replacing));
+        foreach ($replacing as $table => $columns) {
             foreach ($columns as $column) {
                 // Only text-like columns can contain URLs.
                 if ($column->type !== 'text' && $column->type !== 'varchar') {
-                    self::next_step();
                     continue;
                 }
                 $count = $DB->count_records_select(
@@ -205,14 +211,15 @@ class clean extends \local_datacleaner\clean {
                     $DB->sql_like($column->name, ':search', false),
                     ['search' => '%' . $DB->sql_like_escape(self::$config->origsiteurl) . '%']
                 );
+                $label = str_pad("{$table}::{$column->name}", $maxwidth);
                 if ($count > 0) {
-                    mtrace("  {$table}::{$column->name} — {$count} row(s)");
+                    mtrace("  {$label} — {$count} row(s)");
                     $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
                 } else if (!empty(self::$options['verbose'])) {
-                    mtrace("  {$table}::{$column->name} — 0 rows, skipping");
+                    mtrace("  {$label} — 0 rows, skipping");
                 }
-                self::next_step();
             }
+            self::next_step();
         }
 
         // Delete modinfo caches.
