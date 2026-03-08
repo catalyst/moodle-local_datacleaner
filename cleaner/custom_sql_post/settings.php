@@ -27,6 +27,44 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configtextarea('cleaner_custom_sql_post/sql',
-            new lang_string('sql', 'cleaner_custom_sql_post'),
-            new lang_string('sqldesc', 'cleaner_custom_sql_post'), '', PARAM_RAW));
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_custom_sql_post/sql',
+        new lang_string('sql', 'cleaner_custom_sql_post'),
+        new lang_string('sqldesc', 'cleaner_custom_sql_post'),
+        '',
+        PARAM_RAW
+    )
+);
+
+$settings->add(
+    new admin_setting_heading(
+        'cleaner_custom_sql_post/env_heading',
+        new lang_string('environmentsql', 'cleaner_custom_sql_post'),
+        ''
+    )
+);
+
+if (class_exists('\local_envbar\local\envbarlib')) {
+    $environments = \local_envbar\local\envbarlib::get_records();
+    foreach ($environments as $env) {
+        $key = \cleaner_custom_sql_post\clean::get_env_config_key($env->showtext);
+        $settings->add(
+            new admin_setting_configtextarea(
+                'cleaner_custom_sql_post/' . $key,
+                $env->showtext . ' (' . $env->matchpattern . ')',
+                new lang_string('sqlenvironmentdesc', 'cleaner_custom_sql_post'),
+                '',
+                PARAM_RAW
+            )
+        );
+    }
+} else {
+    $settings->add(
+        new admin_setting_heading(
+            'cleaner_custom_sql_post/env_note',
+            '',
+            new lang_string('environmentsqlnote', 'cleaner_custom_sql_post')
+        )
+    );
+}
