@@ -18,7 +18,6 @@ namespace local_datacleaner\plugininfo;
 
 use core\plugininfo\base;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Cleaner plugin info class.
