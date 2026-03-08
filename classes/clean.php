@@ -436,12 +436,12 @@ abstract class clean {
      * Log some context of where and why this was run.
      */
     public static function debug_info() {
-        global $CFG;
+        global $CFG, $USER;
 
         $context = "Time: " . \userdate(time()) . "\n";
         $context .= "TZ:   " . $CFG->timezone . "\n";
         $context .= "Host: " . gethostname() . "\n";
-        $context .= "Moodle User: " . $USER->username . "\n";
+        $context .= "Moodle User: " . ($USER->username ?? 'none') . "\n";
         $context .= "\$CFG->dbhost: " . $CFG->dbhost . "\n";
         $context .= "\$CFG->dbuser: " . $CFG->dbuser . "\n";
         $context .= "\$CFG->dataroot: " . $CFG->dataroot . "\n";
