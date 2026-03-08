@@ -16,7 +16,8 @@
 
 namespace cleaner_backup\tests;
 
-defined('MOODLE_INTERNAL') || die();
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests for the cleaner.
@@ -25,11 +26,12 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 Peter Burnett <peterburnett@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(\cleaner_backup\clean::class)]
 final class cleaner_test extends \advanced_testcase {
     /**
      * Delete provider.
      */
-    public function delete_provider(): array {
+    public static function delete_provider(): array {
         // Array of filename, deleted.
         return [
             ['myfile.txt', false],
@@ -44,12 +46,11 @@ final class cleaner_test extends \advanced_testcase {
 
     /**
      * Test delete backups.
-     * @dataProvider delete_provider
      *
      * @param string $filename Name of the file to test.
      * @param bool $deleted Expected deletion result.
-     * @return void
      */
+    #[DataProvider('delete_provider')]
     public function test_delete_backups($filename, $deleted): void {
         global $DB;
         $this->resetAfterTest();

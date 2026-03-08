@@ -238,7 +238,7 @@ class matrix {
             }
         }
 
-        // $records now contains the tables display
+        // $records now contains the tables display.
         return $display;
     }
 
