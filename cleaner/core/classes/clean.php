@@ -29,7 +29,7 @@ class clean extends \local_datacleaner\clean {
     /**
      * Task.
      */
-    const TASK = 'Removing config settings';
+    const TASK = 'Cleaning core tables';
 
     /**
      * Execute the cleaning process.
@@ -73,9 +73,14 @@ class clean extends \local_datacleaner\clean {
             }
         }
 
+        sort($tablelist);
+
         if (self::$options['dryrun']) {
             // This always gets run.
             printf("\n\r " . get_string('wouldtruncatetables', 'cleaner_core', count($tablelist)) . "\n");
+            foreach ($tablelist as $table) {
+                printf("\r   - %s\n", $table);
+            }
 
             if ($deletemucfile) {
                 // There's only one file here.
@@ -85,6 +90,7 @@ class clean extends \local_datacleaner\clean {
             // This always gets run.
             printf("\n\r " . get_string('willtruncatetables', 'cleaner_core', count($tablelist)) . "\n");
             foreach ($tablelist as $table) {
+                printf("\r   - %s\n", $table);
                 $DB->delete_records($table);
             }
 
