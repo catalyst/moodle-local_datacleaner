@@ -16,8 +16,6 @@
 
 namespace cleaner_custom_sql_pre;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for custom sql pre.
  *

@@ -18,8 +18,6 @@ namespace cleaner_email;
 
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for email.
  *

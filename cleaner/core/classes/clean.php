@@ -16,8 +16,6 @@
 
 namespace cleaner_core;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for core.
  *

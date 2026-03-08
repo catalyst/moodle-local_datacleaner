@@ -16,8 +16,6 @@
 
 namespace cleaner_custom_sql_post;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for custom sql post.
  *

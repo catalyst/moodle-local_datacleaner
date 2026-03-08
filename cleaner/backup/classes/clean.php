@@ -16,8 +16,6 @@
 
 namespace cleaner_backup;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for backup.
  *
