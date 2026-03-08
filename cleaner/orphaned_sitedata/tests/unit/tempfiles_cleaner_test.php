@@ -33,12 +33,12 @@ require_once(__DIR__ . '/orphaned_sitedata_testcase.php');
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
-    public function test_it_exists() {
+final class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
+    public function test_it_exists(): void {
         self::assertNotNull(new tempfiles_cleaner(true));
     }
 
-    public function test_it_removes_tempfiles() {
+    public function test_it_removes_tempfiles(): void {
         global $CFG;
         $file = $CFG->tempdir . '/test_it_removes_tempfiles.test';
         touch($file);
@@ -51,7 +51,7 @@ class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
         }
     }
 
-    public function test_it_removes_all_files_and_subdirs() {
+    public function test_it_removes_all_files_and_subdirs(): void {
         global $CFG;
         $tmpdir = $CFG->tempdir . '/test/it/removes/subdirs';
         $file = $tmpdir . '/test_it_removes_all_files_and_subdirs.test';
@@ -66,7 +66,7 @@ class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
     }
 
 
-    public function test_it_does_not_remove_tempfiles_in_dry_run() {
+    public function test_it_does_not_remove_tempfiles_in_dry_run(): void {
         global $CFG;
         $file = $CFG->tempdir . '/test_it_does_not_remove_tempfiles_in_dry_run.test';
         touch($file);

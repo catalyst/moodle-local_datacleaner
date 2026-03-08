@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class table_scrambler_test extends advanced_testcase {
+final class table_scrambler_test extends advanced_testcase {
     public static function provider_for_it_creates_sorted_temporary_tables(): array {
         return [
             'unrepeated' => [
@@ -114,7 +114,7 @@ class table_scrambler_test extends advanced_testcase {
      * @return void
      */
     #[DataProvider('provider_for_it_creates_sorted_temporary_tables')]
-    public function test_it_creates_sorted_temporary_tables($inputdata, $expectedfirst, $expectedlast) {
+    public function test_it_creates_sorted_temporary_tables($inputdata, $expectedfirst, $expectedlast): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -142,7 +142,7 @@ class table_scrambler_test extends advanced_testcase {
         $DB->get_manager()->drop_table($table);
     }
 
-    public function test_it_requires_a_table_name_and_fields() {
+    public function test_it_requires_a_table_name_and_fields(): void {
         $scrambler = new table_scrambler('table', ['name', 'address']);
         self::assertSame('table', $scrambler->get_table());
         self::assertSame(['name', 'address'], $scrambler->get_fields_to_scramble());
@@ -157,7 +157,7 @@ class table_scrambler_test extends advanced_testcase {
      * @return void
      */
     #[DataProvider('provider_for_it_scrambles_names')]
-    public function test_it_scrambles_names($except, $expected) {
+    public function test_it_scrambles_names($except, $expected): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -180,7 +180,7 @@ class table_scrambler_test extends advanced_testcase {
         $DB->get_manager()->drop_table($table);
     }
 
-    public function test_it_throws_an_exception_if_cannot_find_the_next_prime() {
+    public function test_it_throws_an_exception_if_cannot_find_the_next_prime(): void {
         global $CFG;
         if ($CFG->branch < 32) {
             $this->setExpectedException(invalid_parameter_exception::class);
@@ -191,7 +191,7 @@ class table_scrambler_test extends advanced_testcase {
         table_scrambler::get_prime_after(999999);
     }
 
-    public function test_the_2_prime_factors_for_14351_are_113_127() {
+    public function test_the_2_prime_factors_for_14351_are_113_127(): void {
         $factors = table_scrambler::get_prime_factors(2, 14351);
         $product = array_product($factors);
         self::assertGreaterThanOrEqual(113 * 127, $product);
@@ -208,7 +208,7 @@ class table_scrambler_test extends advanced_testcase {
      * @return void
      */
     #[DataProvider('provider_for_the_next_prime_after')]
-    public function test_the_next_prime_after($number, $expected) {
+    public function test_the_next_prime_after($number, $expected): void {
         $next = table_scrambler::get_prime_after($number);
         self::assertSame($expected, $next);
     }
@@ -223,7 +223,7 @@ class table_scrambler_test extends advanced_testcase {
      * @return void
      */
     #[DataProvider('provider_for_the_prime_factors')]
-    public function test_the_prime_factors($count, $number, $expected) {
+    public function test_the_prime_factors($count, $number, $expected): void {
         $factors = table_scrambler::get_prime_factors($count, $number);
         self::assertSame($expected, $factors);
     }

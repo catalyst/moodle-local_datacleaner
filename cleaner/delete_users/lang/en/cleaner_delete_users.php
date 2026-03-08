@@ -22,11 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Delete users';
-$string['privacy:metadata'] = 'The cleaner delete users plugin does not store any personal data.';
-$string['minimumage'] = 'Minimum age';
-$string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';
 $string['keepsiteadmins'] = 'Keep site admins';
 $string['keepsiteadminsdesc'] = 'Tick to retain site administrator accounts.';
 $string['keepusernames'] = 'Non site administrator usernames';
 $string['keepusernamesdesc'] = 'A comma separated list of non site administrator usernames that should be retained.';
+$string['minimumage'] = 'Minimum age';
+$string['minimumagedesc'] = 'Keep users who logged in within the last <i>n</i> days.';
+$string['pluginname'] = 'Delete users';
+$string['privacy:metadata'] = 'The cleaner delete users plugin does not store any personal data.';

@@ -22,15 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Clean completion';
-$string['privacy:metadata'] = 'The cleaner completion plugin does not store any personal data.';
+$string['categories'] = 'Categories';
+$string['categoriesdesc'] = 'Delete completion data for the courses in the selected categories only. If not selected all categories will be processed.';
+$string['category'] = 'Category';
+$string['coursename'] = 'Full name of course to keep completion';
+$string['courses'] = 'Courses to skip';
+$string['coursesdesc'] = 'Shortname of courses that should never be cleaned, separated by a new line.';
 $string['deleteactivitycompletion'] = 'Delete activity completion';
 $string['deleteactivitycompletiondesc'] = 'Delete activity completion.';
 $string['deletecoursecompletion'] = 'Delete course completion';
 $string['deletecoursecompletiondesc'] = 'Delete course completion.';
-$string['category'] = 'Category';
-$string['categories'] = 'Categories';
-$string['categoriesdesc'] = 'Delete completion data for the courses in the selected categories only. If not selected all categories will be processed.';
-$string['coursename'] = 'Full name of course to keep completion';
-$string['courses'] = 'Courses to skip';
-$string['coursesdesc'] = 'Shortname of courses that should never be cleaned, separated by a new line.';
+$string['pluginname'] = 'Clean completion';
+$string['privacy:metadata'] = 'The cleaner completion plugin does not store any personal data.';

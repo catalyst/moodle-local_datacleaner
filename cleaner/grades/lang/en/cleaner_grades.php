@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Clean grades';
-$string['privacy:metadata'] = 'The cleaner grades plugin does not store any personal data.';
 $string['deleteall'] = 'Delete all';
 $string['deletealldesc'] = 'Delete all grade history. The alternative is to replace the values with fake data based on the user\'s ID number.';
+$string['pluginname'] = 'Clean grades';
+$string['privacy:metadata'] = 'The cleaner grades plugin does not store any personal data.';

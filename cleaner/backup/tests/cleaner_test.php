@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 Peter Burnett <peterburnett@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cleaner_backup_test extends \advanced_testcase {
+final class cleaner_test extends \advanced_testcase {
     /**
      * Delete provider.
      */
@@ -50,7 +50,7 @@ class cleaner_backup_test extends \advanced_testcase {
      * @param bool $deleted Expected deletion result.
      * @return void
      */
-    public function test_delete_backups($filename, $deleted) {
+    public function test_delete_backups($filename, $deleted): void {
         global $DB;
         $this->resetAfterTest();
 

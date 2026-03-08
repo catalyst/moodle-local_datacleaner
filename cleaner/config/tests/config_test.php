@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * @copyright  2016 Marcus Boon <marcus@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cleaner_config_test extends advanced_testcase {
+final class config_test extends advanced_testcase {
     /** @var Column names */
     private $names;
 
@@ -71,7 +71,7 @@ class cleaner_config_test extends advanced_testcase {
     /**
      * Test the wheresql function
      */
-    public function test_cleaner_config_getwhere() {
+    public function test_cleaner_config_getwhere(): void {
 
         $this->resetAfterTest(true);
 
@@ -94,7 +94,7 @@ class cleaner_config_test extends advanced_testcase {
     /**
      * Test the execute function
      */
-    public function test_cleaner_config_execute() {
+    public function test_cleaner_config_execute(): void {
         global $DB;
 
         $this->resetAfterTest(true);

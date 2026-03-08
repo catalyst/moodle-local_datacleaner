@@ -22,9 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Scramble user data';
-$string['privacy:metadata'] = 'The cleaner users plugin does not store any personal data.';
 $string['keepsiteadmins'] = 'Keep site admins unmodified';
 $string['keepsiteadminsdesc'] = 'Tick to avoid modifying site administrator accounts and data.';
 $string['keepusernames'] = 'Non site administrator usernames';
 $string['keepusernamesdesc'] = 'A comma separated list of non site administrator usernames that should be untouched.';
+$string['pluginname'] = 'Scramble user data';
+$string['privacy:metadata'] = 'The cleaner users plugin does not store any personal data.';

@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cleaner_replace_urls_test extends advanced_testcase {
+final class replace_urls_test extends advanced_testcase {
     /** @var Course values */
     private $course;
 
@@ -60,7 +60,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
      * Regression test for old functions
      * @group test_replace_url
      */
-    public function test_replace_url() {
+    public function test_replace_url(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -80,7 +80,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
      * Test the replace without newsite
      * @group without
      */
-    public function test_replace_url_with_wwwroot() {
+    public function test_replace_url_with_wwwroot(): void {
         global $DB, $CFG;
 
         $this->resetAfterTest(true);
