@@ -21,13 +21,6 @@ use admin_setting_configtextarea;
 use admin_setting_heading;
 use stdClass;
 
-require_once(__DIR__ . '/../../../../../../config.php');
-require_once($CFG->libdir . '/adminlib.php');
-
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
-}
-
 /**
  * Environment matrix class.
  *
@@ -238,7 +231,7 @@ class matrix {
             }
         }
 
-        // $records now contains the tables display.
+        // Build the display array from $records.
         return $display;
     }
 
