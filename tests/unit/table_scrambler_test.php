@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use local_datacleaner\table_scrambler;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
@@ -24,6 +25,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(table_scrambler::class)]
 final class table_scrambler_test extends advanced_testcase {
     /**
      * Data provider for test_it_creates_sorted_temporary_tables.

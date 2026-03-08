@@ -16,8 +16,6 @@
 
 namespace cleaner_tasklogs\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy provider.
  *

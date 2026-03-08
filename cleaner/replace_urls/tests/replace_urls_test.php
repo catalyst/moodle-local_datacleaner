@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use cleaner_replace_urls\clean;
-
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Unit tests for replace_urls
@@ -25,6 +24,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(clean::class)]
 final class replace_urls_test extends advanced_testcase {
     /** @var Course values */
     private $course;
@@ -36,12 +36,12 @@ final class replace_urls_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
 
-        // Set config for original and new site
+        // Set config for original and new site.
         set_config('origsiteurl', 'local.origin', 'cleaner_replace_urls');
         set_config('enabled', 1, 'cleaner_replace_urls');
         set_config('cleantext', 1, 'cleaner_replace_urls');
 
-        // create a course to test
+        // Create a course to test.
         $coursearray = [
             'fullname' => get_config('cleaner_replace_urls', 'origsiteurl'),
         ];
@@ -65,7 +65,7 @@ final class replace_urls_test extends advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        // Set the newsiteurl config
+        // Set the newsiteurl config.
         set_config('newsiteurl', 'new.origin', 'cleaner_replace_urls');
 
         $configcleaner = new clean();
@@ -85,7 +85,7 @@ final class replace_urls_test extends advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        // Set the newsiteurl to null
+        // Set the newsiteurl to null.
         set_config('newsiteurl', '', 'cleaner_replace_urls');
 
         $configcleaner = new clean();

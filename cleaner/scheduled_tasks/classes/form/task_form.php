@@ -98,7 +98,7 @@ class task_form extends moodleform {
             $nexttaskcomponent = (isset($tasks[$key + 1])) ? $tasks[$key + 1]->get_component() : null;
 
             if (isset($addcomponent[0]) && $component != $nexttaskcomponent) {
-            // If different component to the next, then we add group.
+                // If different component to the next, then we add group.
                 $mform->addGroup($rendertasks, $class, $component, '<br>', false);
                 $rendertasks = [];
             }

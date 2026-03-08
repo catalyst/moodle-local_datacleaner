@@ -24,11 +24,10 @@
 
 $string['pluginname'] = 'Cleaner scheduled tasks';
 
-// Settings page.
+$string['disabled'] = 'disabled';
+$string['enabled'] = 'enabled';
+$string['noscheduledtasks'] = 'Could not find any scheduled tasks, cannot display the task disabling form.';
 $string['privacy:metadata'] = 'The cleaner scheduled tasks plugin does not store any personal data.';
 $string['subtitle'] = 'Select a task to disable it in the pre wash task.
 Unselected tasks will be unaffected and will remain in their current enabled/disabled state.';
-$string['noscheduledtasks'] = 'Could not find any scheduled tasks, cannot display the task disabling form.';
 $string['title'] = 'Scheduled task disabling form';
-$string['enabled'] = 'enabled';
-$string['disabled'] = 'disabled';

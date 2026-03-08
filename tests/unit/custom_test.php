@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Testcase for cleaner_custom_sql_*
@@ -23,6 +23,8 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2019 Srdjan Janković <srdjan@catalyst.net.nz>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(\cleaner_custom_sql_pre\clean::class)]
+#[CoversClass(\cleaner_custom_sql_post\clean::class)]
 final class custom_test extends advanced_testcase {
     /**
      * Initialise a cleaner object to reset static options.
@@ -38,6 +40,11 @@ final class custom_test extends advanced_testcase {
         parent::tearDown();
     }
 
+    /**
+     * Tests that SQL is executed correctly for both pre and post custom SQL cleaners.
+     *
+     * @return void
+     */
     public function test_executes_sql(): void {
         global $DB;
 

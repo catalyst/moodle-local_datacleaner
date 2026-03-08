@@ -16,8 +16,6 @@
 
 namespace cleaner_sitedata;
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  *
  * Supported file types class for sitedata cleaner.
