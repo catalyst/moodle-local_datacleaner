@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use cleaner_config\clean;
-
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Unit tests for cleaner_config
@@ -25,6 +24,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden');
  * @copyright  2016 Marcus Boon <marcus@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(clean::class)]
 final class config_test extends advanced_testcase {
     /** @var Column names */
     private $names;

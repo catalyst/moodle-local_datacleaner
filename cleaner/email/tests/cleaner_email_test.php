@@ -15,9 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use cleaner_email\clean;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Testcase for cleaner_email
@@ -26,6 +25,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2017 Nicholas Hoobin <nicholashoobin@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(clean::class)]
 final class cleaner_email_test extends advanced_testcase {
     /** @var stdClass $config */
     private $config;

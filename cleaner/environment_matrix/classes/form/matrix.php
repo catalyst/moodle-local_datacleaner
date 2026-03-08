@@ -205,10 +205,14 @@ class matrix extends moodleform {
         $environments = $this->_customdata['environments'];
 
         if (!empty($configitems)) {
-            $header = html_writer::tag('h2', get_string('existing_configuration', 'cleaner_environment_matrix'), ['class' => 'cb_header']);
+            $existheader = html_writer::tag(
+                'h2',
+                get_string('existing_configuration', 'cleaner_environment_matrix'),
+                ['class' => 'cb_header']
+            );
 
             $existingtitle = [];
-            $existingtitle[] = &$mform->createElement('static', 'etitle', 'etitle', $header);
+            $existingtitle[] = &$mform->createElement('static', 'etitle', 'etitle', $existheader);
             $mform->addGroup($existingtitle, 'existingtitle', '', ' ', false);
 
             // Add an environment header group.
