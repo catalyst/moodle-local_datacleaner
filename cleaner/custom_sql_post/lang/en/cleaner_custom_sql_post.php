@@ -22,7 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['environmentsql'] = 'Per-environment SQL';
+$string['environmentsqlnote'] = 'Install <a href="https://github.com/catalyst/moodle-local_envbar">local_envbar</a> to configure per-environment SQL statements.';
 $string['pluginname'] = 'Execute custom database query at post-wash';
 $string['privacy:metadata'] = 'The cleaner custom post-wash database query plugin does not store any personal data.';
 $string['sql'] = 'SQL';
-$string['sqldesc'] = 'SQL to be executed at the end of post-wash.';
+$string['sqldesc'] = 'SQL to be executed at the end of post-wash on all environments.';
+$string['sqlenvironmentdesc'] = 'SQL to be executed at the end of post-wash only when running in this environment.';
