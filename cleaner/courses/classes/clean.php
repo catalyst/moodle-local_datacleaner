@@ -16,8 +16,6 @@
 
 namespace cleaner_courses;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for courses.
  *

@@ -18,8 +18,6 @@ namespace local_datacleaner;
 
 use core\base;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Add cascade delete constraints to the database schema based on field names.
  *

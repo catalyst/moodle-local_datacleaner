@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cleaner_email\privacy;
-defined('MOODLE_INTERNAL') || die;
 use core_privacy\local\metadata\null_provider;
 use core_privacy\local\legacy_polyfill;
 

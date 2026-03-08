@@ -16,8 +16,6 @@
 
 namespace cleaner_config;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for config.
  *

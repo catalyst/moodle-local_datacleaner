@@ -16,8 +16,6 @@
 
 namespace local_datacleaner;
 
-defined('MOODLE_INTERNAL') || die();
-
 use invalid_parameter_exception;
 use xmldb_table;
 

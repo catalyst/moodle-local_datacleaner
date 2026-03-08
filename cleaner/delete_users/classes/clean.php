@@ -16,8 +16,6 @@
 
 namespace cleaner_delete_users;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for delete users.
  *

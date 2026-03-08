@@ -16,8 +16,6 @@
 
 namespace cleaner_completion;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for completion.
  *

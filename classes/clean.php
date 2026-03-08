@@ -18,8 +18,6 @@ namespace local_datacleaner;
 
 use core\base;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Base class for data cleaning plugins.
  *
