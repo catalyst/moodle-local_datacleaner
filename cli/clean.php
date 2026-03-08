@@ -159,7 +159,11 @@ foreach ($plugins as $plugin) {
     }
 
     $class = new $classname($options);
-    clean::log("== Running {$plugin->name} cleaner ==\n");
+    $task = defined("$classname::TASK") ? $classname::TASK : $plugin->name;
+    $header = str_repeat('-', 60);
+    mtrace("\n{$header}");
+    mtrace("  [{$plugin->sortorder}] {$task}");
+    mtrace($header);
 
     if (is_null($cascade) && $class->needs_cascade_delete()) {
         $cascade = new \local_datacleaner\schema_add_cascade_delete($options);
