@@ -197,10 +197,22 @@ class clean extends \local_datacleaner\clean {
         foreach ($replacing as $table => $columns) {
             self::new_task(count($columns));
             foreach ($columns as $column) {
-                if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
-                    mtrace("Replacing in $table::$column->name ...");
+                // Only text-like columns can contain URLs.
+                if ($column->type !== 'text' && $column->type !== 'varchar') {
+                    self::next_step();
+                    continue;
                 }
-                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
+                $count = $DB->count_records_select(
+                    $table,
+                    $DB->sql_like($column->name, ':search', false),
+                    ['search' => '%' . $DB->sql_like_escape(self::$config->origsiteurl) . '%']
+                );
+                if ($count > 0) {
+                    mtrace("  {$table}::{$column->name} — {$count} row(s)");
+                    $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
+                } else if (!empty(self::$options['verbose'])) {
+                    mtrace("  {$table}::{$column->name} — 0 rows, skipping");
+                }
                 self::next_step();
             }
         }
