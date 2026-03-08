@@ -17,6 +17,7 @@
 namespace cleaner_orphaned_sitedata\tests\unit;
 
 use cleaner_orphaned_sitedata\orphan_cleaner;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,11 +32,18 @@ require_once(__DIR__ . '/orphaned_sitedata_testcase.php');
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(orphan_cleaner::class)]
 final class orphan_cleaner_test extends orphaned_sitedata_testcase {
+    /**
+     * Tests that orphan_cleaner can be instantiated.
+     */
     public function test_it_exists(): void {
         self::assertNotNull(new orphan_cleaner(true));
     }
 
+    /**
+     * Tests that orphaned files are removed.
+     */
     public function test_it_removes_orphaned_files(): void {
         global $DB;
         $this->resetAfterTest(true);
@@ -50,6 +58,9 @@ final class orphan_cleaner_test extends orphaned_sitedata_testcase {
         self::assertFalse($this->file_is_readable($file));
     }
 
+    /**
+     * Tests that orphaned files are not removed in dry run mode.
+     */
     public function test_it_does_not_remove_orphaned_files_in_dry_run(): void {
         global $DB;
         $this->resetAfterTest(true);
@@ -64,6 +75,9 @@ final class orphan_cleaner_test extends orphaned_sitedata_testcase {
         self::assertTrue($this->file_is_readable($file));
     }
 
+    /**
+     * Tests that non-orphaned files are not removed.
+     */
     public function test_it_does_not_remove_non_orphaned_files(): void {
         $this->resetAfterTest(true);
 
@@ -75,6 +89,12 @@ final class orphan_cleaner_test extends orphaned_sitedata_testcase {
         self::assertTrue($this->file_is_readable($file));
     }
 
+    /**
+     * Creates a test file in the orphanfiles area.
+     *
+     * @param string $filename The filename to create.
+     * @return stored_file The created file object.
+     */
     private function create_test_file($filename) {
         return $this->create_file('course', '/orphanfiles/', $filename);
     }

@@ -16,8 +16,6 @@
 
 namespace cleaner_tasklogs;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data cleaner class for task logs.
  *

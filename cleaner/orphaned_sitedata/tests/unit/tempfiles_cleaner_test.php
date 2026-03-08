@@ -19,6 +19,7 @@ namespace cleaner_orphaned_sitedata\tests\unit;
 use cleaner_orphaned_sitedata\orphan_cleaner;
 use cleaner_orphaned_sitedata\tempfiles_cleaner;
 use FilesystemIterator;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,11 +34,18 @@ require_once(__DIR__ . '/orphaned_sitedata_testcase.php');
  * @copyright   2016 Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversClass(tempfiles_cleaner::class)]
 final class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
+    /**
+     * Tests that tempfiles_cleaner can be instantiated.
+     */
     public function test_it_exists(): void {
         self::assertNotNull(new tempfiles_cleaner(true));
     }
 
+    /**
+     * Tests that temp files are removed.
+     */
     public function test_it_removes_tempfiles(): void {
         global $CFG;
         $file = $CFG->tempdir . '/test_it_removes_tempfiles.test';
@@ -51,6 +59,9 @@ final class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
         }
     }
 
+    /**
+     * Tests that all files and subdirectories are removed.
+     */
     public function test_it_removes_all_files_and_subdirs(): void {
         global $CFG;
         $tmpdir = $CFG->tempdir . '/test/it/removes/subdirs';
@@ -66,6 +77,9 @@ final class tempfiles_cleaner_test extends orphaned_sitedata_testcase {
     }
 
 
+    /**
+     * Tests that temp files are not removed in dry run mode.
+     */
     public function test_it_does_not_remove_tempfiles_in_dry_run(): void {
         global $CFG;
         $file = $CFG->tempdir . '/test_it_does_not_remove_tempfiles_in_dry_run.test';
