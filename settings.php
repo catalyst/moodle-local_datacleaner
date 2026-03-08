@@ -66,6 +66,8 @@ $temp->add(
 );
 $ADMIN->add('datacleaner', $temp);
 
+require_once(__DIR__ . '/classes/admin_setting_sql_textarea.php');
+
 $plugins = \local_datacleaner\plugininfo\cleaner::get_plugins_by_sortorder();
 foreach ($plugins as $plugin) {
     $pagename = 'cleaner_' . $plugin->name . '_settings';

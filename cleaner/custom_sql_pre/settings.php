@@ -29,7 +29,7 @@ if (!$ADMIN->fulltree) {
 }
 
 $settings->add(
-    new admin_setting_configtextarea(
+    new \local_datacleaner\admin_setting_sql_textarea(
         'cleaner_custom_sql_pre/sql',
         new lang_string('sql', 'cleaner_custom_sql_pre'),
         new lang_string('sqldesc', 'cleaner_custom_sql_pre'),

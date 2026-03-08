@@ -24,14 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once(__DIR__ . '/classes/admin_setting_sql_textarea.php');
-
 if (!$ADMIN->fulltree) {
     return;
 }
 
 $settings->add(
-    new \cleaner_custom_sql_post\admin_setting_sql_textarea(
+    new \local_datacleaner\admin_setting_sql_textarea(
         'cleaner_custom_sql_post/sql',
         new lang_string('sql', 'cleaner_custom_sql_post'),
         new lang_string('sqldesc', 'cleaner_custom_sql_post'),
@@ -53,7 +51,7 @@ if (class_exists('\local_envbar\local\envbarlib')) {
     foreach ($environments as $env) {
         $key = \cleaner_custom_sql_post\clean::get_env_config_key($env->showtext);
         $settings->add(
-            new \cleaner_custom_sql_post\admin_setting_sql_textarea(
+            new \local_datacleaner\admin_setting_sql_textarea(
                 'cleaner_custom_sql_post/' . $key,
                 "SQL for '{$env->showtext}'",
                 new lang_string('sqlenvironmentdesc', 'cleaner_custom_sql_post', $env->matchpattern),
