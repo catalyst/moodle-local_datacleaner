@@ -28,6 +28,9 @@ namespace local_datacleaner;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class admin_setting_sql_textarea extends \admin_setting_configtextarea {
+    /** @var int Number of rows for the textarea. */
+    public $rows;
+
     /** @var int Minimum number of rows to display. */
     const MIN_ROWS = 3;
 
