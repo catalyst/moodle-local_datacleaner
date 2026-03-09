@@ -193,6 +193,7 @@ class clean extends \local_datacleaner\clean {
         } // End foreach tables.
 
         $maxwidth = 0;
+        $minlen = max(strlen(self::$config->origsiteurl), strlen(self::$config->newsiteurl));
         foreach ($replacing as $table => $columns) {
             foreach ($columns as $column) {
                 $maxwidth = max($maxwidth, strlen("{$table}::{$column->name}"));
@@ -204,6 +205,10 @@ class clean extends \local_datacleaner\clean {
             foreach ($columns as $column) {
                 // Only text-like columns can contain URLs.
                 if ($column->type !== 'text' && $column->type !== 'varchar') {
+                    continue;
+                }
+                // Skip varchar columns too short to contain either URL.
+                if ($column->type === 'varchar' && $column->max_length < $minlen) {
                     continue;
                 }
                 $count = $DB->count_records_select(
@@ -292,7 +297,8 @@ class clean extends \local_datacleaner\clean {
         $willwysiwyg = !empty(self::$config->cleanwysiwyg);
 
         if (!$willconfig && !$willtext && !$willwysiwyg) {
-            mtrace("WARNING: No replacement targets enabled. Enable 'Replace in config tables', 'Replace in text/varchar' or 'Replace in wysiwyg' in settings.");
+            mtrace("WARNING: No replacement targets enabled. " .
+                "Enable 'Replace in config tables', 'Replace in text/varchar' or 'Replace in wysiwyg' in settings.");
             return;
         }
 
@@ -300,8 +306,8 @@ class clean extends \local_datacleaner\clean {
         mtrace("{$prefix} '{$orig}' => '{$new}' in {$count} tables.");
 
         if ($verbose) {
-            mtrace("  config tables:   " . ($willconfig  ? 'YES' : 'NO'));
-            mtrace("  text/varchar:    " . ($willtext    ? 'YES' : 'NO'));
+            mtrace("  config tables:   " . ($willconfig ? 'YES' : 'NO'));
+            mtrace("  text/varchar:    " . ($willtext ? 'YES' : 'NO'));
             mtrace("  wysiwyg fields:  " . ($willwysiwyg ? 'YES' : 'NO'));
         }
 
