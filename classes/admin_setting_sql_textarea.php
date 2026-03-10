@@ -28,9 +28,6 @@ namespace local_datacleaner;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class admin_setting_sql_textarea extends \admin_setting_configtextarea {
-    /** @var int Minimum number of rows to display. */
-    const MIN_ROWS = 3;
-
     /**
      * Returns an XHTML string for the editor, sized to fit the current content.
      *
@@ -39,8 +36,6 @@ class admin_setting_sql_textarea extends \admin_setting_configtextarea {
      * @return string
      */
     public function output_html($data, $query = '') {
-        $this->rows = max(self::MIN_ROWS, substr_count($data, "\n") + 2);
-
         $html = parent::output_html($data, $query);
 
         $id = $this->get_id();
