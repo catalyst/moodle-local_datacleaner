@@ -12,7 +12,6 @@ The following maps the plugin version to use depending on your Moodle version.
 |----------------------|-------------------|
 | Moodle 5.0 and above | MOODLE_500_STABLE |
 | Moodle 3.11 to 4.5   | MOODLE_311_STABLE |
-| Moodle 3.10          | MOODLE_310_STABLE |
 
 The following maps the plugin version to use depending on your Totara version.
 
