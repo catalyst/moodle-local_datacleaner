@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2026030800;
-$plugin->release   = '2026030800';
+$plugin->version   = 2015072201;
+$plugin->release   = '2.3.3';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
 $plugin->component = 'cleaner_replace_urls';
