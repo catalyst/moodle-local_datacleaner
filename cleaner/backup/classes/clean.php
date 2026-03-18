@@ -32,9 +32,30 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Deleting course backups';
 
     /**
+     * Returns the SQL fragment and params for matching backup files by filename.
+     *
+     * @return array [$sql_fragment, $params]
+     */
+    private static function get_backup_like_sql(): array {
+        global $DB;
+        return [$DB->sql_like('filename', ':like'), ['like' => '%.mbz']];
+    }
+
+    /**
      * Execute the cleaning process.
      */
     public static function execute() {
+        global $DB;
+
+        $dryrun = (bool)self::$options['dryrun'];
+
+        if ($dryrun) {
+            [$likefrag, $params] = self::get_backup_like_sql();
+            $count = $DB->count_records_select('files', $likefrag, $params);
+            echo "Would delete {$count} backup (.mbz) file records.\n";
+            return;
+        }
+
         self::new_task(1);
         self::delete_backups();
         self::next_step();
@@ -48,23 +69,16 @@ class clean extends \local_datacleaner\clean {
         $storage = get_file_storage();
 
         $fastdelete = get_config('cleaner_backup', 'fastdelete');
-        $likefrag = $DB->sql_like('filename', ':like');
-        $like = '%.mbz';
+        [$likefrag, $params] = self::get_backup_like_sql();
 
         // If this is a fast delete, do a quick delete from files table and return.
         if ($fastdelete) {
-            $sql = "DELETE FROM {files}
-                     WHERE " . $likefrag;
-
-            $DB->execute($sql, ['like' => $like]);
+            $DB->execute("DELETE FROM {files} WHERE " . $likefrag, $params);
             return;
         }
 
         // Do a "proper" delete.
-        $sql = "SELECT *
-                  FROM {files}
-                 WHERE " . $likefrag;
-        $rs = $DB->get_recordset_sql($sql, ['like' => $like]);
+        $rs = $DB->get_recordset_select('files', $likefrag, $params);
 
         foreach ($rs as $record) {
             // Get the file record, then delete it from table.

@@ -68,10 +68,23 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * Set wwwroot as newsiteurl if not provided
+     * Set URLs from envbar or config, falling back to sensible defaults.
+     *
+     * If local_envbar is installed, the production URL is read from its config
+     * and the new site URL is the current wwwroot — no manual configuration needed.
      */
     private static function set_newsiteurl() {
         global $CFG;
+
+        if (class_exists('\local_envbar\local\envbarlib')) {
+            if (empty(self::$config->origsiteurl)) {
+                self::$config->origsiteurl = \local_envbar\local\envbarlib::getprodwwwroot();
+            }
+            if (empty(self::$config->newsiteurl)) {
+                self::$config->newsiteurl = $CFG->wwwroot;
+            }
+            return;
+        }
 
         if (empty(self::$config->newsiteurl)) {
             self::$config->newsiteurl = $CFG->wwwroot;
@@ -181,15 +194,39 @@ class clean extends \local_datacleaner\clean {
             } // End db get columns on table.
         } // End foreach tables.
 
+        $maxwidth = 0;
+        $minlen = max(strlen(self::$config->origsiteurl), strlen(self::$config->newsiteurl));
         foreach ($replacing as $table => $columns) {
-            self::new_task(count($columns));
             foreach ($columns as $column) {
-                if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
-                    mtrace("Replacing in $table::$column->name ...");
-                }
-                $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
-                self::next_step();
+                $maxwidth = max($maxwidth, strlen("{$table}::{$column->name}"));
             }
+        }
+
+        self::new_task(count($replacing));
+        foreach ($replacing as $table => $columns) {
+            foreach ($columns as $column) {
+                // Only text-like columns can contain URLs.
+                if ($column->type !== 'text' && $column->type !== 'varchar') {
+                    continue;
+                }
+                // Skip varchar columns too short to contain either URL.
+                if ($column->type === 'varchar' && $column->max_length < $minlen) {
+                    continue;
+                }
+                $count = $DB->count_records_select(
+                    $table,
+                    $DB->sql_like($column->name, ':search', false),
+                    ['search' => '%' . $DB->sql_like_escape(self::$config->origsiteurl) . '%']
+                );
+                $label = str_pad("{$table}::{$column->name}", $maxwidth);
+                if ($count > 0) {
+                    mtrace("  {$label} — {$count} row(s)");
+                    $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
+                } else if (!empty(self::$options['verbose'])) {
+                    mtrace("  {$label} — 0 rows, skipping");
+                }
+            }
+            self::next_step();
         }
 
         // Delete modinfo caches.
@@ -241,12 +278,42 @@ class clean extends \local_datacleaner\clean {
      * Execute the cleaning process.
      */
     public static function execute() {
-        if (self::$options['dryrun']) {
-            $count = count(self::$tables);
-            if (!isset(self::$options['verbose']) || self::$options['verbose'] == true) {
-                mtrace("Would replace URLs in {$count} tables.");
-            }
-        } else {
+        $orig    = self::$config->origsiteurl;
+        $new     = self::$config->newsiteurl;
+        $count   = count(self::$tables);
+        $verbose = (bool)self::$options['verbose'];
+        $dryrun  = (bool)self::$options['dryrun'];
+
+        if (empty($orig)) {
+            mtrace("ERROR: origsiteurl is not set. Configure it at the Replace URLs settings page or install local_envbar.");
+            return;
+        }
+
+        if (empty($new)) {
+            mtrace("ERROR: newsiteurl is not set.");
+            return;
+        }
+
+        $willconfig  = !empty(self::$config->cleanconfig);
+        $willtext    = !empty(self::$config->cleantext);
+        $willwysiwyg = !empty(self::$config->cleanwysiwyg);
+
+        if (!$willconfig && !$willtext && !$willwysiwyg) {
+            mtrace("WARNING: No replacement targets enabled. " .
+                "Enable 'Replace in config tables', 'Replace in text/varchar' or 'Replace in wysiwyg' in settings.");
+            return;
+        }
+
+        $prefix = $dryrun ? 'Would replace' : 'Replacing';
+        mtrace("{$prefix} '{$orig}' => '{$new}' in {$count} tables.");
+
+        if ($verbose) {
+            mtrace("  config tables:   " . ($willconfig ? 'YES' : 'NO'));
+            mtrace("  text/varchar:    " . ($willtext ? 'YES' : 'NO'));
+            mtrace("  wysiwyg fields:  " . ($willwysiwyg ? 'YES' : 'NO'));
+        }
+
+        if (!$dryrun) {
             self::db_replace();
             self::blocks_replace();
         }

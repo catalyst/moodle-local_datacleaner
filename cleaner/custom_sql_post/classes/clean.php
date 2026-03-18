@@ -32,18 +32,53 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Custom SQL query in post phase';
 
     /**
+     * Generate the config key for an environment's SQL setting.
+     *
+     * @param string $showtext The environment's display name.
+     * @return string
+     */
+    public static function get_env_config_key(string $showtext): string {
+        return 'sql_env_' . preg_replace('/[^a-z0-9_]/', '_', strtolower($showtext));
+    }
+
+    /**
      * Execute the cleaning process.
      */
     public static function execute() {
-        global $DB;
+        global $CFG, $DB;
 
         $dryrun = (bool)self::$options['dryrun'];
         $verbose = (bool)self::$options['verbose'];
 
         $config = get_config('cleaner_custom_sql_post');
 
-        if (isset($config->sql)) {
+        if (!empty($config->sql)) {
+            if ($verbose || $dryrun) {
+                mtrace(($dryrun ? '[DRYRUN] ' : '') . 'Executing global post-wash SQL.');
+            }
             self::execute_sql($config->sql);
+        }
+
+        if (!class_exists('\local_envbar\local\envbarlib')) {
+            return;
+        }
+
+        $environments = \local_envbar\local\envbarlib::get_records();
+        foreach ($environments as $env) {
+            if ($env->matchpattern !== $CFG->wwwroot) {
+                continue;
+            }
+
+            $key = self::get_env_config_key($env->showtext);
+            if (empty($config->$key)) {
+                break;
+            }
+
+            if ($verbose || $dryrun) {
+                mtrace(($dryrun ? '[DRYRUN] ' : '') . "Executing environment SQL for: {$env->showtext} ({$env->matchpattern})");
+            }
+            self::execute_sql($config->$key);
+            break;
         }
     }
 }
