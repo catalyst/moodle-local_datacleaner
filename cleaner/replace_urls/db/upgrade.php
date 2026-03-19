@@ -29,7 +29,7 @@
  * @return bool
  */
 function xmldb_cleaner_replace_urls_upgrade($oldversion) {
-    if ($oldversion < 2026030800) {
+    if ($oldversion < 2026031900) {
         // Clear the default 'http://localhost' newsiteurl so it falls back to wwwroot.
         if (get_config('cleaner_replace_urls', 'newsiteurl') === 'http://localhost') {
             set_config('newsiteurl', '', 'cleaner_replace_urls');
@@ -40,7 +40,7 @@ function xmldb_cleaner_replace_urls_upgrade($oldversion) {
             set_config('origsiteurl', '', 'cleaner_replace_urls');
         }
 
-        upgrade_plugin_savepoint(true, 2026030800, 'cleaner', 'replace_urls');
+        upgrade_plugin_savepoint(true, 2026031900, 'cleaner', 'replace_urls');
     }
 
     return true;
