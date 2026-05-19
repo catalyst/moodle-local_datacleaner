@@ -141,7 +141,6 @@ SQL;
 
         $fields = [
             'auth'         => 'nologin',
-            'mnethostid'   => 1,
             'password'     => AUTH_PASSWORD_NOT_CACHED,
             'email'        => 'cleaned@datacleaner.example',
             'emailstop'    => 1,
