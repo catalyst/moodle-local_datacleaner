@@ -40,7 +40,7 @@ $ADMIN->add(
 );
 
 
-$general = new admin_settingpage('generalsettings', new lang_string('generalsettings', 'local_datacleaner'));
+$general = new admin_settingpage('local_datacleaner_generalsettings', new lang_string('generalsettings', 'local_datacleaner'));
 
 $general->add(
     new \local_datacleaner\admin_setting_configencodedtext(
