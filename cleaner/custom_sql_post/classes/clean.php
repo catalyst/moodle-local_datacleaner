@@ -53,7 +53,7 @@ class clean extends \local_datacleaner\clean {
         $config = get_config('cleaner_custom_sql_post');
 
         if (!empty($config->sql)) {
-            if ($verbose || $dryrun) {
+            if ($verbose || ($dryrun && $verbose)) {
                 mtrace(($dryrun ? '[DRYRUN] ' : '') . 'Executing global post-wash SQL.');
             }
             self::execute_sql($config->sql);
