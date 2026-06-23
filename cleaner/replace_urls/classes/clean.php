@@ -143,6 +143,7 @@ class clean extends \local_datacleaner\clean {
     private static function db_replace() {
         global $DB;
 
+        $verbose = (bool)self::$options['verbose'];
         // Turn off time limits.
         // Check for MOODLE_26 and below.
         if (class_exists('core_php_time_limit')) {
@@ -218,9 +219,11 @@ class clean extends \local_datacleaner\clean {
                 );
                 $label = str_pad("{$table}::{$column->name}", $maxwidth);
                 if ($count > 0) {
-                    mtrace("  {$label} — {$count} row(s)");
+                    if ($verbose) {
+                        mtrace("  {$label} — {$count} row(s)");
+                    }
                     $DB->replace_all_text($table, $column, self::$config->origsiteurl, self::$config->newsiteurl);
-                } else if (!empty(self::$options['verbose'])) {
+                } else if ($verbose) {
                     mtrace("  {$label} — 0 rows, skipping");
                 }
             }
@@ -303,9 +306,9 @@ class clean extends \local_datacleaner\clean {
         }
 
         $prefix = $dryrun ? 'Would replace' : 'Replacing';
-        mtrace("{$prefix} '{$orig}' => '{$new}' in {$count} tables.");
 
         if ($verbose) {
+            mtrace("{$prefix} '{$orig}' => '{$new}' in {$count} tables.");
             mtrace("  config tables:   " . ($willconfig ? 'YES' : 'NO'));
             mtrace("  text/varchar:    " . ($willtext ? 'YES' : 'NO'));
             mtrace("  wysiwyg fields:  " . ($willwysiwyg ? 'YES' : 'NO'));
