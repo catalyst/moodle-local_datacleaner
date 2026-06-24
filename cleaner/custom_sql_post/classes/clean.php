@@ -51,7 +51,7 @@ class clean extends \local_datacleaner\clean {
         $config = get_config('cleaner_custom_sql_post');
 
         if (!empty($config->sql)) {
-            if ($verbose || ($dryrun && $verbose)) {
+            if ($verbose) {
                 mtrace(($dryrun ? '[DRYRUN] ' : '') . 'Executing global post-wash SQL.');
             }
             self::execute_sql($config->sql);
@@ -72,7 +72,7 @@ class clean extends \local_datacleaner\clean {
                 break;
             }
 
-            if ($verbose || $dryrun) {
+            if ($verbose) {
                 mtrace(($dryrun ? '[DRYRUN] ' : '') . "Executing environment SQL for: {$env->showtext} ({$env->matchpattern})");
             }
             self::execute_sql($config->$key);
