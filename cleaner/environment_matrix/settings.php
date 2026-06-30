@@ -33,7 +33,9 @@ if (!$hassiteconfig) { // Needs this condition or there is error on login page.
 $externalpage = new admin_externalpage(
     'cleaner_environment_matrix',
     get_string('pluginname', 'cleaner_environment_matrix'),
-    new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php')
+    new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php'),
+    'moodle/site:config',
+    !$plugininfo->enabled()
 );
 
 $ADMIN->add('datacleaner', $externalpage);

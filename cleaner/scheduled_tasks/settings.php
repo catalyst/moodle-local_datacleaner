@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+$settings = null;
+
 if (!$hassiteconfig) {
     return;
 }
@@ -32,5 +34,7 @@ if (!$hassiteconfig) {
 $ADMIN->add('datacleaner', new admin_externalpage(
     'cleaner_scheduled_tasks_settings',
     get_string('pluginname', 'cleaner_scheduled_tasks'),
-    new moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php')
+    new moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php'),
+    'moodle/site:config',
+    !$plugininfo->enabled()
 ));
