@@ -51,11 +51,8 @@ $general->add(
         PARAM_URL
     )
 );
-$ADMIN->add('datacleaner', $general);
 
-$temp = new admin_settingpage('cascadedeletesettings', new lang_string('cascadedeletesettings', 'local_datacleaner'));
-
-$temp->add(
+$general->add(
     new admin_setting_configtext(
         'local_datacleaner/mismatch_threshold',
         new lang_string('mismatch_threshold', 'local_datacleaner'),
@@ -64,7 +61,7 @@ $temp->add(
         PARAM_INT
     )
 );
-$ADMIN->add('datacleaner', $temp);
+$ADMIN->add('datacleaner', $general);
 
 require_once(__DIR__ . '/classes/admin_setting_sql_textarea.php');
 
