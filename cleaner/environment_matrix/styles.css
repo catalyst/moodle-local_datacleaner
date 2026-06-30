@@ -7,7 +7,7 @@
     flex-wrap: nowrap;
 }
 
-.cleaner_environment_matrix .mform .fitem .felement input {
+.cleaner_environment_matrix .mform .fitem .felement input:not([type="checkbox"]) {
     width: initial;
 }
 
