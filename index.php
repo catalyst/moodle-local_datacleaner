@@ -61,6 +61,7 @@ if ((!empty($hide) || !empty($show)) && confirm_sesskey()) {
         throw new \moodle_exception('plugindoesnotexist', 'error');
     }
     set_config('enabled', $state, 'cleaner_' . $pluginname);
+    redirect(new moodle_url('/local/datacleaner/index.php'));
 }
 
 echo $OUTPUT->header();
