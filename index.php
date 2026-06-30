@@ -88,13 +88,26 @@ $table->head = [
     get_string('version'),
     get_string('sortorder', 'local_datacleaner'),
     get_string('uninstallplugin', 'core_admin'),
-    get_string('stage', 'local_datacleaner'),
 ];
-$table->attributes['class'] = 'admintable generaltable';
+$table->attributes['class'] = 'admintable generaltable table table-sm table-bordered table-striped w-auto';
 $data = [];
 
+$colcount = count($table->head);
+$currentstage = null;
 
 foreach ($plugins as $plugin) {
+    $stage = $plugin->sortorder >= 200 ? 'postwash' : 'prewash';
+
+    if ($stage !== $currentstage) {
+        $currentstage = $stage;
+        $headingrow = new html_table_row();
+        $headingcell = new html_table_cell(html_writer::tag('strong', get_string('stage' . $stage, 'local_datacleaner')));
+        $headingcell->colspan = $colcount;
+        $headingrow->cells = [$headingcell];
+        $headingrow->attributes['class'] = 'table-active';
+        $data[] = $headingrow;
+    }
+
     $settings = $plugin->get_settings_section_url();
     if (!is_null($settings)) {
         $settings = html_writer::link($settings, $strsettings);
@@ -116,8 +129,6 @@ foreach ($plugins as $plugin) {
         $uninstall = html_writer::link($uninstallurl, get_string('uninstallplugin', 'core_admin'));
     }
 
-    $stage = get_string('stage' . ($plugin->sortorder >= 200 ? 'postwash' : 'prewash'), 'local_datacleaner');
-
     $row = new html_table_row([
         $visible,
         $plugin->displayname,
@@ -126,8 +137,6 @@ foreach ($plugins as $plugin) {
         $plugin->versiondb,
         $plugin->sortorder,
         $uninstall,
-        $stage,
-        // TODO relates to core or plugin?
     ]);
 
     $row->attributes['class'] = $class;
