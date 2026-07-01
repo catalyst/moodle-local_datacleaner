@@ -173,8 +173,12 @@ class table_scrambler {
      * If provided, only the given $ids will be changed, all others will be kept unmodified.
      *
      * @param string|null $ids A comma-separated string with the ids that can be changed. Null means all.
+     * @throws \coding_exception If $ids is not null and not a comma-separated list of positive integers.
      */
     public function set_change_only_ids($ids) {
+        if ($ids !== null && !preg_match('/^\d+(,\d+)*$/', $ids)) {
+            throw new \coding_exception('set_change_only_ids: value must be a comma-separated list of integer ids.');
+        }
         $this->changeonlyids = $ids;
     }
 

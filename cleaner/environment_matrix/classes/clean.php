@@ -41,10 +41,33 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
+     * Substrings of config names that indicate the value is sensitive and must not be logged in plain text.
+     *
+     * @var string[]
+     */
+    const SENSITIVE_CONFIG_KEYWORDS = ['pass', 'secret', 'apikey', 'token', 'private', 'credential'];
+
+    /**
+     * Format a config value for logging, redacting it if the config name looks sensitive.
+     *
+     * @param string $configname
+     * @param string $value
+     * @return string
+     */
+    protected static function loggable_value($configname, $value) {
+        foreach (self::SENSITIVE_CONFIG_KEYWORDS as $keyword) {
+            if (stripos($configname, $keyword) !== false) {
+                return '***REDACTED***';
+            }
+        }
+        return $value;
+    }
+
+    /**
      * Execute the cleaning process.
      */
     public static function execute() {
-        global $CFG;
+        global $CFG, $USER;
 
         $dryrun = (bool)self::$options['dryrun'];
         $verbose = (bool)self::$options['verbose'];
@@ -71,62 +94,70 @@ class clean extends \local_datacleaner\clean {
                 // Obtain the data for this environment only.
                 $matrixdata = local\matrix::get_matrix_data($environment);
 
-                // Set Admin User for admin_write_settings perms.
+                // Set Admin User for admin_write_settings perms, restoring the original user afterwards.
+                $originaluser = $USER;
                 \core\session\manager::set_user(get_admin());
 
-                // Build admin tree once for all setting lookups.
-                $admintree = admin_get_root(true);
+                try {
+                    // Build admin tree once for all setting lookups.
+                    $admintree = admin_get_root(true);
 
-                // Process settings.
-                foreach ($matrixdata as $plugin => $items) {
-                    foreach ($items as $name => $env) {
-                        $config = $env[$environment->id];
+                    // Process settings.
+                    foreach ($matrixdata as $plugin => $items) {
+                        foreach ($items as $name => $env) {
+                            $config = $env[$environment->id];
 
-                        // Set_config requires a null 'plugin' value when updating core configuration values.
-                        $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
+                            // Set_config requires a null 'plugin' value when updating core configuration values.
+                            $config->plugin = ($config->plugin == 'core') ? null : $config->plugin;
 
-                        // First, set config in database.
-                        if ($verbose) {
-                            mtrace("set_config('{$config->config}', '{$config->value}')");
-                        }
-                        if (!$dryrun) {
-                            set_config($config->config, $config->value, $config->plugin);
-                        }
-
-                        // Get strings in nicer format for reuse.
-                        $configname = $config->config;
-                        $pluginname = $config->plugin;
-                        $elementname = $pluginname . $configname;
-
-                        // Search the admintree for configname.
-                        $nodes = $admintree->search($configname);
-                        $relevantobject = '';
-
-                        // Iterate through tree for specific page and elementname.
-                        foreach ($nodes as $node) {
-                            if ($node->page instanceof \admin_settingpage && isset($node->page->settings->$elementname)) {
-                                // Should only ever be reached once, so break loop.
-                                $relevantobject = $node->page->settings->$elementname;
-                                break;
+                            // First, set config in database.
+                            if ($verbose) {
+                                $loggedvalue = self::loggable_value($config->config, $config->value);
+                                mtrace("set_config('{$config->config}', '{$loggedvalue}')");
                             }
-                        }
+                            if (!$dryrun) {
+                                set_config($config->config, $config->value, $config->plugin);
+                            }
 
-                        // Now perform any additional validation.
-                        if ($verbose) {
-                            // Show the additional write_settings.
-                            mtrace("{$config->plugin}:{$relevantobject->name}->write_setting('{$config->value}')");
-                        }
-                        if ($relevantobject != '' && $relevantobject->plugin == $pluginname) {
-                            // Get setting object back out of config control.
-                            $settings = $relevantobject->get_setting();
-                            // Reset to fire additional validation/actions.
-                            $errors = $relevantobject->write_setting($settings);
-                            // Log any errors that might have been thrown.
-                            if ($errors != '') {
-                                mtrace($errors);
+                            // Get strings in nicer format for reuse.
+                            $configname = $config->config;
+                            $pluginname = $config->plugin;
+                            $elementname = $pluginname . $configname;
+
+                            // Search the admintree for configname.
+                            $nodes = $admintree->search($configname);
+                            $relevantobject = '';
+
+                            // Iterate through tree for specific page and elementname.
+                            foreach ($nodes as $node) {
+                                if ($node->page instanceof \admin_settingpage && isset($node->page->settings->$elementname)) {
+                                    // Should only ever be reached once, so break loop.
+                                    $relevantobject = $node->page->settings->$elementname;
+                                    break;
+                                }
+                            }
+
+                            // Now perform any additional validation.
+                            if ($verbose) {
+                                // Show the additional write_settings.
+                                $loggedvalue = self::loggable_value($config->config, $config->value);
+                                mtrace("{$config->plugin}:{$relevantobject->name}->write_setting('{$loggedvalue}')");
+                            }
+                            if ($relevantobject != '' && $relevantobject->plugin == $pluginname) {
+                                // Get setting object back out of config control.
+                                $settings = $relevantobject->get_setting();
+                                // Reset to fire additional validation/actions.
+                                $errors = $relevantobject->write_setting($settings);
+                                // Log any errors that might have been thrown.
+                                if ($errors != '') {
+                                    mtrace($errors);
+                                }
                             }
                         }
                     }
+                } finally {
+                    // Always restore the original session user, even if an exception was thrown above.
+                    \core\session\manager::set_user($originaluser);
                 }
 
                 break;

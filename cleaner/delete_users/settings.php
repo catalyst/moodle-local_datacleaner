@@ -53,6 +53,6 @@ $settings->add(
         new lang_string('keepusernames', 'cleaner_delete_users'),
         new lang_string('keepusernamesdesc', 'cleaner_delete_users'),
         '',
-        PARAM_RAW
+        PARAM_NOTAGS
     )
 );

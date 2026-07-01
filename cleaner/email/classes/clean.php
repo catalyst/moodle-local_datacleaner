@@ -96,11 +96,17 @@ class clean extends \local_datacleaner\clean {
             return false;
         }
 
-        $query  = "UPDATE {user} SET email = " . $DB->sql_concat_join("''", ['email', "'$suffix'"]);
-        $query .= " WHERE email " . $DB->sql_regex(false) . " '$suffix'";
+        $params = [
+            'suffix' => $suffix,
+            'suffix2' => $suffix,
+        ];
+
+        $query  = "UPDATE {user} SET email = " . $DB->sql_concat_join("''", ['email', ':suffix']);
+        $query .= " WHERE email " . $DB->sql_regex(false) . " :suffix2";
 
         if (!empty($emailsuffixignore)) {
-            $query .= " AND email " . $DB->sql_regex(false) . " '$emailsuffixignore'";
+            $params['emailsuffixignore'] = $emailsuffixignore;
+            $query .= " AND email " . $DB->sql_regex(false) . " :emailsuffixignore";
         }
 
         if ($verbose) {
@@ -108,7 +114,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         if (!$dryrun) {
-            $DB->execute($query);
+            $DB->execute($query, $params);
         }
 
         return true;

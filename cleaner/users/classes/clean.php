@@ -102,14 +102,15 @@ class clean extends \local_datacleaner\clean {
 
         echo "Updating all usernames...\n";
 
-        $where = 'id IN (' . self::$idstoupdate . ')';
+        $ids = explode(',', self::$idstoupdate);
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'uid');
         $prefix = self::USERNAME_PREFIX;
         $sql = <<<SQL
 UPDATE {user}
 SET username = CONCAT('{$prefix}', id)
-WHERE $where
+WHERE id $insql
 SQL;
-        $DB->execute($sql);
+        $DB->execute($sql, $inparams);
     }
 
     /**
@@ -155,10 +156,12 @@ SQL;
             'idnumber'     => '',
         ];
 
-        $select = 'id IN (' . self::$idstoupdate . ')';
+        $ids = explode(',', self::$idstoupdate);
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'uid');
+        $select = "id $insql";
         foreach ($fields as $field => $value) {
             self::debug("* Erasing contents for: {$field} ...\n");
-            $DB->set_field_select('user', $field, $value, $select);
+            $DB->set_field_select('user', $field, $value, $select, $inparams);
         }
     }
 }

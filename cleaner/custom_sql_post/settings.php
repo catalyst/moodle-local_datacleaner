@@ -50,11 +50,15 @@ if (class_exists('\local_envbar\local\envbarlib')) {
     $environments = \local_envbar\local\envbarlib::get_records();
     foreach ($environments as $env) {
         $key = \cleaner_custom_sql_post\clean::get_env_config_key($env->showtext);
+        $envlinkdata = (object)[
+            'url' => s($env->matchpattern),
+            'text' => s($env->matchpattern),
+        ];
         $settings->add(
             new \local_datacleaner\admin_setting_sql_textarea(
                 'cleaner_custom_sql_post/' . $key,
                 "SQL for '{$env->showtext}'",
-                new lang_string('sqlenvironmentdesc', 'cleaner_custom_sql_post', $env->matchpattern),
+                new lang_string('sqlenvironmentdesc', 'cleaner_custom_sql_post', $envlinkdata),
                 '',
                 PARAM_RAW
             )

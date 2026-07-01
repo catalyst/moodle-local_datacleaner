@@ -84,6 +84,7 @@ class task_form extends moodleform {
                 "$name: Currently $status<br><small class='text-dim ml-4'> \\$class</small>",
                 ['group' => 1]
             );
+            $mform->setType($cbkey, PARAM_INT);
 
             // We have our current saved settings as the default value.
             $default = 0;
@@ -93,7 +94,7 @@ class task_form extends moodleform {
                     $default = 1;
                 }
             }
-            $mform->setDefault($cbkey, "$default");
+            $mform->setDefault($cbkey, (int)$default);
 
             $nexttaskcomponent = (isset($tasks[$key + 1])) ? $tasks[$key + 1]->get_component() : null;
 
