@@ -131,6 +131,13 @@ if ($matrix->is_cancelled()) {
             }
         }
     }
+
+    // Redirect back to a GET to prevent form resubmission on refresh.
+    $redirecturl = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
+    if (!empty($search)) {
+        $redirecturl->param('search', $search);
+    }
+    redirect($redirecturl);
 }
 
 // After data has been posted, we obtain the list of new values and variables.
