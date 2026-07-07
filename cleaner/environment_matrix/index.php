@@ -46,7 +46,15 @@ $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
 
+// Search value may come from a direct GET param (?search=...) or, when submitted via
+// the form's Save/Search buttons, from inside the 'searchgroup' form group in POST.
 $search = optional_param('search', null, PARAM_TEXT);
+if (empty($search)) {
+    $searchgroupdata = optional_param_array('searchgroup', [], PARAM_RAW);
+    if (!empty($searchgroupdata['search'])) {
+        $search = clean_param($searchgroupdata['search'], PARAM_TEXT);
+    }
+}
 if (!empty($search)) {
     $searchitems = \cleaner_environment_matrix\local\matrix::search($search, $configitems);
 }
@@ -55,9 +63,13 @@ $customdata = [
     'searchitems' => $searchitems,
     'configitems' => $configitems,
     'environments' => $environments,
+    'search' => $search,
 ];
 
 $post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
+if (!empty($search)) {
+    $post->param('search', $search);
+}
 $matrix = new \cleaner_environment_matrix\form\matrix($post, $customdata);
 
 // We have created the form with the correct fields and data, but we don't want to display this one.
@@ -155,9 +167,13 @@ $customdata = [
     'searchitems' => $searchitems,
     'configitems' => $configitems,
     'environments' => $environments,
+    'search' => $search,
 ];
 
 $post = new moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
+if (!empty($search)) {
+    $post->param('search', $search);
+}
 $matrix = new \cleaner_environment_matrix\form\matrix($post, $customdata);
 
 echo $OUTPUT->header();
