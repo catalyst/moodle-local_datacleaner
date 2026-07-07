@@ -111,10 +111,15 @@ class matrix extends moodleform {
 
         // Add the search element group.
         $searchstring = get_string('button_search', 'cleaner_environment_matrix');
+        $clearstring = get_string('button_clear', 'cleaner_environment_matrix');
+        $clearurl = new \moodle_url('/local/datacleaner/cleaner/environment_matrix/index.php');
+        $clearlink = \html_writer::link($clearurl, $clearstring, ['class' => 'btn btn-secondary']);
         $searchgroup = [];
         $searchgroup[] = &$mform->createElement('text', 'search', '', $params);
         $searchgroup[] = &$mform->createElement('submit', 'searchbutton', $searchstring, null);
+        $searchgroup[] = &$mform->createElement('static', 'clearbtn', '', $clearlink);
         $mform->setType('search', PARAM_TEXT);
+        $mform->setDefault('search', $this->_customdata['search'] ?? '');
         $mform->addGroup($searchgroup, 'searchgroup', '', ' ', false);
     }
 
