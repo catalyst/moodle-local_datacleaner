@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['button_clear'] = 'Clear';
 $string['button_search'] = 'Search';
 $string['existing_configuration'] = 'Existing configuration';
 $string['missingenvbar'] = 'Environment bar missing';
