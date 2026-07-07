@@ -42,7 +42,8 @@ $settings->add(
         'cleaner_email/divertallemailsto',
         new lang_string('divertallemailsto', 'cleaner_email'),
         new lang_string('divertallemailstodesc', 'cleaner_email'),
-        ''
+        '',
+        PARAM_TEXT
     )
 );
 
@@ -51,7 +52,8 @@ $settings->add(
         'cleaner_email/divertallemailsexcept',
         new lang_string('divertallemailsexcept', 'cleaner_email'),
         new lang_string('divertallemailsexceptdesc', 'cleaner_email'),
-        ''
+        '',
+        PARAM_TEXT
     )
 );
 
@@ -60,7 +62,8 @@ $settings->add(
         'cleaner_email/emailsuffix',
         new lang_string('emailsuffix', 'cleaner_email'),
         new lang_string('emailsuffixdesc', 'cleaner_email'),
-        '.invalid'
+        '.invalid',
+        PARAM_TEXT
     )
 );
 
@@ -69,6 +72,7 @@ $settings->add(
         'cleaner_email/emailsuffixignore',
         new lang_string('emailsuffixignore', 'cleaner_email'),
         new lang_string('emailsuffixignoredesc', 'cleaner_email'),
-        ''
+        '',
+        PARAM_TEXT
     )
 );

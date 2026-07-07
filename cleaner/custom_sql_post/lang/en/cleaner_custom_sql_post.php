@@ -28,4 +28,4 @@ $string['pluginname'] = 'Execute custom database query at post-wash';
 $string['privacy:metadata'] = 'The cleaner custom post-wash database query plugin does not store any personal data.';
 $string['sql'] = 'SQL';
 $string['sqldesc'] = 'SQL to be executed at the end of post-wash on all environments.';
-$string['sqlenvironmentdesc'] = 'SQL to be executed at the end of post-wash only when running in this environment (<a href="{$a}">{$a}</a>).';
+$string['sqlenvironmentdesc'] = 'SQL to be executed at the end of post-wash only when running in this environment (<a href="{$a->url}">{$a->text}</a>).';

@@ -391,7 +391,14 @@ abstract class clean {
     }
 
     /**
-     * Execute SQL in single transaction
+     * Execute SQL in single transaction.
+     *
+     * The $sql passed in must be trusted, admin-configured input only (e.g.
+     * from the cleaner_custom_sql_pre/post plugin settings, which are only
+     * writable by a site administrator). This method executes each
+     * semicolon-separated statement as-is and does not attempt to sanitise
+     * or parameterise it. Callers must never pass SQL built from
+     * user-supplied or otherwise untrusted data to this method.
      *
      * @param  string $sql
      */
@@ -412,10 +419,7 @@ abstract class clean {
         $transaction = $DB->start_delegated_transaction();
         foreach (array_map('trim', explode(";", $sql)) as $sql1) {
             if (!empty($sql1)) {
-                $params = [];
-                preg_match_all("('(.+?)')", $sql1, $params);
-                $sql1 = preg_replace("('(.+?)')", '?', $sql1);
-                $DB->execute($sql1, $params[1]);
+                $DB->execute($sql1);
             }
         }
         $transaction->allow_commit();
@@ -434,15 +438,14 @@ abstract class clean {
      * Log some context of where and why this was run.
      */
     public static function debug_info() {
-        global $CFG, $USER;
+        global $CFG;
 
+        // Note: deliberately excludes $CFG->dbhost/dbuser/dataroot and the current
+        // username - this log is persisted to disk and to config_log, so it must
+        // not contain infrastructure credentials or PII.
         $context = "Time: " . \userdate(time()) . "\n";
         $context .= "TZ:   " . $CFG->timezone . "\n";
         $context .= "Host: " . gethostname() . "\n";
-        $context .= "Moodle User: " . ($USER->username ?? 'none') . "\n";
-        $context .= "\$CFG->dbhost: " . $CFG->dbhost . "\n";
-        $context .= "\$CFG->dbuser: " . $CFG->dbuser . "\n";
-        $context .= "\$CFG->dataroot: " . $CFG->dataroot . "\n";
         $context .= "\$CFG->wwwroot: " . $CFG->wwwroot . "\n";
         $context .= "\$CFG->original_wwwroot: " . $CFG->original_wwwroot . "\n";
 

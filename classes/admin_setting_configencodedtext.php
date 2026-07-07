@@ -31,7 +31,7 @@ class admin_setting_configencodedtext extends \admin_setting_configtext {
      */
     public function get_setting() {
         global $CFG;
-        return base64_decode($CFG->original_wwwroot) ?? null;
+        return isset($CFG->original_wwwroot) ? base64_decode($CFG->original_wwwroot) : null;
     }
 
     /**
@@ -69,7 +69,8 @@ class admin_setting_configencodedtext extends \admin_setting_configtext {
             get_string('resetbutton', 'local_datacleaner'),
             [
                 'type' => 'button',
-                'onclick' => "document.getElementById('{$elementid}').value = '{$CFG->wwwroot}'",
+                'onclick' => "document.getElementById('{$elementid}').value = "
+                    . json_encode($CFG->wwwroot, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) . ";",
                 'class' => 'btn btn-secondary',
             ],
         );

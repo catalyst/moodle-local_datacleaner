@@ -29,8 +29,10 @@ use local_datacleaner\clean;
  *
  * @param string $text      The text to print.
  * @param bool   $highlight Whether to add highlighting.
+ * @param bool   $log       Whether to also persist this message via clean::log(). Set to false for
+ *                          messages containing PII that should only ever go to the terminal.
  */
-function print_message($text, $highlight = false) {
+function print_message($text, $highlight = false, $log = true) {
     $highlightstart = "\033[1m";
     $highlightend = "\033[0m";
 
@@ -39,7 +41,9 @@ function print_message($text, $highlight = false) {
     } else {
         echo $text;
     }
-    clean::log($text);
+    if ($log) {
+        clean::log($text);
+    }
 }
 
 /**
@@ -48,8 +52,9 @@ function print_message($text, $highlight = false) {
  * @param string $prefix    The prefix to the reason header.
  * @param string $text      The text to print.
  * @param bool   $highlight Whether to highlight the text.
+ * @param bool   $log       Whether to also persist this message via clean::log().
  */
-function abort_message($prefix, $text, $highlight = false) {
+function abort_message($prefix, $text, $highlight = false, $log = true) {
     static $haverun = false;
 
     if (!$haverun) {
@@ -57,7 +62,7 @@ function abort_message($prefix, $text, $highlight = false) {
         $haverun = true;
     }
 
-    print_message($text, $highlight);
+    print_message($text, $highlight, $log);
 }
 
 /**
@@ -119,8 +124,10 @@ function safety_checks($dryrun) {
     }
 
     if ($nonadmins) {
-        abort_message($abort, $message);
-        abort_message($abort, "There are non site-administrators in the list of recent users.", true);
+        // The detailed list contains full names/usernames (PII); keep that on the terminal only,
+        // not persisted to the datacleaner log file/config_log.
+        abort_message($abort, $message, false, false);
+        abort_message($abort, "There are {$nonadmins} non site-administrator(s) in the list of recent users.", true);
         $willdie = true;
     }
 

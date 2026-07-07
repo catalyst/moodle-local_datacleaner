@@ -37,8 +37,10 @@ if (!isset($CFG->original_wwwroot)) {
 
 // Allows the admin to configure subplugins (enable/disable, configure).
 
-$hide     = optional_param('hide', '', PARAM_ALPHAEXT);
-$show     = optional_param('show', '', PARAM_ALPHAEXT);
+// Plugin enable/disable is a state-changing action, so it must only ever be accepted via POST.
+$submitteddata = data_submitted();
+$hide = ($submitteddata && isset($submitteddata->hide)) ? clean_param($submitteddata->hide, PARAM_ALPHAEXT) : '';
+$show = ($submitteddata && isset($submitteddata->show)) ? clean_param($submitteddata->show, PARAM_ALPHAEXT) : '';
 
 // Print headings.
 
@@ -52,7 +54,9 @@ $strname = get_string('name');
 
 // If data submitted, then process and store.
 
-if ((!empty($hide) || !empty($show)) && confirm_sesskey()) {
+if (!empty($hide) || !empty($show)) {
+    require_sesskey();
+
     $plugins = core_plugin_manager::instance()->get_plugins_of_type('cleaner');
     $pluginname = empty($hide) ? $show : $hide;
     $state = empty($hide);
@@ -115,14 +119,31 @@ foreach ($plugins as $plugin) {
 
     $class = '';
     if ($plugin->enabled()) {
-        $visible = '<a href="index.php?hide=' . $plugin->name . '&amp;sesskey=' . sesskey() . '" title="' . $strdisable . '">' .
-            $OUTPUT->pix_icon('t/hide', $strdisable) . '</a>';
+        $action = 'hide';
+        $strtoggle = $strdisable;
+        $icon = $OUTPUT->pix_icon('t/hide', $strdisable);
         $class = $plugin->sortorder >= 200 ? 'bg-secondary' : 'bg-warning';
     } else {
-        $visible = '<a href="index.php?show=' . $plugin->name . '&amp;sesskey=' . sesskey() . '" title="' . $strenable . '">' .
-            $OUTPUT->pix_icon('t/show', $strenable, 'moodle', ['class' => 'dimmed_text']) . '</a>';
+        $action = 'show';
+        $strtoggle = $strenable;
+        $icon = $OUTPUT->pix_icon('t/show', $strenable, 'moodle', ['class' => 'dimmed_text']);
         $class = 'dimmed_text';
     }
+
+    // State-changing action: submit via POST with sesskey in the request body, never in a GET URL.
+    $visible  = html_writer::start_tag('form', [
+        'method' => 'post',
+        'action' => new moodle_url('/local/datacleaner/index.php'),
+        'class'  => 'form-inline d-inline m-0',
+    ]);
+    $visible .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $action, 'value' => $plugin->name]);
+    $visible .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
+    $visible .= html_writer::tag('button', $icon, [
+        'type'  => 'submit',
+        'class' => 'btn btn-link p-0 border-0 align-baseline',
+        'title' => $strtoggle,
+    ]);
+    $visible .= html_writer::end_tag('form');
 
     $uninstall = '';
     if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('cleaner_' . $plugin->name, 'manage')) {
