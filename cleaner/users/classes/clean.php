@@ -41,7 +41,19 @@ class clean extends \local_datacleaner\clean {
      * @var string
      */
     const USERNAME_PREFIX = 'user_';
+
+    /**
+     * A prefix to use for all first names if renameusers setting is enabled.
+     *
+     * @var string
+     */
     const FIRST_NAME_PREFIX = 'anonfirstname';
+
+    /**
+     * A prefix to use for all last names if renameusers setting is enabled.
+     *
+     * @var string
+     */
     const LAST_NAME_PREFIX = 'anonlastname';
 
     /**
@@ -114,22 +126,9 @@ SQL;
         $DB->execute($sql);
     }
 
-    private static function replace_first_and_last_names() {
-        global $DB;
-
-        echo "Updating all first and last names...\n";
-
-        $where = 'id IN ('.self::$idstoupdate.')';
-        $firstprefix = self::FIRST_NAME_PREFIX;
-        $lastprefix = self::LAST_NAME_PREFIX;
-        $sql = <<<SQL
-UPDATE {user}
-SET firstname = CONCAT('{$firstprefix}', id), lastname = CONCAT('{$lastprefix}', id)
-WHERE $where
-SQL;
-        $DB->execute($sql);
-    }
-
+    /**
+     * Replace all first and last names.
+     */
     private static function replace_first_and_last_names() {
         global $DB;
 
@@ -148,6 +147,8 @@ SQL;
 
     /**
      * Scramble all other fields.
+     *
+     * When renameusers setting is enabled, first name and last name fields are replaced rather than scrambled.
      */
     private static function scramble_fields() {
         $config = get_config('cleaner_users');
@@ -158,7 +159,7 @@ SQL;
                 'address'     => ['address', 'city', 'country', 'lang', 'calendartype', 'timezone'],
             ];
             self::replace_first_and_last_names();
-        }else{
+        } else {
             $fieldset = [
                 'main names'  => ['firstname', 'lastname'],
                 'other names' => ['firstnamephonetic', 'alternatename', 'middlename', 'lastnamephonetic'],
