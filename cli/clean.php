@@ -120,60 +120,8 @@ if ($filter) {
     clean::log("Filtering to ONLY run: $filter \n");
 }
 
-$cascade = null;
+clean::debug_info();
 
-local_datacleaner\clean::debug_info();
-
-foreach ($plugins as $plugin) {
-    // Get the class that does the work.
-    $classname = 'cleaner_' . $plugin->name . '\clean';
-
-    // Only run a certain cleaner.
-    if ($filter) {
-        if ($plugin->name != $filter) {
-            continue;
-        }
-    }
-
-    // Pre washing detection.
-    // Skip subplugins that have a sort order that is greater or equal to 200.
-    if ($options['run-pre-wash']) {
-        if ($plugin->sortorder >= 200) {
-            clean::log("NOTICE: Pre washing only. Skipping {$plugin->name} ({$plugin->sortorder}) cleaner.\n");
-            continue;
-        }
-    }
-
-    // Post washing detection.
-    // Skip subplugins that have a sort order that is less than 200.
-    if ($options['run-post-wash']) {
-        if ($plugin->sortorder < 200) {
-            clean::log("NOTICE: Post washing only. Skipping {$plugin->name} ({$plugin->sortorder}) cleaner.\n");
-            continue;
-        }
-    }
-
-    if (!class_exists($classname)) {
-        clean::log("ERROR: Unable to locate local/datacleaner/cleaner/{$plugin->name}/classes/clean.php class. Skipping.\n");
-        continue;
-    }
-
-    $class = new $classname($options);
-    $task = defined("$classname::TASK") ? $classname::TASK : $plugin->name;
-    $header = str_repeat('-', 60);
-    mtrace("\n{$header}");
-    mtrace("  [{$plugin->sortorder}] {$task}");
-    mtrace($header);
-
-    if (is_null($cascade) && $class->needs_cascade_delete()) {
-        $cascade = new \local_datacleaner\schema_add_cascade_delete($options);
-
-        // Shutdown handler does the undo().
-        $cascade->execute('user');
-        $cascade->execute('course');
-    }
-
-    $class->execute();
-}
+clean::run_wash($plugins, $options);
 
 clean::log("Done.\n");
