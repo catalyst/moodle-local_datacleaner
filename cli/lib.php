@@ -66,9 +66,10 @@ function abort_message($prefix, $text, $highlight = false) {
  * Make sure it's safe for us to continue. Don't wash prod!
  *
  * @param bool $dryrun If true, just reports potential issues without aborting.
+ * @param bool $throwerror If true, throws an exception instead of exiting.
  * @return bool True if it is unsafe to proceed.
  */
-function safety_checks($dryrun) {
+function safety_checks($dryrun, $throwerror = false) {
     global $CFG, $DB;
 
     $willdie = false;
@@ -142,8 +143,11 @@ function safety_checks($dryrun) {
     }
 
     if ($willdie && !$dryrun) {
+        if ($throwerror) {
+            throw new \moodle_exception("Aborting datawash due to safety checks failing. See above for details.");
+        }
         exit(1);
     }
-
+    
     return $willdie;    /* For dryrun */
 }
