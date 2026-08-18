@@ -61,6 +61,16 @@ $general->add(
         PARAM_INT
     )
 );
+
+$general->add(
+    new admin_setting_configcheckbox(
+        'local_datacleaner/enable_postwash',
+        new lang_string('enable_postwash', 'local_datacleaner'),
+        new lang_string('enable_postwashdesc', 'local_datacleaner'),
+        0
+    )
+);
+
 $ADMIN->add('datacleaner', $general);
 
 require_once(__DIR__ . '/classes/admin_setting_sql_textarea.php');

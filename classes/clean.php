@@ -474,4 +474,62 @@ abstract class clean {
         // Copy into the db so we can see it in the refreshed env as well.
         add_to_config_log($when, '', substr($string, 0, 100), 'local_datacleaner');
     }
+
+    /**
+     * Run a data wash for the given plugins.
+     *
+     * @param array $plugins The plugins to run.
+     * @param array $options The options to pass to the plugins.
+     * @return void
+     */
+    public static function run_wash(array $plugins, mixed $options) {
+        $filter = $options['filter'] ?? false;
+        $cascade = null;
+
+        foreach ($plugins as $plugin) {
+            $classname = 'cleaner_' . $plugin->name . '\clean';
+
+            if ($filter && $plugin->name != $filter) {
+                continue;
+            }
+
+            if (!empty($options['run-pre-wash']) && $plugin->sortorder >= 200) {
+                self::log("NOTICE: Pre washing only. Skipping {$plugin->name} ({$plugin->sortorder}) cleaner.\n");
+                continue;
+            }
+
+            if (!empty($options['run-post-wash']) && $plugin->sortorder < 200) {
+                self::log("NOTICE: Post washing only. Skipping {$plugin->name} ({$plugin->sortorder}) cleaner.\n");
+                continue;
+            }
+
+            if (!class_exists($classname)) {
+                self::log("ERROR: Unable to locate local/datacleaner/cleaner/{$plugin->name}/classes/clean.php class. Skipping.\n");
+                continue;
+            }
+
+            $class = new $classname($options);
+            $task = defined("$classname::TASK") ? $classname::TASK : $plugin->name;
+            $header = str_repeat('-', 60);
+            mtrace("\n{$header}");
+            mtrace("  [{$plugin->sortorder}] {$task}");
+            mtrace($header);
+
+            if (is_null($cascade) && $class->needs_cascade_delete()) {
+                $cascade = new \local_datacleaner\schema_add_cascade_delete($options);
+
+                // Shutdown handler does the undo().
+                $cascade->execute('user');
+                $cascade->execute('course');
+            }
+
+            $class->execute();
+        }
+
+        // If we are running the post-wash, enabled the scheduled task to run following its scheduled time.
+        if (!empty($options['run-post-wash']) && get_config('local_datacleaner', 'enable_postwash')) {
+            $scheduledtask = \core\task\manager::get_scheduled_task('local_datacleaner\task\postwash');
+            $scheduledtask->enable();
+        }
+    }
 }

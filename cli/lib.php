@@ -66,9 +66,11 @@ function abort_message($prefix, $text, $highlight = false) {
  * Make sure it's safe for us to continue. Don't wash prod!
  *
  * @param bool $dryrun If true, just reports potential issues without aborting.
+ * @param bool $isscheduledtask If true, throws an exception instead of exiting to properly fail the scheduled task.
+ *
  * @return bool True if it is unsafe to proceed.
  */
-function safety_checks($dryrun) {
+function safety_checks($dryrun, $isscheduledtask = false) {
     global $CFG, $DB;
 
     $willdie = false;
@@ -142,6 +144,9 @@ function safety_checks($dryrun) {
     }
 
     if ($willdie && !$dryrun) {
+        if ($isscheduledtask) {
+            throw new \Exception(get_string('scheduledtaskpostwasherror', 'local_datacleaner'));
+        }
         exit(1);
     }
 
