@@ -170,18 +170,18 @@ class clean extends \local_datacleaner\clean {
                             $replacing[$table][$column->name] = $column;
                         }
                     }
+                } // End foreach columns as column.
 
-                    // Clean oof wysiwyg columns that have a pair 'format' column.
-                    if (self::$config->cleanwysiwyg) {
-                        foreach ($columns as $column) {
-                            if (preg_match('/(.*)format$/', $column->name, $matches)) {
-                                if (!empty($matches[1])) {
-                                    $wysiwyg[$column->name] = $matches[1];
-                                }
+                // Find wysiwyg columns that have a paired 'format' column.
+                if (self::$config->cleanwysiwyg) {
+                    foreach ($columns as $col) {
+                        if (preg_match('/(.*)format$/', $col->name, $matches)) {
+                            if (!empty($matches[1])) {
+                                $wysiwyg[$col->name] = $matches[1];
                             }
                         }
-                    } // End cleanwysiwyg.
-                } // End foreach columns as column.
+                    }
+                } // End cleanwysiwyg.
 
                 // Add found wysiwyg columns to the list of things to clean.
                 foreach ($wysiwyg as $name) {
@@ -205,7 +205,7 @@ class clean extends \local_datacleaner\clean {
         foreach ($replacing as $table => $columns) {
             foreach ($columns as $column) {
                 // Only text-like columns can contain URLs.
-                if ($column->type !== 'text' && $column->type !== 'varchar') {
+                if ($column->type !== 'text' && $column->type !== 'varchar' && $column->type !== 'longtext') {
                     continue;
                 }
                 // Skip varchar columns too short to contain either URL.
