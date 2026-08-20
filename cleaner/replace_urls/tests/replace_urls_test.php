@@ -77,6 +77,42 @@ final class replace_urls_test extends advanced_testcase {
     }
 
     /**
+     * Test that wysiwyg fields (columns paired with a *format column) are replaced.
+     *
+     * Regression test for https://github.com/catalyst/moodle-local_datacleaner/issues/201
+     * The bug was an inner foreach reusing the outer $column variable, causing the
+     * wysiwyg scan to only run once (on the last outer iteration) and silently corrupt
+     * earlier columns — so content-type fields were never cleaned.
+     *
+     * @group test_replace_wysiwyg
+     */
+    public function test_replace_wysiwyg(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        // Use only wysiwyg mode (not cleantext) to isolate the wysiwyg code path.
+        set_config('cleantext', 0, 'cleaner_replace_urls');
+        set_config('cleanwysiwyg', 1, 'cleaner_replace_urls');
+        set_config('newsiteurl', 'new.origin', 'cleaner_replace_urls');
+
+        // course_sections.summary / summaryformat is a classic wysiwyg pair.
+        $section = $this->getDataGenerator()->create_course_section([
+            'course'  => $this->course->id,
+            'section' => 1,
+        ]);
+        $DB->set_field('course_sections', 'summary', 'Visit http://local.origin/course/view.php?id=1',
+            ['id' => $section->id]);
+
+        $configcleaner = new clean();
+        $configcleaner::execute();
+
+        $after = $DB->get_field('course_sections', 'summary', ['id' => $section->id]);
+        $this->assertStringContainsString('new.origin', $after);
+        $this->assertStringNotContainsString('local.origin', $after);
+    }
+
+    /**
      * Test the replace without newsite
      * @group without
      */
