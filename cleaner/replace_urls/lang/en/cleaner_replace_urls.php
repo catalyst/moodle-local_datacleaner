@@ -24,6 +24,8 @@
 
 $string['cleanconfig'] = 'Replace in config tables';
 $string['cleanconfigdesc'] = 'This will enable replacing URLs in the config and config_plugins tables.';
+$string['cleantext'] = 'Replace in database fields text / varchar';
+$string['cleantextdesc'] = 'This will enable replacing URLs in all database columns of type text and varchar.';
 $string['cleanwysiwyg'] = 'Replace in wysiwyg elements';
 $string['cleanwysiwygdesc'] = 'This will enable replacing URLs in all rich text editor fields.';
 $string['cleantext'] = 'Relace in database fields text / varchar';
