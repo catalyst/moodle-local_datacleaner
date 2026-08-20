@@ -101,8 +101,12 @@ class cleaner_replace_urls_test extends advanced_testcase {
             'course'  => $this->course->id,
             'section' => 1,
         ]);
-        $DB->set_field('course_sections', 'summary', 'Visit http://local.origin/course/view.php?id=1',
-            ['id' => $section->id]);
+        $DB->set_field(
+            'course_sections',
+            'summary',
+            'Visit http://local.origin/course/view.php?id=1',
+            ['id' => $section->id]
+        );
 
         $configcleaner = new clean();
         $configcleaner::execute();
