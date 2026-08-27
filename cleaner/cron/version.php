@@ -17,16 +17,17 @@
 /**
  * Version details.
  *
- * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @package    cleaner_cron
+ * @copyright  2026 Catalyst IT
+ * @author     Jason den Dulk <jasondendulk@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2022020307;
-$plugin->release   = 2022020307;
+$plugin->version   = 2026081800;
+$plugin->release   = 2026081800;
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2021051700; // Moodle 3.11 release and upwards.
-$plugin->supported = [311, 405];
-$plugin->component = 'local_datacleaner';
+$plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
+$plugin->component = 'cleaner_cron';
+$plugin->sortorder = 400;

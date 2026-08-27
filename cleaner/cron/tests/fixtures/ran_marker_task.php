@@ -14,19 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace cleaner_cron\task;
+
 /**
- * Version details.
+ * Scheduled task fixture that records how many times it has been executed.
  *
- * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * Used by cleaner_cron tests to observe whether a task was actually run.
+ *
+ * @package    cleaner_cron
+ * @copyright  2026 Catalyst IT
+ * @author     Jason den Dulk <jasondendulk@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class ran_marker_task extends \core\task\scheduled_task {
+    /** @var int Number of times execute() has been called this process. */
+    public static $timesrun = 0;
 
-defined('MOODLE_INTERNAL') || die;
+    /**
+     * Get the task name.
+     *
+     * @return string
+     */
+    public function get_name() {
+        return 'Ran marker task';
+    }
 
-$plugin->version   = 2022020307;
-$plugin->release   = 2022020307;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2021051700; // Moodle 3.11 release and upwards.
-$plugin->supported = [311, 405];
-$plugin->component = 'local_datacleaner';
+    /**
+     * Record that the task ran.
+     */
+    public function execute() {
+        self::$timesrun++;
+    }
+}
