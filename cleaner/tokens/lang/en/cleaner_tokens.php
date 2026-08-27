@@ -15,18 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Language strings
  *
- * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @package    cleaner_tokens
+ * @copyright  2026 Catalyst IT
+ * @author     Jason den Dulk <jasondendulk@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
-$plugin->version   = 2026010110;
-$plugin->release   = 2026010110;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2025041400; // Moodle 5.0 release and upwards.
-$plugin->supported = [500, 501];
-$plugin->component = 'local_datacleaner';
+$string['extratables'] = 'Extra tables to clean';
+$string['extratablesdesc'] = 'Put any other tables (one per line) that you want to be truncated.';
+$string['pluginname'] = 'Token cleaner';
+$string['privacy:metadata'] = 'The token cleaner plugin does not store any personal data.';

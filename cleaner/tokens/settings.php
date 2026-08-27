@@ -15,18 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Settings for the task logs cleaner.
  *
- * @package    local_datacleaner
- * @copyright  2015 Brendan Heywood <brendan@catalyst-au.net>
+ * @package    cleaner_tokens
+ * @copyright  2026 Catalyst IT
+ * @author     Jason den Dulk <jasondendulk@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2026010110;
-$plugin->release   = 2026010110;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2025041400; // Moodle 5.0 release and upwards.
-$plugin->supported = [500, 501];
-$plugin->component = 'local_datacleaner';
+if (!$ADMIN->fulltree) {
+    return;
+}
+
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_tokens/extratables',
+        new lang_string('extratables', 'cleaner_tokens'),
+        new lang_string('extratablesdesc', 'cleaner_tokens'),
+        '',
+        PARAM_RAW
+    )
+);
