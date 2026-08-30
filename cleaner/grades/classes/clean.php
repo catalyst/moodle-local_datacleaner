@@ -37,7 +37,6 @@ class clean extends \local_datacleaner\clean {
      * Execute the cleaning process.
      */
     public static function execute() {
-
         global $DB;
 
         // Get the settings, handling the case where new ones (dev) haven't been set yet.
@@ -48,9 +47,11 @@ class clean extends \local_datacleaner\clean {
                 echo "Would truncate the grade_grades and grade_grades_history tables.\n";
             } else {
                 self::new_task(2);
-                $DB->delete_records('grade_grades');
+                // TRUNCATE does not work with foreign keys. So we insert empty arrays to ensure that DELETE
+                // is used instead.
+                $DB->delete_records('grade_grades', []);
                 self::next_step();
-                $DB->delete_records('grade_grades_history');
+                $DB->delete_records('grade_grades_history', []);
                 self::next_step();
             }
         } else {
