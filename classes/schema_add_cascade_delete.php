@@ -62,6 +62,34 @@ class schema_add_cascade_delete extends clean {
     protected static $numcascadedeletes = 0;
 
     /**
+     * Defines a table of candidate foreign keys that are actually not foreign keys.
+     *
+     * Defines an entry for each [parent][child][field] that is proscribed.
+     *
+     * Note: This table is not exhaustive. Add any that are discovered here.
+     */
+    protected const NOT_FOREIGN_KEYS = [
+        'grade_grades' => [
+            'competency_usercomp' => ['grade' => 1],
+            'competency_usercompcourse' => ['grade' => 1],
+            'competency_usercompplan' => ['grade' => 1],
+            'competency_evidence' => ['grade' => 1],
+        ],
+    ];
+
+    /**
+     * Returns whether the given field is proscribed to be not a foreign key.
+     *
+     * @param string $parenttable
+     * @param string $childtable
+     * @param string $field
+     * @return bool
+     */
+    protected static function is_candidate_proscribed(string $parenttable, string $childtable, string $field): bool {
+        return isset(self::NOT_FOREIGN_KEYS[$parenttable][$childtable][$field]);
+    }
+
+    /**
      * Based on get_install_xml_schema in lib/ddl/database_manager.php.
      *
      * Reads the install.xml files for Moodle core and modules and returns an array of
@@ -189,6 +217,11 @@ class schema_add_cascade_delete extends clean {
     private static function try_add_cascade_delete($parent, $tablename, $fieldname, $indexname) {
         global $DB;
 
+        if (self::is_candidate_proscribed($parent, $tablename, $fieldname)) {
+            self::debug("Skipping {$tablename}:{$fieldname} for {$parent} because it is proscribed.\n");
+            return false;
+        }
+
         try {
             $config = get_config('local_datacleaner');
             $mismatchlimit = isset($config->mismatch_threshold) ? $config->mismatch_threshold : 5;
@@ -274,6 +307,7 @@ class schema_add_cascade_delete extends clean {
 
         self::$depth++;
 
+        // Load the schema for all tables.
         if (is_null($schema)) {
             $schema = self::get_xml_schema();
             foreach ($schema->getTables() as $table) {
@@ -318,7 +352,7 @@ class schema_add_cascade_delete extends clean {
         // Iterate over tables in the schema ...
         foreach ($schema->getTables() as $table) {
             $tablename = $table->getName();
-            if ($tablename == $parent) {
+            if ($tablename == $parent) { // Skip self.
                 continue;
             }
             $fields = $table->getFields();
