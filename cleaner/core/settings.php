@@ -27,7 +27,9 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_core/deletemucfile',
-        new lang_string('deletemucfile', 'cleaner_core'),
-        new lang_string('deletemucfiledesc', 'cleaner_core'), 1));
-
+$settings->add(new core\setting\type\checkbox(
+    'cleaner_core/deletemucfile',
+    new lang_string('deletemucfile', 'cleaner_core'),
+    new lang_string('deletemucfiledesc', 'cleaner_core'),
+    1
+));

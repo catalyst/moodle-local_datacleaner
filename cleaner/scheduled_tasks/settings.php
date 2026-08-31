@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    cleaner_scheduled_tasks
+ * @package     cleaner_scheduled_tasks
  * @subpackage  local_datacleaner
- * @copyright  2019 Catalyst IT
+ * @copyright   2019 Catalyst IT
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @var $ADMIN  admin_root
  */
 
@@ -28,7 +29,7 @@ if (!$hassiteconfig) {
 }
 
 // Add the new settings page.
-$ADMIN->add('datacleaner', new admin_externalpage(
+$ADMIN->add('datacleaner', new core\setting\page\externalpage(
     'cleaner_scheduled_tasks_settings',
     get_string('pluginname', 'cleaner_scheduled_tasks'),
     new moodle_url('/local/datacleaner/cleaner/scheduled_tasks/index.php')

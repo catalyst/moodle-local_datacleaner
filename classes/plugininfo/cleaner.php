@@ -96,9 +96,11 @@ class cleaner extends base {
      * Include the settings.php file from sub plugins if they provide it.
      * This is a copy of very similar implementations from various other subplugin areas.
      *
-     * @return \moodle_url
+     * @param \core\setting\part\part_of_admin_tree $adminroot
+     * @param string $parentnodename
+     * @param bool $hassiteconfig whether the current user has moodle/site:config capability
      */
-    public function load_settings(\part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig) {
+    public function load_settings(\core\setting\part\part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig) {
         global $CFG, $USER, $DB, $OUTPUT, $PAGE; // In case settings.php wants to refer to them.
         $ADMIN = $adminroot; // May be used in settings.php.
         $plugininfo = $this; // Also can be used inside settings.php.
@@ -107,18 +109,22 @@ class cleaner extends base {
             return;
         }
 
-        if (!$hassiteconfig or !file_exists($this->full_path('settings.php'))) {
+        if (!$hassiteconfig || !file_exists($this->full_path('settings.php'))) {
             return;
         }
 
         $section = $this->get_settings_section_name();
-        $settings = new \admin_settingpage($section, $this->displayname, 'moodle/site:config', $this->is_enabled() === false);
+        $settings = new \core\setting\part\page($section, $this->displayname, 'moodle/site:config', $this->is_enabled() === false);
 
         include($this->full_path('settings.php')); // This may also set $settings to null.
 
         if ($settings) {
-            $settings->add(new \admin_setting_configcheckbox('cleaner_' . $this->name . '/enabled',
-                new \lang_string('enabledisable', 'local_datacleaner'), null, 0));
+            $settings->add(new \core\setting\type\checkbox(
+                'cleaner_' . $this->name . '/enabled',
+                new \lang_string('enabledisable', 'local_datacleaner'),
+                null,
+                0
+            ));
 
             $ADMIN->add($parentnodename, $settings);
         }

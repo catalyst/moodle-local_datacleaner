@@ -27,6 +27,10 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configtextarea('cleaner_custom_sql_pre/sql',
-            new lang_string('sql', 'cleaner_custom_sql_pre'),
-            new lang_string('sqldesc', 'cleaner_custom_sql_pre'), '', PARAM_RAW));
+$settings->add(new core\setting\type\textarea(
+    'cleaner_custom_sql_pre/sql',
+    new lang_string('sql', 'cleaner_custom_sql_pre'),
+    new lang_string('sqldesc', 'cleaner_custom_sql_pre'),
+    '',
+    PARAM_RAW
+));

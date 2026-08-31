@@ -27,6 +27,9 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_grades/deleteall',
-            new lang_string('deleteall', 'cleaner_grades'),
-            new lang_string('deletealldesc', 'cleaner_grades'), 1));
+$settings->add(new core\setting\type\checkbox(
+    'cleaner_grades/deleteall',
+    new lang_string('deleteall', 'cleaner_grades'),
+    new lang_string('deletealldesc', 'cleaner_grades'),
+    1
+));

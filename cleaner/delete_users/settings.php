@@ -21,20 +21,34 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+ use core\setting\type\checkbox;
+ use core\setting\type\text;
+
 defined('MOODLE_INTERNAL') || die;
 
 if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configtext('cleaner_delete_users/minimumage',
-            new lang_string('minimumage', 'cleaner_delete_users'),
-            new lang_string('minimumagedesc', 'cleaner_delete_users'), 365, PARAM_INT));
+$settings->add(new text(
+    'cleaner_delete_users/minimumage',
+    new lang_string('minimumage', 'cleaner_delete_users'),
+    new lang_string('minimumagedesc', 'cleaner_delete_users'),
+    365,
+    PARAM_INT
+));
 
-$settings->add(new admin_setting_configcheckbox('cleaner_delete_users/keepsiteadmins',
-            new lang_string('keepsiteadmins', 'cleaner_delete_users'),
-            new lang_string('keepsiteadminsdesc', 'cleaner_delete_users'), 1));
+$settings->add(new checkbox(
+    'cleaner_delete_users/keepsiteadmins',
+    new lang_string('keepsiteadmins', 'cleaner_delete_users'),
+    new lang_string('keepsiteadminsdesc', 'cleaner_delete_users'),
+    1
+));
 
-$settings->add(new admin_setting_configtext('cleaner_delete_users/keepusernames',
-            new lang_string('keepusernames', 'cleaner_delete_users'),
-            new lang_string('keepusernamesdesc', 'cleaner_delete_users'), '', PARAM_RAW));
+$settings->add(new text(
+    'cleaner_delete_users/keepusernames',
+    new lang_string('keepusernames', 'cleaner_delete_users'),
+    new lang_string('keepusernamesdesc', 'cleaner_delete_users'),
+    '',
+    PARAM_RAW
+));

@@ -118,7 +118,7 @@ class clean extends \local_datacleaner\clean {
 
                         // Iterate through tree for specific page and elementname
                         foreach ($nodes as $node) {
-                            if ($node->page instanceof \admin_settingpage && isset($node->page->settings->$elementname)) {
+                            if ($node->page instanceof \core\setting\part\page && isset($node->page->settings->$elementname)) {
                                 // Should only ever be reached once, so break loop
                                 $relevantobject = $node->page->settings->$elementname;
                                 break;

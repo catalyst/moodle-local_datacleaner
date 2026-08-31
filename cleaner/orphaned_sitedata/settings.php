@@ -21,25 +21,38 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\setting\type\checkbox;
+
 defined('MOODLE_INTERNAL') || die;
 
 if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_orphaned_sitedata/deletebackups',
-        new lang_string('deletebackups', 'cleaner_orphaned_sitedata'),
-        new lang_string('deletebackupsdesc', 'cleaner_orphaned_sitedata'), 0));
+$settings->add(new checkbox(
+    'cleaner_orphaned_sitedata/deletebackups',
+    new lang_string('deletebackups', 'cleaner_orphaned_sitedata'),
+    new lang_string('deletebackupsdesc', 'cleaner_orphaned_sitedata'),
+    0
+));
 
-$settings->add(new admin_setting_configcheckbox('cleaner_orphaned_sitedata/deletecachedfiles',
-        new lang_string('deletecachedfiles', 'cleaner_orphaned_sitedata'),
-        new lang_string('deletecachedfilesdesc', 'cleaner_orphaned_sitedata'), 1));
+$settings->add(new checkbox(
+    'cleaner_orphaned_sitedata/deletecachedfiles',
+    new lang_string('deletecachedfiles', 'cleaner_orphaned_sitedata'),
+    new lang_string('deletecachedfilesdesc', 'cleaner_orphaned_sitedata'),
+    1
+));
 
-$settings->add(new admin_setting_configcheckbox('cleaner_orphaned_sitedata/deletetmpfiles',
-        new lang_string('deletetmpfiles', 'cleaner_orphaned_sitedata'),
-        new lang_string('deletetmpfilesdesc', 'cleaner_orphaned_sitedata'), 1));
+$settings->add(new checkbox(
+    'cleaner_orphaned_sitedata/deletetmpfiles',
+    new lang_string('deletetmpfiles', 'cleaner_orphaned_sitedata'),
+    new lang_string('deletetmpfilesdesc', 'cleaner_orphaned_sitedata'),
+    1
+));
 
-$settings->add(new admin_setting_configcheckbox('cleaner_orphaned_sitedata/deleteorphanedfiles',
-        new lang_string('deleteorphanedfiles', 'cleaner_orphaned_sitedata'),
-        new lang_string('deleteorphanedfilesdesc', 'cleaner_orphaned_sitedata'), 0));
-
+$settings->add(new checkbox(
+    'cleaner_orphaned_sitedata/deleteorphanedfiles',
+    new lang_string('deleteorphanedfiles', 'cleaner_orphaned_sitedata'),
+    new lang_string('deleteorphanedfilesdesc', 'cleaner_orphaned_sitedata'),
+    0
+));

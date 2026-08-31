@@ -26,17 +26,15 @@
 
 namespace cleaner_environment_matrix\local;
 
-use admin_setting_confightmleditor;
-use admin_setting_configtextarea;
-use admin_setting_heading;
+use core\setting\type\editor_html;
+use core\setting\type\textarea;
+use core\setting\heading;
 use stdClass;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../../../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
-}
 
 /**
  * Environment matrix class.
@@ -78,9 +76,8 @@ class matrix {
             $settings = $found->settings;
 
             foreach ($settings as $setting) {
-
                 // Prevent heading types from populating the list. There is nothing to configure.
-                if ($setting instanceof admin_setting_heading) {
+                if ($setting instanceof heading) {
                     continue;
                 }
 
@@ -97,8 +94,10 @@ class matrix {
                 $record->display = true;
 
                 // Identify that this is a text area, during search.
-                if ($setting instanceof admin_setting_configtextarea ||
-                    $setting instanceof admin_setting_confightmleditor) {
+                if (
+                    $setting instanceof textarea ||
+                    $setting instanceof editor_html
+                ) {
                     $record->textarea = true;
                 }
 
@@ -112,9 +111,7 @@ class matrix {
                 }
 
                 $result[$record->plugin][$record->name] = $record;
-
             }
-
         }
 
         return $result;

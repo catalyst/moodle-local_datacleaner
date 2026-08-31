@@ -21,15 +21,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\setting\type\checkbox;
+
 defined('MOODLE_INTERNAL') || die;
 
 if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_users/keepsiteadmins', new lang_string('keepsiteadmins', 'cleaner_users'),
-            new lang_string('keepsiteadminsdesc', 'cleaner_users'), 1));
+$settings->add(new checkbox(
+    'cleaner_users/keepsiteadmins',
+    new lang_string('keepsiteadmins', 'cleaner_users'),
+    new lang_string('keepsiteadminsdesc', 'cleaner_users'),
+    1
+));
 
-$settings->add(new admin_setting_configtextarea('cleaner_users/keepusernames',
-            new lang_string('keepusernames', 'cleaner_users'),
-            new lang_string('keepusernamesdesc', 'cleaner_users'), '', PARAM_RAW));
+$settings->add(new checkbox(
+    'cleaner_users/keepusernames',
+    new lang_string('keepusernames', 'cleaner_users'),
+    new lang_string('keepusernamesdesc', 'cleaner_users'),
+    '',
+    PARAM_RAW
+));

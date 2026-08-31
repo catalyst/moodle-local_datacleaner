@@ -28,6 +28,9 @@ if (!$ADMIN->fulltree) {
     return;
 }
 
-$settings->add(new admin_setting_configcheckbox('cleaner_backup/fastdelete',
-            new lang_string('fastdelete', 'cleaner_backup'),
-            new lang_string('fastdelete_desc', 'cleaner_backup'), 0));
+$settings->add(new core\setting\type\checkbox(
+    'cleaner_backup/fastdelete',
+    new lang_string('fastdelete', 'cleaner_backup'),
+    new lang_string('fastdelete_desc', 'cleaner_backup'),
+    0
+));
