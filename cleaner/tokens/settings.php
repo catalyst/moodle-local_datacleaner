@@ -53,17 +53,6 @@ $settings->add(
     )
 );
 
-// Seed to use for rehashing.
-$settings->add(
-    new admin_setting_configtext(
-        'cleaner_tokens/rehashseed',
-        new lang_string('rehashseed', 'cleaner_tokens'),
-        new lang_string('rehashseeddesc', 'cleaner_tokens'),
-        defaults::DEFAULT_REHASH_SEED,
-        PARAM_INT
-    )
-);
-
 // Fields to be regenerated.
 $settings->add(
     new admin_setting_configtextarea(

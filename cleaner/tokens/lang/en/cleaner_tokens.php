@@ -34,3 +34,4 @@ $string['rehashseed'] = 'Rehash seed';
 $string['rehashseeddesc'] = 'The seed to use when rehashing fields. If zero, then the rehash will be unseeded.';
 $string['tablestotruncate'] = 'Tables to truncate';
 $string['tablestotruncatedesc'] = 'Put any tables (one per line) that you want to be truncated.';
+$string['unsupported_dbtype'] = 'Unsupported database type: {$a}';
