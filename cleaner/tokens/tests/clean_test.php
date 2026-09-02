@@ -16,7 +16,9 @@
 
 namespace cleaner_tokens\tests;
 
+use cleaner_tokens\clean;
 use PHPUnit\Framework\Attributes\CoversClass;
+use xmldb_table;
 
 /**
  * Testcase for cleaner_tokens
@@ -26,617 +28,214 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @author     Jason den Dulk <jasondendulk@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[CoversClass(\cleaner_tokens\clean::class)]
+#[CoversClass(clean::class)]
 final class clean_test extends \advanced_testcase {
+    /** @var string[] Tables created during the test run. */
+    private array $tables = [];
+
     /**
      * Setup for each test.
      */
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
+        $this->tables = [];
     }
 
     /**
-     * Create sample test data for user_password_history table.
+     * Tear down and clean up any temporary tables.
      */
-    protected function create_password_history_records(): int {
+    protected function tearDown(): void {
         global $DB;
-        $user = $this->getDataGenerator()->create_user();
-        $count = 3;
 
-        for ($i = 0; $i < $count; $i++) {
-            $DB->insert_record('user_password_history', [
-                'userid' => $user->id,
-                'hash' => password_hash('password' . $i, PASSWORD_DEFAULT),
-                'timecreated' => time() - (3600 * $i),
-            ]);
+        $dbman = $DB->get_manager();
+        foreach ($this->tables as $tablename) {
+            if ($dbman->table_exists($tablename)) {
+                $dbman->drop_table(new xmldb_table($tablename));
+            }
         }
 
-        return $count;
+        parent::tearDown();
     }
 
     /**
-     * Create sample test data for user_password_resets table.
-     */
-    protected function create_password_resets_records(): int {
-        global $DB;
-        $user = $this->getDataGenerator()->create_user();
-        $count = 2;
-
-        for ($i = 0; $i < $count; $i++) {
-            $DB->insert_record('user_password_resets', [
-                'userid' => $user->id,
-                'token' => substr(hash('sha1', 'reset_token_' . $i), 0, 30),
-                'timecreated' => time() - (3600 * $i),
-                'timerequested' => time() - (3600 * $i),
-            ]);
-        }
-
-        return $count;
-    }
-
-    /**
-     * Create sample test data for external_tokens table.
-     */
-    protected function create_external_tokens_records(): int {
-        global $DB;
-        $user = $this->getDataGenerator()->create_user();
-        $count = 2;
-
-        for ($i = 0; $i < $count; $i++) {
-            $DB->insert_record('external_tokens', [
-                'token' => md5(uniqid('token_', true)),
-                'privatetoken' => md5(uniqid('private_', true)),
-                'tokentype' => 0,
-                'userid' => $user->id,
-                'externalserviceid' => 1,
-                'contextid' => 1,
-                'creatorid' => $user->id,
-                'timecreated' => time(),
-            ]);
-        }
-
-        return $count;
-    }
-
-    /**
-     * Create sample test data for registration_hubs table.
-     */
-    protected function create_registration_hubs_records(): int {
-        global $DB;
-        $count = 2;
-
-        for ($i = 0; $i < $count; $i++) {
-            $DB->insert_record('registration_hubs', [
-                'token' => md5(uniqid('hub_token_', true)),
-                'hubname' => 'Test Hub ' . $i,
-                'huburl' => 'https://hub.example.com/' . $i,
-                'confirmed' => 1,
-                'secret' => md5(uniqid('hub_secret_', true)),
-                'timemodified' => time(),
-            ]);
-        }
-
-        return $count;
-    }
-
-    /**
-     * Create sample test data for user_private_key table.
-     */
-    protected function create_user_private_key_records(): int {
-        global $DB;
-        $user = $this->getDataGenerator()->create_user();
-        $count = 2;
-
-        for ($i = 0; $i < $count; $i++) {
-            $DB->insert_record('user_private_key', [
-                'userid' => $user->id,
-                'privatekey' => md5(uniqid('private_key_', true)),
-                'type' => 'webservices',
-                'instance' => $i,
-                'ipwhitelist' => '',
-                'validuntil' => time() + 3600,
-                'timecreated' => time(),
-            ]);
-        }
-
-        return $count;
-    }
-
-    /**
-     * Create sample test data for oauth2_issuer table.
-     */
-    protected function create_oauth2_issuer_records(): int {
-        global $DB;
-        $user = $this->getDataGenerator()->create_user();
-        $count = 1;
-
-        for ($i = 0; $i < $count; $i++) {
-            $DB->insert_record('oauth2_issuer', [
-                'timecreated' => time(),
-                'timemodified' => time(),
-                'usermodified' => $user->id,
-                'name' => 'Test OAuth2 Issuer ' . $i,
-                'image' => '',
-                'baseurl' => 'https://oauth.example.com/' . $i,
-                'clientid' => 'client_id_' . $i,
-                'clientsecret' => 'client_secret_' . $i,
-                'loginscopes' => 'openid profile email',
-                'loginscopesoffline' => 'openid profile email offline_access',
-                'loginparams' => '',
-                'loginparamsoffline' => '',
-                'alloweddomains' => '',
-                'showonloginpage' => 1,
-                'discoveryurl' => '',
-                'sortorder' => 1,
-            ]);
-        }
-
-        return $count;
-    }
-
-    /**
-     * Create sample test data for oauth2_system_account table.
-     */
-    protected function create_oauth2_system_account_records(): int {
-        global $DB;
-        $issuer = $DB->get_record('oauth2_issuer', []);
-        if (!$issuer) {
-            $this->create_oauth2_issuer_records();
-            $issuer = $DB->get_record('oauth2_issuer', []);
-        }
-
-        $user = $this->getDataGenerator()->create_user();
-        $count = 1;
-
-        $DB->insert_record('oauth2_system_account', [
-            'timecreated' => time(),
-            'timemodified' => time(),
-            'usermodified' => $user->id,
-            'issuerid' => $issuer->id,
-            'refreshtoken' => 'refresh_token_system_' . uniqid(),
-            'grantedscopes' => 'openid profile email offline_access',
-            'email' => 'system@example.com',
-            'username' => 'system_user',
-        ]);
-
-        return $count;
-    }
-
-    /**
-     * Create sample test data for oauth2_access_token table.
-     */
-    protected function create_oauth2_access_token_records(): int {
-        global $DB;
-        $issuer = $DB->get_record('oauth2_issuer', []);
-        if (!$issuer) {
-            $this->create_oauth2_issuer_records();
-            $issuer = $DB->get_record('oauth2_issuer', []);
-        }
-
-        $user = $this->getDataGenerator()->create_user();
-        $count = 1;
-
-        $DB->insert_record('oauth2_access_token', [
-            'timecreated' => time(),
-            'timemodified' => time(),
-            'usermodified' => $user->id,
-            'issuerid' => $issuer->id,
-            'token' => 'access_token_' . uniqid(),
-            'expires' => time() + 3600,
-            'scope' => 'openid profile email',
-        ]);
-
-        return $count;
-    }
-
-    /**
-     * Create sample test data for oauth2_refresh_token table.
-     */
-    protected function create_oauth2_refresh_token_records(): int {
-        global $DB;
-        $issuer = $DB->get_record('oauth2_issuer', []);
-        if (!$issuer) {
-            $this->create_oauth2_issuer_records();
-            $issuer = $DB->get_record('oauth2_issuer', []);
-        }
-
-        $user = $this->getDataGenerator()->create_user();
-        $count = 1;
-
-        $DB->insert_record('oauth2_refresh_token', [
-            'timecreated' => time(),
-            'timemodified' => time(),
-            'userid' => $user->id,
-            'issuerid' => $issuer->id,
-            'token' => 'refresh_token_' . uniqid(),
-            'scopehash' => sha1('openid profile email'),
-        ]);
-
-        return $count;
-    }
-
-    /**
-     * Test cleaning user password history with dryrun disabled.
-     */
-    public function test_clean_user_password_history_execute(): void {
-        global $DB;
-
-        $this->create_password_history_records();
-        $this->assertTrue($DB->record_exists('user_password_history', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_user_password_history();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('user_password_history', []));
-    }
-
-    /**
-     * Test cleaning user password history with dryrun enabled.
-     */
-    public function test_clean_user_password_history_dryrun(): void {
-        global $DB;
-
-        $this->create_password_history_records();
-        $this->assertTrue($DB->record_exists('user_password_history', []));
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::clean_user_password_history();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('user_password_history', []));
-    }
-
-    /**
-     * Test cleaning user password resets with dryrun disabled.
-     */
-    public function test_clean_user_password_resets_execute(): void {
-        global $DB;
-
-        $this->create_password_resets_records();
-        $this->assertTrue($DB->record_exists('user_password_resets', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_user_password_resets();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('user_password_resets', []));
-    }
-
-    /**
-     * Test cleaning user password resets with dryrun enabled.
-     */
-    public function test_clean_user_password_resets_dryrun(): void {
-        global $DB;
-
-        $this->create_password_resets_records();
-        $this->assertTrue($DB->record_exists('user_password_resets', []));
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::clean_user_password_resets();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('user_password_resets', []));
-    }
-
-    /**
-     * Test cleaning external tokens with dryrun disabled.
-     */
-    public function test_clean_external_tokens_execute(): void {
-        global $DB;
-
-        $this->create_external_tokens_records();
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_external_tokens();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('external_tokens', []));
-    }
-
-    /**
-     * Test cleaning external tokens with dryrun enabled.
-     */
-    public function test_clean_external_tokens_dryrun(): void {
-        global $DB;
-
-        $this->create_external_tokens_records();
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::clean_external_tokens();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-    }
-
-    /**
-     * Test cleaning registration hubs with dryrun disabled.
-     */
-    public function test_clean_registration_hubs_execute(): void {
-        global $DB;
-
-        $this->create_registration_hubs_records();
-        $this->assertTrue($DB->record_exists('registration_hubs', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_registration_hubs();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('registration_hubs', []));
-    }
-
-    /**
-     * Test cleaning registration hubs with dryrun enabled.
-     */
-    public function test_clean_registration_hubs_dryrun(): void {
-        global $DB;
-
-        $this->create_registration_hubs_records();
-        $this->assertTrue($DB->record_exists('registration_hubs', []));
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::clean_registration_hubs();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('registration_hubs', []));
-    }
-
-    /**
-     * Test cleaning user private keys with dryrun disabled.
-     */
-    public function test_clean_user_private_key_execute(): void {
-        global $DB;
-
-        $this->create_user_private_key_records();
-        $this->assertTrue($DB->record_exists('user_private_key', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_user_private_key();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('user_private_key', []));
-    }
-
-    /**
-     * Test cleaning user private keys with dryrun enabled.
-     */
-    public function test_clean_user_private_key_dryrun(): void {
-        global $DB;
-
-        $this->create_user_private_key_records();
-        $this->assertTrue($DB->record_exists('user_private_key', []));
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::clean_user_private_key();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('user_private_key', []));
-    }
-
-    /**
-     * Test cleaning OAuth2 data with dryrun disabled.
-     */
-    public function test_clean_oauth2_execute(): void {
-        global $DB;
-
-        $this->create_oauth2_issuer_records();
-        $this->create_oauth2_system_account_records();
-        $this->create_oauth2_access_token_records();
-        $this->create_oauth2_refresh_token_records();
-
-        $this->assertTrue($DB->record_exists('oauth2_issuer', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_oauth2();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('oauth2_issuer', []));
-        $this->assertFalse($DB->record_exists('oauth2_system_account', []));
-        $this->assertFalse($DB->record_exists('oauth2_access_token', []));
-        $this->assertFalse($DB->record_exists('oauth2_refresh_token', []));
-    }
-
-    /**
-     * Test cleaning OAuth2 data with dryrun enabled.
-     */
-    public function test_clean_oauth2_dryrun(): void {
-        global $DB;
-
-        $this->create_oauth2_issuer_records();
-        $this->create_oauth2_system_account_records();
-        $this->create_oauth2_access_token_records();
-        $this->create_oauth2_refresh_token_records();
-
-        $this->assertTrue($DB->record_exists('oauth2_issuer', []));
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::clean_oauth2();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('oauth2_issuer', []));
-        $this->assertTrue($DB->record_exists('oauth2_system_account', []));
-        $this->assertTrue($DB->record_exists('oauth2_access_token', []));
-        $this->assertTrue($DB->record_exists('oauth2_refresh_token', []));
-    }
-
-    /**
-     * Test cleaning extra tables with valid tables and dryrun disabled.
-     */
-    public function test_clean_extra_tables_valid_execute(): void {
-        global $DB;
-
-        $this->create_external_tokens_records();
-        set_config('extratables', 'external_tokens', 'cleaner_tokens');
-
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_extra_tables();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('external_tokens', []));
-    }
-
-    /**
-     * Test cleaning extra tables with valid tables and dryrun enabled.
-     */
-    public function test_clean_extra_tables_valid_dryrun(): void {
-        global $DB;
-
-        $this->create_external_tokens_records();
-        set_config('extratables', 'external_tokens', 'cleaner_tokens');
-
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::clean_extra_tables();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-    }
-
-    /**
-     * Test cleaning extra tables with non-existent table.
-     */
-    public function test_clean_extra_tables_invalid_table(): void {
-        global $DB;
-
-        set_config('extratables', "nonexistent_table_xyz\nregistration_hubs", 'cleaner_tokens');
-        $this->create_registration_hubs_records();
-
-        $this->assertTrue($DB->record_exists('registration_hubs', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_extra_tables();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('registration_hubs', []));
-    }
-
-    /**
-     * Test cleaning extra tables with empty config.
-     */
-    public function test_clean_extra_tables_empty_config(): void {
-        global $DB;
-
-        set_config('extratables', '', 'cleaner_tokens');
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_extra_tables();
-        ob_end_clean();
-
-        $this->assertTrue(true);
-    }
-
-    /**
-     * Test cleaning extra tables with multiple tables.
-     */
-    public function test_clean_extra_tables_multiple(): void {
-        global $DB;
-
-        $this->create_external_tokens_records();
-        $this->create_registration_hubs_records();
-        set_config('extratables', "external_tokens\nregistration_hubs", 'cleaner_tokens');
-
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-        $this->assertTrue($DB->record_exists('registration_hubs', []));
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::clean_extra_tables();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('external_tokens', []));
-        $this->assertFalse($DB->record_exists('registration_hubs', []));
-    }
-
-    /**
-     * Test execute method calls all cleaning methods.
-     */
-    public function test_execute(): void {
-        global $DB;
-
-        $this->create_password_history_records();
-        $this->create_password_resets_records();
-        $this->create_external_tokens_records();
-        $this->create_registration_hubs_records();
-        $this->create_user_private_key_records();
-        $this->create_oauth2_issuer_records();
-        $this->create_oauth2_system_account_records();
-        $this->create_oauth2_access_token_records();
-        $this->create_oauth2_refresh_token_records();
-
-        $this->set_clean_options(['dryrun' => false]);
-        ob_start();
-        \cleaner_tokens\clean::execute();
-        ob_end_clean();
-
-        $this->assertFalse($DB->record_exists('user_password_history', []));
-        $this->assertFalse($DB->record_exists('user_password_resets', []));
-        $this->assertFalse($DB->record_exists('external_tokens', []));
-        $this->assertFalse($DB->record_exists('registration_hubs', []));
-        $this->assertFalse($DB->record_exists('user_private_key', []));
-        $this->assertFalse($DB->record_exists('oauth2_issuer', []));
-        $this->assertFalse($DB->record_exists('oauth2_system_account', []));
-        $this->assertFalse($DB->record_exists('oauth2_access_token', []));
-        $this->assertFalse($DB->record_exists('oauth2_refresh_token', []));
-    }
-
-    /**
-     * Test execute method with dryrun enabled.
-     */
-    public function test_execute_dryrun(): void {
-        global $DB;
-
-        $this->create_password_history_records();
-        $this->create_password_resets_records();
-        $this->create_external_tokens_records();
-        $this->create_registration_hubs_records();
-        $this->create_user_private_key_records();
-        $this->create_oauth2_issuer_records();
-
-        $this->set_clean_options(['dryrun' => true]);
-        ob_start();
-        \cleaner_tokens\clean::execute();
-        ob_end_clean();
-
-        $this->assertTrue($DB->record_exists('user_password_history', []));
-        $this->assertTrue($DB->record_exists('user_password_resets', []));
-        $this->assertTrue($DB->record_exists('external_tokens', []));
-        $this->assertTrue($DB->record_exists('registration_hubs', []));
-        $this->assertTrue($DB->record_exists('user_private_key', []));
-        $this->assertTrue($DB->record_exists('oauth2_issuer', []));
-    }
-
-    /**
-     * Helper method to set clean class options via reflection.
+     * Create a temporary table with a token column.
      *
-     * @param array $options The options to set.
+     * @param string $tablename The unprefixed table name.
+     * @param int $length Token column length.
      */
-    private function set_clean_options(array $options): void {
-        $reflection = new \ReflectionClass(\cleaner_tokens\clean::class);
-        $property = $reflection->getProperty('options');
-        $property->setAccessible(true);
-        $currentoptions = $property->getValue(null);
-        $property->setValue(null, array_merge($currentoptions, $options));
+    private function create_token_table(string $tablename, int $length = 64): void {
+        global $DB;
+
+        $dbman = $DB->get_manager();
+        if ($dbman->table_exists($tablename)) {
+            $dbman->drop_table(new xmldb_table($tablename));
+        }
+
+        $table = new xmldb_table($tablename);
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('token', XMLDB_TYPE_CHAR, (string) $length, null, null, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $dbman->create_table($table);
+
+        $this->tables[] = $tablename;
+    }
+
+    /**
+     * Insert deterministic test records into a table.
+     *
+     * @param string $tablename The unprefixed table name.
+     * @param array $tokens Token values to insert.
+     */
+    private function insert_tokens(string $tablename, array $tokens): void {
+        global $DB;
+
+        foreach ($tokens as $token) {
+            $DB->insert_record($tablename, (object) ['token' => $token]);
+        }
+    }
+
+    /**
+     * Test execute() reads the plugin config and applies all configured actions.
+     */
+    public function test_execute_truncates_hashes_and_regenerates_fields(): void {
+        global $DB;
+
+        $truncate = 'cleaner_tokens_test_truncate';
+        $hash = 'cleaner_tokens_test_hash';
+        $regen = 'cleaner_tokens_test_regen';
+
+        $this->create_token_table($truncate);
+        $this->create_token_table($hash);
+        $this->create_token_table($regen);
+
+        $this->insert_tokens($truncate, ['alpha', 'beta']);
+        $this->insert_tokens($hash, ['first-token', 'second-token']);
+        $this->insert_tokens($regen, ['regen-one', 'regen-two']);
+
+        set_config('tablestotruncate', implode("\r\n", [$truncate]), 'cleaner_tokens');
+        set_config('fieldstorehash', $hash . ':token:8', 'cleaner_tokens');
+        set_config('rehashseed', '64', 'cleaner_tokens');
+        set_config('fieldstoregenerate', $regen . ':token:12', 'cleaner_tokens');
+
+        ob_start();
+        clean::execute();
+        ob_end_clean();
+
+        $this->assertEquals(0, $DB->count_records($truncate));
+
+        $hashed = $DB->get_records($hash, null, 'id ASC');
+        foreach ($hashed as $record) {
+            $this->assertLessThanOrEqual(8, strlen($record->token));
+            $this->assertNotEquals('first-token', $record->token);
+            $this->assertNotEquals('second-token', $record->token);
+        }
+
+        $regenerated = $DB->get_records($regen, null, 'id ASC');
+        foreach ($regenerated as $record) {
+            $this->assertLessThanOrEqual(12, strlen($record->token));
+            $this->assertNotEquals('regen-one', $record->token);
+            $this->assertNotEquals('regen-two', $record->token);
+        }
+    }
+
+    /**
+     * Test truncate_tables() removes all rows from configured tables.
+     */
+    public function test_truncate_tables_removes_rows_for_existing_tables(): void {
+        global $DB;
+
+        $tablename1 = 'cleaner_tokens_test_truncate_1';
+        $tablename2 = 'cleaner_tokens_test_truncate_2';
+
+        $this->create_token_table($tablename1);
+        $this->create_token_table($tablename2);
+        $this->insert_tokens($tablename1, ['keep-me', 'remove-me']);
+        $this->insert_tokens($tablename2, ['clobber-me']);
+
+        ob_start();
+        clean::truncate_tables([$tablename1, $tablename2]);
+        ob_end_clean();
+
+        $this->assertEquals(0, $DB->count_records($tablename1));
+        $this->assertEquals(0, $DB->count_records($tablename2));
+    }
+
+    /**
+     * Test rehash_fields() hashes values and enforces the optional length limit.
+     */
+    public function test_rehash_fields_hashes_values_and_truncates_when_requested(): void {
+        global $DB;
+
+        $tablename1 = 'cleaner_tokens_test_rehash1';
+        $tablename2 = 'cleaner_tokens_test_rehash2';
+        $this->create_token_table($tablename1);
+        $this->create_token_table($tablename2);
+        $this->insert_tokens($tablename1, ['alpha-value', 'beta-value']);
+        $this->insert_tokens($tablename2, ['gamma-value']);
+
+        ob_start();
+        clean::rehash_fields([$tablename1 . ':token:8', $tablename2 . ':token']);
+        ob_end_clean();
+
+        $values = array_map(static fn($record) => $record->token, $DB->get_records($tablename1, null, 'id ASC'));
+        foreach ($values as $value) {
+            $this->assertLessThanOrEqual(8, strlen($value));
+            $this->assertNotSame('alpha-value', $value);
+            $this->assertNotSame('beta-value', $value);
+        }
+
+        $values = array_map(static fn($record) => $record->token, $DB->get_records($tablename2, null, 'id ASC'));
+        foreach ($values as $value) {
+            $this->assertNotSame('gamma-value', $value);
+        }
+    }
+
+    /**
+     * Test rehash_fields() rejects malformed field definitions.
+     */
+    public function test_rehash_fields_rejects_invalid_field_definition(): void {
+        $this->expectException(\moodle_exception::class);
+
+        clean::rehash_fields(['cleaner_tokens_test_rehash:']);
+    }
+
+    /**
+     * Test regenerate_fields() replaces values with random strings and applies the length limit.
+     */
+    public function test_regenerate_fields_replaces_values_and_applies_length_limit(): void {
+        global $DB;
+
+        $tablename1 = 'cleaner_tokens_test_regenerate1';
+        $tablename2 = 'cleaner_tokens_test_regenerate2';
+        $this->create_token_table($tablename1);
+        $this->create_token_table($tablename2);
+        $this->insert_tokens($tablename1, ['seed-one', 'seed-two']);
+        $this->insert_tokens($tablename2, ['seed-three']);
+
+        ob_start();
+        clean::regenerate_fields([$tablename1 . ':token:12', $tablename2 . ':token']);
+        ob_end_clean();
+
+        $values = array_map(static fn($record) => $record->token, $DB->get_records($tablename1, null, 'id ASC'));
+        foreach ($values as $value) {
+            $this->assertLessThanOrEqual(12, strlen($value));
+            $this->assertNotSame('seed-one', $value);
+            $this->assertNotSame('seed-two', $value);
+        }
+
+        $values = array_map(static fn($record) => $record->token, $DB->get_records($tablename2, null, 'id ASC'));
+        foreach ($values as $value) {
+            $this->assertNotSame('seed-three', $value);
+        }
+    }
+
+    /**
+     * Test regenerate_fields() rejects malformed field definitions.
+     */
+    public function test_regenerate_fields_rejects_invalid_field_definition(): void {
+        $this->expectException(\moodle_exception::class);
+
+        clean::regenerate_fields(['cleaner_tokens_test_regenerate:']);
     }
 }
