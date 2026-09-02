@@ -16,10 +16,10 @@
 
 namespace cleaner_tokens;
 
+use core\exception\moodle_exception;
+
 /**
  * Data cleaner class for access tokens and keys.
- *
- * Simply seletes a
  *
  * Note: User passwords are cleaned in the cleaner_users plugin.
  *
@@ -33,140 +33,136 @@ class clean extends \local_datacleaner\clean {
      * Execute the cleaning process.
      */
     public static function execute() {
-        self::clean_user_password_history();
-        self::clean_user_password_resets();
-        self::clean_external_tokens();
-        self::clean_registration_hubs();
-        self::clean_user_private_key();
-        self::clean_oauth2();
-        self::clean_extra_tables();
+        $config = get_config('cleaner_tokens');
+        self::truncate_tables(explode("\r\n", trim($config->tablestotruncate)));
+        self::rehash_fields(explode("\r\n", trim($config->fieldstorehash)), $config->rehashseed);
+        self::regenerate_fields(explode("\r\n", trim($config->fieldstoregenerate)));
     }
 
     /**
-     * Clean (truncate) user password history table.
+     * Truncate a list of tables.
+     *
+     * @param array $tables List of tables to truncate
      */
-    public static function clean_user_password_history() {
+    public static function truncate_tables(array $tables) {
         global $DB;
 
-        if (self::$options['dryrun']) {
-            mtrace("Would delete user password history.");
-        } else {
-            $DB->delete_records('user_password_history');
-            mtrace("Deleted user password history.");
-        }
-    }
-
-    /**
-     * Clean (truncate) user password resets table.
-     */
-    public static function clean_user_password_resets() {
-        global $DB;
-
-        if (self::$options['dryrun']) {
-            mtrace("Would delete user password resets.");
-        } else {
-            $DB->delete_records('user_password_resets');
-            mtrace("Deleted user password resets.");
-        }
-    }
-
-    /**
-     * Clean (truncate) external tokens table.
-     */
-    public static function clean_external_tokens() {
-        global $DB;
-
-        if (self::$options['dryrun']) {
-            mtrace("Would delete all web service tokens.");
-        } else {
-            $DB->delete_records('external_tokens');
-            mtrace("Deleted all web service tokens.");
-        }
-    }
-
-    /**
-     * Clean (truncate) registration hubs table.
-     */
-    public static function clean_registration_hubs() {
-        global $DB;
-
-        if (self::$options['dryrun']) {
-            mtrace("Would delete all registration hubs.");
-        } else {
-            $DB->delete_records('registration_hubs');
-            mtrace("Deleted all registration hubs.");
-        }
-    }
-
-    /**
-     * Clean (truncate) private user access keys table.
-     */
-    public static function clean_user_private_key() {
-        global $DB;
-
-        if (self::$options['dryrun']) {
-            mtrace("Would delete all private user access keys.");
-        } else {
-            $DB->delete_records('user_private_key');
-            mtrace("Deleted all private user access keys.");
-        }
-    }
-
-    /**
-     * Clean (truncate) OAuth2 token data.
-     */
-    public static function clean_oauth2() {
-        global $DB;
-
-        if (self::$options['dryrun']) {
-            mtrace("Would delete all OAuth2 token data.");
-        } else {
-            $DB->delete_records('oauth2_issuer');
-            $DB->delete_records('oauth2_system_account');
-            $DB->delete_records('oauth2_access_token');
-            $DB->delete_records('oauth2_refresh_token');
-            mtrace("Deleted all OAuth2 token data.");
-        }
-    }
-
-    /**
-     * Clean (truncate) the table specified in the config option.
-     */
-    public static function clean_extra_tables() {
-        global $DB;
-
-        $tables = trim(get_config('cleaner_tokens', 'extratables'));
-        if (!empty($tables)) {
-            $tables = str_replace("\r", "", $tables);
-            $tables = explode("\n", $tables);
-            $tables = array_map('trim', $tables);
-            $dbman = $DB->get_manager();
-            $goodtables = [];
-            $badtables = [];
-            foreach ($tables as $table) {
-                if ($dbman->table_exists($table)) {
-                    $goodtables[] = $table;
-                } else {
-                    $badtables[] = $table;
-                }
+        $dbman = $DB->get_manager();
+        foreach ($tables as $table) {
+            $table = trim($table);
+            if (!$dbman->table_exists($table)) {
+                mtrace("Table $table does not exist, skipping.");
+                continue;
             }
-            $badtables = implode(', ', $badtables);
+
             if (self::$options['dryrun']) {
-                $goodtables = implode(', ', $goodtables);
-                mtrace("Would delete the following tables: $goodtables");
-                if (!empty($badtables)) {
-                    mtrace("The following tables do not exist and would be skipped: $badtables");
-                }
+                mtrace("Would truncate $table.");
             } else {
-                foreach ($goodtables as $table) {
-                    $DB->delete_records($table);
-                }
-                $goodtables = implode(', ', $goodtables);
-                mtrace("Deleted the following tables: $goodtables");
-                if (!empty($badtables)) {
-                    mtrace("The following tables do not exist and were skipped: $badtables");
-                }
+                $DB->delete_records($table);
+                mtrace("Truncated table: $table");
             }
         }
+    }
+
+    /**
+     * Deterministicly rehash values for a list of fields.
+     *
+     * @param array $fielddefs List of field definitions in the format "tablename:fieldname[:length]"
+     * @param int $seed The seed to use for the hash
+     */
+    public static function rehash_fields(array $fielddefs, int $seed) {
+        global $DB;
+
+        $dbman = $DB->get_manager();
+        foreach ($fielddefs as $fielddef) {
+            @[$tablename, $fieldname, $length] = explode(':', $fielddef);
+            if (empty($fieldname)) {
+                throw new moodle_exception('invalid_field_format', 'cleaner_tokens');
+            }
+
+            $tablename = trim($tablename);
+            $fieldname = trim($fieldname);
+
+            if (!$dbman->table_exists($tablename) || !$dbman->field_exists($tablename, $fieldname)) {
+                mtrace("Field $tablename:$fieldname does not exist, skipping.");
+                continue;
+            }
+
+            $values = $DB->get_records_menu($tablename, null, null, "id," . $fieldname);
+            if (self::$options['dryrun']) {
+                mtrace("Would rehash " . count($values) . " value(s) for $tablename:$fieldname");
+            } else {
+                foreach ($values as $id => $value) {
+                    $DB->set_field(
+                        $tablename,
+                        $fieldname,
+                        self::rehash_value($value, $length ?? null, $seed),
+                        ['id' => $id]
+                    );
+                }
+                mtrace("Rehashed " . count($values) . " value(s) for $tablename:$fieldname");
+            }
+        }
+    }
+
+    /**
+     * Generate a deterministic rehash of a value.
+     *
+     * @param string $value The value to rehash
+     * @param int|null $length The length of the value to truncate to, if set.
+     * @param int $seed The seed to use for the hash
+     * @return string The generated value
+     */
+    public static function rehash_value(string $value, ?int $length, int $seed): string {
+        $newvalue = hash('xxh128', $value, false, ['seed' => $seed]);
+        if ($length !== null) {
+            $newvalue = substr($newvalue, 0, $length);
+        }
+        return $newvalue;
+    }
+
+    /**
+     * Regenerate values for a list of fields.
+     *
+     * @param array $fielddefs List of field definitions in the format "tablename:fieldname[:length]"
+     */
+    public static function regenerate_fields(array $fielddefs) {
+        global $DB;
+
+        $dbman = $DB->get_manager();
+        foreach ($fielddefs as $fielddef) {
+            @[$tablename, $fieldname, $length] = explode(':', $fielddef);
+            if (empty($fieldname)) {
+                throw new moodle_exception('invalid_field_format', 'cleaner_tokens');
+            }
+
+            $tablename = trim($tablename);
+            $fieldname = trim($fieldname);
+
+            if (!$dbman->table_exists($tablename) || !$dbman->field_exists($tablename, $fieldname)) {
+                mtrace("Field $tablename:$fieldname does not exist, skipping.");
+                continue;
+            }
+
+            $values = $DB->get_records_menu($tablename, null, null, "id," . $fieldname);
+            if (self::$options['dryrun']) {
+                mtrace("Would regenerate " . count($values) . " value(s) for $tablename:$fieldname");
+            } else {
+                foreach ($values as $id => $value) {
+                    $DB->set_field($tablename, $fieldname, self::regenerate_value($length ?? null), ['id' => $id]);
+                }
+                mtrace("Regenerated " . count($values) . " value(s) for $tablename:$fieldname");
+            }
+        }
+    }
+
+    /**
+     * Generate a replacement value of the specified length.
+     *
+     * @param int|null $length the length of the value to generate
+     * @return string the generated value
+     */
+    public static function regenerate_value(?int $length = null): string {
+        return random_string($length ?? 64);
     }
 }
