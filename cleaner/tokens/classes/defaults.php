@@ -27,7 +27,6 @@ namespace cleaner_tokens;
 class defaults {
     /** @var string[] Default tables to truncate. */
     public const DEFAULT_TABLES_TO_TRUNCATE = [
-        'user_password_history',
         'user_private_key',
         'user_password_resets',
         'registration_hubs',
@@ -39,7 +38,7 @@ class defaults {
 
     /** @var string[] Default fields to rehash. */
     public const DEFAULT_FIELDS_TO_REHASH = [
-        'external_tokens:token:128',
+        'external_tokens:token:32',
     ];
 
     /** @var string[] Default fields to regenerate. */
