@@ -25,16 +25,52 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+use cleaner_tokens\defaults;
+
 if (!$ADMIN->fulltree) {
     return;
 }
 
+// Tables to be truncated.
 $settings->add(
     new admin_setting_configtextarea(
-        'cleaner_tokens/extratables',
-        new lang_string('extratables', 'cleaner_tokens'),
-        new lang_string('extratablesdesc', 'cleaner_tokens'),
-        '',
+        'cleaner_tokens/tablestotruncate',
+        new lang_string('tablestotruncate', 'cleaner_tokens'),
+        new lang_string('tablestotruncatedesc', 'cleaner_tokens'),
+        implode("\r\n", defaults::DEFAULT_TABLES_TO_TRUNCATE),
+        PARAM_RAW
+    )
+);
+
+// Fields to be rehashed.
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_tokens/fieldstorehash',
+        new lang_string('fieldstorehash', 'cleaner_tokens'),
+        new lang_string('fieldstorehashdesc', 'cleaner_tokens'),
+        implode("\r\n", defaults::DEFAULT_FIELDS_TO_REHASH),
+        PARAM_RAW
+    )
+);
+
+// Seed to use for rehashing.
+$settings->add(
+    new admin_setting_configtext(
+        'cleaner_tokens/rehashseed',
+        new lang_string('rehashseed', 'cleaner_tokens'),
+        new lang_string('rehashseeddesc', 'cleaner_tokens'),
+        defaults::DEFAULT_REHASH_SEED,
+        PARAM_INT
+    )
+);
+
+// Fields to be regenerated.
+$settings->add(
+    new admin_setting_configtextarea(
+        'cleaner_tokens/fieldstoregenerate',
+        new lang_string('fieldstoregenerate', 'cleaner_tokens'),
+        new lang_string('fieldstoregeneratedesc', 'cleaner_tokens'),
+        implode("\r\n", defaults::DEFAULT_FIELDS_TO_REGENERATE),
         PARAM_RAW
     )
 );
