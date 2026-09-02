@@ -35,7 +35,7 @@ class clean extends \local_datacleaner\clean {
     public static function execute() {
         $config = get_config('cleaner_tokens');
         self::truncate_tables(explode("\r\n", trim($config->tablestotruncate)));
-        self::rehash_fields(explode("\r\n", trim($config->fieldstorehash)), $config->rehashseed);
+        self::rehash_fields(explode("\r\n", trim($config->fieldstorehash)));
         self::regenerate_fields(explode("\r\n", trim($config->fieldstoregenerate)));
     }
 
@@ -70,7 +70,7 @@ class clean extends \local_datacleaner\clean {
      * @param array $fielddefs List of field definitions in the format "tablename:fieldname[:length]"
      * @param int $seed The seed to use for the hash
      */
-    public static function rehash_fields(array $fielddefs, int $seed) {
+    public static function rehash_fields(array $fielddefs) {
         global $DB;
 
         $dbman = $DB->get_manager();
@@ -88,37 +88,46 @@ class clean extends \local_datacleaner\clean {
                 continue;
             }
 
-            $values = $DB->get_records_menu($tablename, null, null, "id," . $fieldname);
+            $numrecords = $DB->count_records($tablename);
             if (self::$options['dryrun']) {
-                mtrace("Would rehash " . count($values) . " value(s) for $tablename:$fieldname");
+                mtrace("Would rehash " . $numrecords . " value(s) for $tablename:$fieldname");
             } else {
-                foreach ($values as $id => $value) {
-                    $DB->set_field(
-                        $tablename,
-                        $fieldname,
-                        self::rehash_value($value, $length ?? null, $seed),
-                        ['id' => $id]
-                    );
+                $sql = self::get_rehash_sql($fieldname);
+                if ($length !== null) {
+                    $sql = $DB->sql_substr($sql, 0, $length);
                 }
-                mtrace("Rehashed " . count($values) . " value(s) for $tablename:$fieldname");
+                $DB->execute("UPDATE {{$tablename}} set $fieldname=($sql)");
+
+                mtrace("Rehashed " . $numrecords . " value(s) for $tablename:$fieldname");
             }
         }
     }
 
     /**
-     * Generate a deterministic rehash of a value.
+     * Get SQL to rehash a field.
      *
-     * @param string $value The value to rehash
-     * @param int|null $length The length of the value to truncate to, if set.
-     * @param int $seed The seed to use for the hash
-     * @return string The generated value
+     * @param string $fieldname
+     * @return string
+     * @throws moodle_exception
      */
-    public static function rehash_value(string $value, ?int $length, int $seed): string {
-        $newvalue = hash('xxh128', $value, false, ['seed' => $seed]);
-        if ($length !== null) {
-            $newvalue = substr($newvalue, 0, $length);
+    protected static function get_rehash_sql(string $fieldname): string {
+        global $CFG;
+
+        switch ($CFG->dbtype) {
+            case 'pgsql':
+                $sql = "encode(sha256($fieldname::bytea), 'hex')";
+                break;
+            case 'mysqli':
+            case 'mariadb':
+                $sql = "SHA2($fieldname, 256)";
+                break;
+            case 'mssql':
+                $sql = "CONVERT(varchar(64), HASHBYTES('SHA2_256', $fieldname)))";
+                break;
+            default:
+                throw new moodle_exception('unsupported_dbtype', 'cleaner_tokens', null, $CFG->dbtype);
         }
-        return $newvalue;
+        return $sql;
     }
 
     /**
@@ -144,25 +153,44 @@ class clean extends \local_datacleaner\clean {
                 continue;
             }
 
-            $values = $DB->get_records_menu($tablename, null, null, "id," . $fieldname);
+            $numrecords = $DB->count_records($tablename);
             if (self::$options['dryrun']) {
-                mtrace("Would regenerate " . count($values) . " value(s) for $tablename:$fieldname");
+                mtrace("Would regenerate " . $numrecords . " value(s) for $tablename:$fieldname");
             } else {
-                foreach ($values as $id => $value) {
-                    $DB->set_field($tablename, $fieldname, self::regenerate_value($length ?? null), ['id' => $id]);
+                $sql = self::get_random_string_sql();
+                if ($length !== null) {
+                    $sql = $DB->sql_substr($sql, 0, $length);
                 }
-                mtrace("Regenerated " . count($values) . " value(s) for $tablename:$fieldname");
+                $DB->execute("UPDATE {{$tablename}} set $fieldname=($sql)");
+
+                mtrace("Regenerated " . $numrecords . " value(s) for $tablename:$fieldname");
             }
         }
     }
 
     /**
-     * Generate a replacement value of the specified length.
+     * Get SQL to generate a random string.
      *
-     * @param int|null $length the length of the value to generate
-     * @return string the generated value
+     * @return string
+     * @throws moodle_exception
      */
-    public static function regenerate_value(?int $length = null): string {
-        return random_string($length ?? 64);
+    protected static function get_random_string_sql(): string {
+        global $CFG;
+
+        switch ($CFG->dbtype) {
+            case 'pgsql':
+                $sql = "MD5(RANDOM()::text)";
+                break;
+            case 'mysqli':
+            case 'mariadb':
+                $sql = "MD5(RAND())";
+                break;
+            case 'mssql':
+                $sql = "replace(CONVERT(varchar(36), NEWID()) + CONVERT(varchar(36), NEWID()), '-','')";
+                break;
+            default:
+                throw new moodle_exception('unsupported_dbtype', 'cleaner_tokens', null, $CFG->dbtype);
+        }
+        return $sql;
     }
 }
