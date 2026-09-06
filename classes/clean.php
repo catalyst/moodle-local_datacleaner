@@ -381,6 +381,7 @@ abstract class clean {
             $params = array_merge($params, $sqlparams);
         }
 
+        // These courses are exclusionary. Do not delete them.
         if (isset($criteria['courses'])) {
             [$sql, $sqlparams] = $DB->get_in_or_equal(explode("\n", $criteria['courses']), SQL_PARAMS_NAMED, 'course_', false);
             $extrasql .= ' AND shortname ' . $sql;
