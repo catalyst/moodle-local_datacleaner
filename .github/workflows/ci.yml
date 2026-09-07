@@ -8,5 +8,5 @@ jobs:
     uses: catalyst/catalyst-moodle-workflows/.github/workflows/ci.yml@main
     with:
       disable_behat: true
-    secrets:
-      moodle_org_token: ${{ secrets.MOODLE_ORG_TOKEN }}
+      enable_composer_publish: true
+    secrets: inherit
