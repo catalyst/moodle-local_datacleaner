@@ -30,3 +30,5 @@ $string['pluginname'] = 'Environment matrix';
 $string['privacy:metadata'] = 'The cleaner environment matrix plugin does not store any personal data.';
 $string['search_placeholder'] = 'Search for a named configuration item.';
 $string['search_results'] = 'Search results';
+$string['configuration'] = 'setting';
+$string['configuration_help'] = '{$a}';
