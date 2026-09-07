@@ -8,5 +8,8 @@ jobs:
     uses: catalyst/catalyst-moodle-workflows/.github/workflows/ci.yml@main
     with:
       disable_behat: true
+      enable_composer_publish: true
     secrets:
       moodle_org_token: ${{ secrets.MOODLE_ORG_TOKEN }}
+      COMPOSER_TRIGGER_URL: ${{ secrets.COMPOSER_TRIGGER_URL }}
+      COMPOSER_TRIGGER_TOKEN: ${{ secrets.COMPOSER_TRIGGER_TOKEN }}
