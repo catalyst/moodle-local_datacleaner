@@ -244,6 +244,37 @@ final class clean_test extends \advanced_testcase {
     }
 
     /**
+     * A task already locked by core cron must not run again.
+     */
+    public function test_run_scheduled_task_with_locking_skips_locked_task(): void {
+        global $CFG;
+
+        $this->preventResetByRollback();
+        $CFG->task_logtostdout = true;
+        \core\cron::reset_user_cache();
+
+        // Use non-reentrant locks so contention is enforced within this process.
+        $CFG->lock_factory = \core\lock\db_record_lock_factory::class;
+
+        $classname = $this->register_marker_task();
+        $task = manager::get_scheduled_task($classname);
+        $factory = \core\lock\lock_config::get_lock_factory('cron');
+        $lock = $factory->get_lock($classname, 0);
+        $this->assertNotFalse($lock);
+
+        ob_start();
+        try {
+            $result = clean::run_scheduled_task_with_locking($task);
+        } finally {
+            ob_end_clean();
+            $lock->release();
+        }
+
+        $this->assertFalse($result);
+        $this->assertSame(0, ran_marker_task::$timesrun);
+    }
+
+    /**
      * run_scheduled_task_with_locking() should run the task through the cron
      * machinery and release the lock afterwards.
      */
@@ -266,7 +297,7 @@ final class clean_test extends \advanced_testcase {
 
         // The task lock must have been released: we can re-acquire it immediately.
         $factory = \core\lock\lock_config::get_lock_factory('cron');
-        $lock = $factory->get_lock(trim($classname, '\\'), 0);
+        $lock = $factory->get_lock($classname, 0);
         $this->assertNotFalse($lock);
         $lock->release();
     }
