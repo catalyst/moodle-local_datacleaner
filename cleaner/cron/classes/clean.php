@@ -160,9 +160,9 @@ class clean extends \local_datacleaner\clean {
     public static function run_scheduled_task_with_locking(\core\task\scheduled_task $task): bool {
         $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
 
-        // Use the same resource key core uses (DB classname, no leading slash)
+        // Use the same resource key core uses (DB classname, including the leading backslash)
         // so we contend on the same per-task lock as a real cron run.
-        $classname = trim(\core\task\manager::get_canonical_class_name($task), '\\');
+        $classname = \core\task\manager::get_canonical_class_name($task);
 
         if (!$lock = $cronlockfactory->get_lock($classname, 10)) {
             self::debug("Could not obtain lock to run scheduled task: {$classname}");
