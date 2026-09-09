@@ -30,13 +30,6 @@ class clean extends \local_datacleaner\clean {
     const TASK = 'Removing old courses';
 
     /**
-     * Needs cascade delete.
-     *
-     * @var bool
-     */
-    protected $needscascadedelete = true;
-
-    /**
      * Courses.
      *
      * @var array
@@ -91,16 +84,23 @@ class clean extends \local_datacleaner\clean {
                 "SELECT COUNT('x')
                    FROM {context}
               LEFT JOIN {course} ON {context}.instanceid = {course}.id
-                  WHERE contextlevel = 50
-                    AND {course}.id IS NULL"
+                  WHERE contextlevel = :contextlevel
+                    AND {course}.id IS NULL",
+                ['contextlevel' => CONTEXT_COURSE]
             );
             echo "\nWould delete " . $count . " context records that are currently lacking matching courses " .
                     "and those from courses to be deleted.\n";
         } else {
-            $DB->execute("DELETE FROM {context} USING {course}
-                                WHERE contextlevel = 50
-                                  AND {context}.instanceid = {course}.id
-                                  AND {course}.id IS NULL");
+            $DB->delete_records_select(
+                'context',
+                "contextlevel = :contextlevel
+                 AND NOT EXISTS (
+                     SELECT 1
+                       FROM {course}
+                      WHERE {course}.id = {context}.instanceid
+                 )",
+                ['contextlevel' => CONTEXT_COURSE]
+            );
         }
     }
 
