@@ -127,6 +127,9 @@ SQL;
             echo "Scrambling: {$title} ...\n";
             $scrambler = new table_scrambler('user', $fields);
             $scrambler->set_change_only_ids(self::$idstoupdate);
+            if ($title == 'main names') {
+                $scrambler->set_restrict_values_to_changed_ids();
+            }
             $scrambler->execute();
         }
     }

@@ -25,7 +25,7 @@ namespace cleaner_grades;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \cleaner_grades\clean
  */
-class grades_clean_test extends \advanced_testcase {
+final class grades_clean_test extends \advanced_testcase {
     /**
      * Reset the cleaner options and test data before each test.
      */
