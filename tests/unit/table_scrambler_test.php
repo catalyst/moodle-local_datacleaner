@@ -208,6 +208,67 @@ final class table_scrambler_test extends advanced_testcase {
     }
 
     /**
+     * Tests that values from records outside the change-only IDs are returned.
+     *
+     * @return void
+     * @covers \local_datacleaner\table_scrambler::get_values_to_exclude
+     */
+    public function test_it_gets_values_to_exclude(): void {
+         global $DB;
+         $this->resetAfterTest(true);
+
+        $table = $this->create_test_data();
+        $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        $method = new ReflectionMethod(table_scrambler::class, 'get_values_to_exclude');
+        $method->setAccessible(true);
+
+        self::assertSame([], $method->invoke($scrambler, 'first'));
+
+        $scrambler->set_change_only_ids('2,4');
+        self::assertSame(
+            ['David', 'Bill', 'Brendan', 'Sarah'],
+            $method->invoke($scrambler, 'first')
+        );
+
+        $DB->get_manager()->drop_table($table);
+    }
+
+    /**
+     * Tests that scrambling can restrict replacement values to the changed IDs.
+     *
+     * @return void
+     * @covers \local_datacleaner\table_scrambler::execute
+     */
+    public function test_it_scrambles_using_only_values_from_changed_ids(): void {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $table = $this->create_test_data();
+        $scrambler = new table_scrambler('test_names', ['first', 'last']);
+        $scrambler->set_change_only_ids('3,4,5,6');
+        $scrambler->set_restrict_values_to_changed_ids();
+        $scrambler->execute();
+
+        $scrambled = $DB->get_records('test_names', null, 'id ASC');
+
+        // Assert that the first and last names of the first two records are not changed.
+        self::assertSame('David', $scrambled[1]->first);
+        self::assertSame('Smith', $scrambled[1]->last);
+        self::assertSame('Nicholas', $scrambled[2]->first);
+        self::assertSame('Hoobin', $scrambled[2]->last);
+
+        // Assert that the names of the first two records are not used in the other records.
+        for ($i = 3; $i <= 6; $i++) {
+            self::assertNotSame('David', $scrambled[$i]->first);
+            self::assertNotSame('Smith', $scrambled[$i]->last);
+            self::assertNotSame('Nicholas', $scrambled[$i]->first);
+            self::assertNotSame('Hoobin', $scrambled[$i]->last);
+        }
+
+        $DB->get_manager()->drop_table($table);
+    }
+
+    /**
      * Tests that an exception is thrown when no prime can be found after the given number.
      *
      * @return void
