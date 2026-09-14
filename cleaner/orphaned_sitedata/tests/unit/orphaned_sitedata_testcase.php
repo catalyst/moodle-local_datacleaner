@@ -77,18 +77,9 @@ class orphaned_sitedata_testcase extends advanced_testcase {
      * @return bool True if readable, false otherwise.
      */
     protected function file_is_readable(stored_file $file) {
-        if (class_exists('file_system')) {
-            $filestorage = get_file_storage();
-            $filesystem = $filestorage->get_file_system();
-            $contenthash = $file->get_contenthash(); // Bypass trash recovery.
-            return $filesystem->is_file_readable_locally_by_hash($contenthash);
-        } else {
-            // Let's be a little naughty and hack access the protected method in stored_file.
-            $reflection = new ReflectionMethod(stored_file::class, 'get_pathname_by_contenthash');
-            $reflection->setAccessible(true);
-            $path = $reflection->invoke($file);
-            $isreadable = is_readable($path);
-        }
-        return $isreadable;
+        $filestorage = get_file_storage();
+        $filesystem = $filestorage->get_file_system();
+        $contenthash = $file->get_contenthash(); // Bypass trash recovery.
+        return $filesystem->is_file_readable_locally_by_hash($contenthash);
     }
 }
