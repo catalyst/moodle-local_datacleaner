@@ -27,7 +27,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 #[CoversClass(clean::class)]
-class grades_clean_test extends \advanced_testcase {
+final class grades_clean_test extends \advanced_testcase {
     /**
      * Reset the cleaner options and test data before each test.
      */
