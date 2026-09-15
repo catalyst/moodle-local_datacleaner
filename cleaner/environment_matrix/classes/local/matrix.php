@@ -29,6 +29,9 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class matrix {
+    /** @var string */
+    const REDACTED = '*****';
+
     /**
      * Checks to see if environment bar is installed and exists.
      * @return bool
@@ -69,13 +72,15 @@ class matrix {
                 $record = new stdClass();
 
                 $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
-
-                $record->value = get_config($record->plugin, $setting->name);
-
                 $record->name = $setting->name;
 
-                $record->textarea = false;
+                if (self::is_forced_value($record)) {
+                    $record->value = self::REDACTED;
+                } else {
+                    $record->value = get_config($record->plugin, $record->name);
+                }
 
+                $record->textarea = false;
                 $record->display = true;
 
                 // Identify that this is a text area, during search.
@@ -256,9 +261,15 @@ class matrix {
 
         foreach ($records as $record) {
             if (\local_envbar\local\envbarlib::getprodwwwroot() === $CFG->wwwroot) {
+                // This is a production site.
                 // Create a copy of the record that will be displayed in the first column.
                 $prodrecord = clone $record;
-                $prodrecord->value = get_config($record->plugin, $record->config);
+                $prodrecord->name = $record->config;
+                if (self::is_forced_value($prodrecord)) {
+                    $prodrecord->value = self::REDACTED;
+                } else {
+                    $prodrecord->value = get_config($record->plugin, $record->config);
+                }
                 $prodrecord->envid = '-1';
                 $prodrecord->id = '-1';
 
@@ -269,6 +280,22 @@ class matrix {
         }
 
         return $data;
+    }
+
+    /**
+     * Returns true if the config value is forced (defined in config.php).
+     *
+     * @param object $record
+     * @return bool
+     */
+    protected static function is_forced_value(object $record): bool {
+        global $CFG;
+        if ($record->plugin == 'core' || empty($record->plugin)) {
+            return array_key_exists($record->name, $CFG->config_php_settings);
+        } else {
+            return array_key_exists($record->plugin, $CFG->forced_plugin_settings) &&
+                   array_key_exists($record->name, $CFG->forced_plugin_settings[$record->plugin]);
+        }
     }
 
     /**
