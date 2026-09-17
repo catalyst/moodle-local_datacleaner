@@ -120,6 +120,9 @@ class table_scrambler {
     /** @var xmldb_table[] */
     private $temporarytables = [];
 
+    /** @var bool */
+    private $restrictvaluestoids = false;
+
     /**
      * Creates the temporary tables with the values to be used for scrambling.
      */
@@ -181,6 +184,15 @@ class table_scrambler {
     }
 
     /**
+     * If true, the values to be scrambled will be restricted to the changed ids.
+     *
+     * @param bool $istrue
+     */
+    public function set_restrict_values_to_changed_ids(bool $istrue = true) {
+        $this->restrictvaluestoids = $istrue;
+    }
+
+    /**
      * Creates a temporary table with the values to be used for scrambling.
      *
      * @param int $index
@@ -204,6 +216,21 @@ class table_scrambler {
         $dbmanager->create_temp_table($table);
         $this->temporarytables[$index] = $table;
 
+        $where = '';
+        $params = [];
+        if ($this->restrictvaluestoids) {
+            $excludedvalues = $this->get_values_to_exclude($field);
+            if (!empty($excludedvalues)) {
+                [$excludedsql, $params] = $DB->get_in_or_equal(
+                    $excludedvalues,
+                    SQL_PARAMS_NAMED,
+                    'excluded',
+                    false
+                );
+                $where = "WHERE $field $excludedsql";
+            }
+        }
+
         // Populate data.
         $sql = <<<SQL
 INSERT INTO {{$name}} (value) (
@@ -213,6 +240,7 @@ INSERT INTO {{$name}} (value) (
       FROM (
         SELECT MIN(id), {$field} f
         FROM {{$this->tabletoscramble}}
+        {$where}
         GROUP BY f
         ORDER BY MIN(id) ASC
       ) as norepeated
@@ -221,7 +249,7 @@ INSERT INTO {{$name}} (value) (
   ORDER BY unsorted.f ASC
 )
 SQL;
-        $DB->execute($sql);
+        $DB->execute($sql, $params);
     }
 
     /**
@@ -249,5 +277,28 @@ $where
 SQL;
 
         $DB->execute($sql);
+    }
+
+    /**
+     * Get a list of values to exclude when scrambling.
+     *
+     * @param string $fieldname
+     * @return array
+     */
+    private function get_values_to_exclude(string $fieldname): array {
+        global $DB;
+
+        if (empty($this->changeonlyids)) {
+            return [];
+        }
+        $records = $DB->get_records_select_menu(
+            $this->tabletoscramble,
+            "NOT id IN ({$this->changeonlyids})",
+            null,
+            '',
+            "id, $fieldname"
+        );
+
+        return array_values($records);
     }
 }
