@@ -43,6 +43,20 @@ class clean extends \local_datacleaner\clean {
     const USERNAME_PREFIX = 'user_';
 
     /**
+     * A prefix to use for all first names if renameusers setting is enabled.
+     *
+     * @var string
+     */
+    const FIRST_NAME_PREFIX = 'anonfirstname';
+
+    /**
+     * A prefix to use for all last names if renameusers setting is enabled.
+     *
+     * @var string
+     */
+    const LAST_NAME_PREFIX = 'anonlastname';
+
+    /**
      * A SQL string with the comma-separated IDs of the users to update.
      *
      * @var string
@@ -113,15 +127,46 @@ SQL;
     }
 
     /**
+     * Replace all first and last names.
+     */
+    private static function replace_first_and_last_names() {
+        global $DB;
+
+        echo "Updating all first and last names...\n";
+
+        $where = 'id IN ('.self::$idstoupdate.')';
+        $firstprefix = self::FIRST_NAME_PREFIX;
+        $lastprefix = self::LAST_NAME_PREFIX;
+        $sql = <<<SQL
+UPDATE {user}
+SET firstname = CONCAT('{$firstprefix}', id), lastname = CONCAT('{$lastprefix}', id)
+WHERE $where
+SQL;
+        $DB->execute($sql);
+    }
+
+    /**
      * Scramble all other fields.
+     *
+     * When renameusers setting is enabled, first name and last name fields are replaced rather than scrambled.
      */
     private static function scramble_fields() {
-        $fieldset = [
-            'main names'  => ['firstname', 'lastname'],
-            'other names' => ['firstnamephonetic', 'alternatename', 'middlename', 'lastnamephonetic'],
-            'department'  => ['institution', 'department'],
-            'address'     => ['address', 'city', 'country', 'lang', 'calendartype', 'timezone'],
-        ];
+        $config = get_config('cleaner_users');
+        if (isset($config->renameusers) && $config->renameusers == 1) {
+            $fieldset = [
+                'other names' => ['firstnamephonetic', 'alternatename', 'middlename', 'lastnamephonetic'],
+                'department'  => ['institution', 'department'],
+                'address'     => ['address', 'city', 'country', 'lang', 'calendartype', 'timezone'],
+            ];
+            self::replace_first_and_last_names();
+        } else {
+            $fieldset = [
+                'main names'  => ['firstname', 'lastname'],
+                'other names' => ['firstnamephonetic', 'alternatename', 'middlename', 'lastnamephonetic'],
+                'department'  => ['institution', 'department'],
+                'address'     => ['address', 'city', 'country', 'lang', 'calendartype', 'timezone'],
+            ];
+        }
 
         foreach ($fieldset as $title => $fields) {
             echo "Scrambling: {$title} ...\n";
