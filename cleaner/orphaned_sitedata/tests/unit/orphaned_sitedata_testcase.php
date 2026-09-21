@@ -44,7 +44,7 @@ require_once($CFG->libdir.'/adminlib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class orphaned_sitedata_testcase extends advanced_testcase {
+abstract class orphaned_sitedata_testcase extends advanced_testcase {
     protected function execute($cleaner) {
         ob_start();
         $cleaner->execute();

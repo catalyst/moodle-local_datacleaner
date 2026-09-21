@@ -41,7 +41,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @SuppressWarnings(public) Allow as many methods as needed.
  */
-class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
+abstract class local_datacleaner_cleaner_muc_testcase extends advanced_testcase {
     const URL = 'https://moodle.test/subdir';
 
     public static function setUpBeforeClass() : void {
