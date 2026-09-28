@@ -239,8 +239,6 @@ class clean extends \local_datacleaner\clean {
      * It's pretty much a copy of core db_replace() function from lib/adminlib.php
      */
     private static function blocks_replace() {
-        global $CFG;
-
         $blocks = \core_component::get_plugin_list('block');
         $blockfunctions = [];
 
@@ -272,7 +270,95 @@ class clean extends \local_datacleaner\clean {
             self::next_step();
         }
 
+        self::blocks_config_replace(self::$config->origsiteurl, self::$config->newsiteurl);
+
         purge_all_caches();
+    }
+
+    /**
+     * Generically replaces URLs inside every block_instances.configdata column.
+     *
+     * Block configuration is stored as base64-encoded serialized PHP data
+     * (see block_manager / moodleblock.class.php), so a plain text search &
+     * replace on the column (as db_replace() does for other tables) can never
+     * match — the URL is scrambled by the base64/serialize encoding. Core has
+     * the same limitation (see db_replace() in lib/adminlib.php): it only
+     * fixes this up for blocks that implement their own
+     * block_XXXX_global_db_replace() function (currently just block_html),
+     * leaving every other block's config untouched. This walks *all* blocks'
+     * config data recursively and replaces any matching string, regardless of
+     * whether the block implements its own replace function.
+     *
+     * @param string $search string to look for
+     * @param string $replace string to replace with
+     */
+    private static function blocks_config_replace($search, $replace) {
+        global $DB;
+
+        $verbose = (bool)self::$options['verbose'];
+        $updated = 0;
+
+        $instances = $DB->get_recordset('block_instances');
+        foreach ($instances as $instance) {
+            if (empty($instance->configdata)) {
+                continue;
+            }
+
+            $config = unserialize_object(base64_decode($instance->configdata));
+
+            $changed = false;
+            $config = self::replace_recursive($config, $search, $replace, $changed);
+
+            if ($changed) {
+                $updated++;
+                $DB->update_record('block_instances', (object)[
+                    'id' => $instance->id,
+                    'configdata' => base64_encode(serialize($config)),
+                    'timemodified' => time(),
+                ]);
+            }
+        }
+        $instances->close();
+
+        if ($verbose) {
+            mtrace("  Replaced URLs in {$updated} block_instances.configdata record(s)");
+        }
+    }
+
+    /**
+     * Recursively replaces $search with $replace in any string found inside
+     * an array/object structure, leaving other data types untouched.
+     *
+     * @param mixed $data the value (or structure of values) to search within
+     * @param string $search string to look for
+     * @param string $replace string to replace with
+     * @param bool $changed set to true (by reference) if a replacement was made
+     * @return mixed the (possibly updated) data
+     */
+    private static function replace_recursive($data, $search, $replace, &$changed) {
+        if (is_string($data)) {
+            if (strpos($data, $search) !== false) {
+                $changed = true;
+                return str_replace($search, $replace, $data);
+            }
+            return $data;
+        }
+
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = self::replace_recursive($value, $search, $replace, $changed);
+            }
+            return $data;
+        }
+
+        if (is_object($data)) {
+            foreach ($data as $key => $value) {
+                $data->$key = self::replace_recursive($value, $search, $replace, $changed);
+            }
+            return $data;
+        }
+
+        return $data;
     }
 
     /**
