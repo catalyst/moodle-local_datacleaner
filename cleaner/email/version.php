@@ -25,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017030600;
-$plugin->release   = 2017030600;
+$plugin->version   = 2017030601;
+$plugin->release   = 2017030601;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
 $plugin->component = 'cleaner_email';
