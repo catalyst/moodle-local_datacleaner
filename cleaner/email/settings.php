@@ -53,6 +53,9 @@ $settings->add(new text(
     ''
 ));
 
+// This is a suffix added to the end of email address.
+// It can include dots, and may need to support UTF-8 characters.
+// Therefore it's parameter type is PARAM_RAW.
 $settings->add(new text(
     'cleaner_email/emailsuffix',
     new lang_string('emailsuffix', 'cleaner_email'),
@@ -60,6 +63,9 @@ $settings->add(new text(
     '.invalid'
 ));
 
+// This is a regualr expression that defines email addresses to NOT add the above suffix to.
+// It may also need to support UTF-8 characters.
+// Therefore it's parameter type is PARAM_RAW.
 $settings->add(new text(
     'cleaner_email/emailsuffixignore',
     new lang_string('emailsuffixignore', 'cleaner_email'),
