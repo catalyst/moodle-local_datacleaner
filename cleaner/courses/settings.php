@@ -107,7 +107,10 @@ if ($placeholders) {
         $params
     );
     foreach ($itemstoignore as $r) {
-        $table->data[] = [$r->fullname, $r->name];
+        $table->data[] = [
+            format_string($r->fullname),
+            format_string($r->name),
+        ];
     }
 }
 
