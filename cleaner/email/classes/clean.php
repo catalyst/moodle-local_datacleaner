@@ -98,19 +98,21 @@ class clean extends \local_datacleaner\clean {
             return false;
         }
 
-        $query  = "UPDATE {user} SET email = " . $DB->sql_concat_join("''", ['email', "'$suffix'"]);
-        $query .= " WHERE email " . $DB->sql_regex(false) . " '$suffix'";
+        $query  = "UPDATE {user} SET email = " . $DB->sql_concat_join("''", ['email', ':suffix']);
+        $query .= " WHERE email " . $DB->sql_regex(false) . " :suffixmatch";
+        $params = ['suffix' => $suffix, 'suffixmatch' => $suffix];
 
         if (!empty($emailsuffixignore)) {
-            $query .= " AND email " . $DB->sql_regex(false) . " '$emailsuffixignore'";
+            $query .= " AND email " . $DB->sql_regex(false) . " :suffixignore";
+            $params['suffixignore'] = $emailsuffixignore;
         }
 
         if ($verbose) {
-            mtrace("Executing: $query");
+            mtrace("Executing: $query with params: " . print_r($params, true));
         }
 
         if (!$dryrun) {
-            $DB->execute($query);
+            $DB->execute($query, $params);
         }
 
         return true;

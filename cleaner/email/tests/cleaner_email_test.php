@@ -54,23 +54,50 @@ class cleaner_email_test extends advanced_testcase {
 
     /**
      * Test appending the suffix
+     *
+     * @param string $input
+     * @param string $suffix
+     * @param string $expected
+     * @dataProvider provider_for_cleaner_email_suffix_append
      */
-    public function test_cleaner_email_suffix_append() {
+    public function test_cleaner_email_suffix_append($input, $suffix, $expected): void {
         global $DB;
 
-        // Obtain the list of generated users.
-        foreach ($this->users as $user) {
-            $this->assertStringNotContainsString('.test', $user->email);
-        }
+        $this->config->emailsuffix = $suffix;
+
+        $user = $this->getDataGenerator()->create_user(['email' => $input]);
+        $this->assertStringEndsNotWith($suffix, $user->email);
 
         // Lets clean!
         clean::execute_appendsuffix($this->config, false, false);
 
         // Check that suffix exists.
-        foreach ($this->users as $user) {
-            $record = $DB->get_record('user', ['id' => $user->id]);
-            $this->assertStringContainsString('.test', $record->email);
-        }
+        $record = $DB->get_record('user', ['id' => $user->id]);
+        $this->assertEquals($expected, $record->email);
+
+        // Check that no other fields were modified.
+        $this->assertEquals($user->password, $record->password);
+    }
+
+    /**
+     * Provider for test_cleaner_email_suffix_append.
+     *
+     * The array values are,
+     *
+     * 1. Input.
+     * 2. Suffix.
+     * 3. Expected output.
+     *
+     * @return array
+     */
+    public static function provider_for_cleaner_email_suffix_append(): array {
+        return [
+            'default suffix' => ['user@example.com', '.test', 'user@example.com.test'],
+            'custom suffix' => ['user@example.com', '.invalid', 'user@example.com.invalid'],
+            'subdomain' => ['user@mail.example.com', '.test', 'user@mail.example.com.test'],
+            'plus alias' => ['user+alias@example.com', '.test', 'user+alias@example.com.test'],
+            'sql injection' => ['user@example.com', ".test', password = 'test", "user@example.com.test', password = 'test"],
+        ];
     }
 
     /**
@@ -129,6 +156,9 @@ class cleaner_email_test extends advanced_testcase {
 
         $record = $DB->get_record('user', ['id' => $user->id]);
         $this->assertEquals($expected, $record->email);
+
+        // Check that no other fields were modified.
+        $this->assertEquals($user->password, $record->password);
     }
 
     /**
@@ -151,6 +181,7 @@ class cleaner_email_test extends advanced_testcase {
             ['user@email+alias.com', 'user@email+alias.com', ' .nosuffix', 'email[\+]alias'],
             ['user@email+alias.com', 'user@email+alias.com', '.nosuffix', 'email.alias'],
             ['user@example.com', 'user@example.com', '.nosuffix', 'example.com'],
+            ['user@example.com', 'user@example.com.nosuffix', '.nosuffix', "'example.com', password='<hash>'"],
         ];
     }
 }
