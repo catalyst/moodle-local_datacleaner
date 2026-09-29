@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->version   = 2019030401;
-$plugin->release   = '3.6.0';
+$plugin->release   = 2019030401;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
 $plugin->component = 'cleaner_scheduled_tasks';

@@ -106,7 +106,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         if ($verbose) {
-            mtrace("Executing: $query with params: " . print_r($params, true));
+            mtrace("Executing: $query with params: " . json_encode($params));
         }
 
         if (!$dryrun) {
