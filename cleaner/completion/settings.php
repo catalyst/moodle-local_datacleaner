@@ -115,7 +115,7 @@ if ($where) {
                 '/course/view.php',
                 ['id' => $r->id]
             ),
-            $r->fullname,
+            format_string($r->fullname),
             ['title' => 'View course'],
         );
         $categorylink = html_writer::link(
@@ -123,7 +123,7 @@ if ($where) {
                 '/course/management.php',
                 ['categoryid' => $r->category]
             ),
-            $r->name,
+            format_string($r->name),
             ['title' => 'View category'],
         );
         $table->data[] = [$courselink, $categorylink];

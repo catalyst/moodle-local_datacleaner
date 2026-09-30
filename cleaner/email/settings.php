@@ -57,6 +57,9 @@ $settings->add(
     )
 );
 
+// This is a suffix added to the end of email address.
+// It can include dots, and may need to support UTF-8 characters.
+// Therefore it's parameter type is PARAM_RAW.
 $settings->add(
     new admin_setting_configtext(
         'cleaner_email/emailsuffix',
@@ -66,11 +69,14 @@ $settings->add(
     )
 );
 
+// This is a regualr expression that defines email addresses to NOT add the above suffix to.
+// It may also need to support UTF-8 characters.
+// Therefore it's parameter type is PARAM_RAW.
 $settings->add(
     new admin_setting_configtext(
         'cleaner_email/emailsuffixignore',
         new lang_string('emailsuffixignore', 'cleaner_email'),
         new lang_string('emailsuffixignoredesc', 'cleaner_email'),
-        ''
+        '',
     )
 );
