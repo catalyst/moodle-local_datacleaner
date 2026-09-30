@@ -69,7 +69,7 @@ class cleaner_email_test extends advanced_testcase {
      * @param string $input
      * @param string $suffix
      * @param string $expected
-     * @dataProvider provider_for_email_suffix_append
+     * @dataProvider provider_for_cleaner_email_suffix_append
      */
     public function test_cleaner_email_suffix_append($input, $suffix, $expected): void {
         global $DB;
