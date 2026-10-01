@@ -111,6 +111,7 @@ if ($matrix->is_cancelled()) {
                     if (array_key_exists($plugin, $searchitems)) {
                         if (array_key_exists($name, $searchitems[$plugin])) {
                             $entry['textarea'] = $searchitems[$plugin][$name]->textarea;
+                            $entry['classname'] = $searchitems[$plugin][$name]->classname;
                         }
                     }
 

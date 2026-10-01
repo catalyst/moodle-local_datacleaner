@@ -47,5 +47,50 @@ function xmldb_cleaner_environment_matrix_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2017053000, 'cleaner', 'environment_matrix');
     }
 
+    if ($oldversion < 2026010104) {
+        // Define field classname to be added to cleaner_environment_matrixd.
+        $table = new xmldb_table('cleaner_environment_matrixd');
+        $field = new xmldb_field('classname', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'textarea');
+
+        // Conditionally launch add field classname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Search each configs in database to find the classnames.
+
+        $adminroot = admin_get_root();
+
+        // Walk the admin tree once and build a lookup of [plugin][name] => classname.
+        $classnames = [];
+        $walk = function ($node) use (&$walk, &$classnames) {
+            if ($node instanceof admin_settingpage) {
+                foreach ($node->settings as $setting) {
+                    $settingplugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
+                    $classnames[$settingplugin][$setting->name] = get_class($setting);
+                }
+            } else if ($node instanceof admin_category) {
+                foreach ($node->get_children() as $child) {
+                    $walk($child);
+                }
+            }
+        };
+        $walk($adminroot);
+
+        // Walk through table records, updating the classname of each record.
+        $records = $DB->get_records('cleaner_environment_matrixd');
+        foreach ($records as $record) {
+            $plugin = (empty($record->plugin) ? 'core' : $record->plugin);
+            $name = $record->config;
+            $classname = $classnames[$plugin][$name] ?? '';
+
+            $record->classname = $classname;
+            $DB->update_record('cleaner_environment_matrixd', $record);
+        }
+
+        // Environment_matrix savepoint reached.
+        upgrade_plugin_savepoint(true, 2026010104, 'cleaner', 'environment_matrix');
+    }
+
     return true;
 }

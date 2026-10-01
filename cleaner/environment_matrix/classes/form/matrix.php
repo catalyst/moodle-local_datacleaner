@@ -158,7 +158,7 @@ class matrix extends moodleform {
                     continue;
                 }
 
-                $configname = $item->name;
+                $configname = $item->config;
                 $plugin = $item->plugin;
 
                 $group = [];
@@ -196,12 +196,13 @@ class matrix extends moodleform {
                     $mform->setType($key, PARAM_RAW);
                 }
 
-                $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
+                $groupname = "group_{$plugin}_{$configname}";
+                $mform->addGroup($group, $groupname, $plugin . ' | ' . $configname, ' ', false);
                 $notifications = $this->get_admin_setting_notifications($configname, $plugin);
 
                 if (!empty($notifications)) {
                     $mform->addHelpButton(
-                        "group_$configname",
+                        $groupname,
                         'configuration',
                         'cleaner_environment_matrix',
                         a: implode('<br>', $notifications)
@@ -279,14 +280,15 @@ class matrix extends moodleform {
                     $mform->setType($key, PARAM_RAW);
                 }
 
+                $groupname = "group_{$plugin}_{$configname}";
                 $grouplabel = $plugin . ' | ' . $configname;
-                $mform->addGroup($group, "group_$configname", $grouplabel, ' ', false);
+                $mform->addGroup($group, $groupname, $grouplabel, ' ', false);
 
                 $notifications = $this->get_admin_setting_notifications($configname, $plugin);
 
                 if (!empty($notifications)) {
                     $mform->addHelpButton(
-                        "group_$configname",
+                        $groupname,
                         'configuration',
                         'cleaner_environment_matrix',
                         a: implode('<br>', $notifications)
