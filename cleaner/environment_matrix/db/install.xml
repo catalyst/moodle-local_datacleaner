@@ -22,6 +22,7 @@
         <FIELD NAME="config" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="value" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="textarea" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="classname" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" DEFAULT="" COMMENT="Class name of the setting."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for cleaner_env_matrix_data"/>

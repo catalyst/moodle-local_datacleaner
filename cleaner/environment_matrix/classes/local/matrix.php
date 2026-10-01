@@ -29,6 +29,17 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class matrix {
+    /** @var string */
+    const REDACTED = '*****';
+
+    /** @var string[] Classnames of settigns whose values should be redacted if forced set.  */
+    const REDACTABLE_SETTING_CLASSES = [
+        'admin_setting_configpasswordunmask',
+        'admin_setting_configpasswordunmask_with_advanced',
+        'admin_setting_encryptedpassword',
+        'admin_setting_requiredpasswordunmask',
+    ];
+
     /**
      * Checks to see if environment bar is installed and exists.
      * @return bool
@@ -67,15 +78,18 @@ class matrix {
                 }
 
                 $record = new stdClass();
+                $record->classname = get_class($setting);
 
                 $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
+                $record->config = $setting->name;
 
-                $record->value = get_config($record->plugin, $setting->name);
-
-                $record->name = $setting->name;
+                if (self::is_redactable($record)) {
+                    $record->value = self::REDACTED;
+                } else {
+                    $record->value = get_config($record->plugin, $record->config);
+                }
 
                 $record->textarea = false;
-
                 $record->display = true;
 
                 // Identify that this is a text area, during search.
@@ -89,13 +103,13 @@ class matrix {
                 // Have we passed an array of config items, does the plugin type exist in that array?
                 if (array_key_exists($record->plugin, $configitems)) {
                     // Does the config name exist in the type array?
-                    if (array_key_exists($record->name, $configitems[$record->plugin])) {
+                    if (array_key_exists($record->config, $configitems[$record->plugin])) {
                         // Setting a flag to indicate that we should not show this in the list of found items.
                         $record->display = false;
                     }
                 }
 
-                $result[$record->plugin][$record->name] = $record;
+                $result[$record->plugin][$record->config] = $record;
             }
         }
 
@@ -124,14 +138,14 @@ class matrix {
             $record = new stdClass();
             $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
             $record->value = get_config($record->plugin, $setting->name);
-            $record->name = $setting->name;
+            $record->conifg = $setting->name;
             $record->textarea = false;
             $record->display = true;
             // Make sure we don't overwrite things that have already been added to the result array,
             // as they might have been created as admin_setting_configtextarea or admin_setting_confightmleditor,
             // and we won't be able to tell that here.
-            if (empty($result[$record->plugin][$record->name])) {
-                $result[$record->plugin][$record->name] = $record;
+            if (empty($result[$record->plugin][$record->conifg])) {
+                $result[$record->plugin][$record->conifg] = $record;
             }
         }
 
@@ -256,9 +270,15 @@ class matrix {
 
         foreach ($records as $record) {
             if (\local_envbar\local\envbarlib::getprodwwwroot() === $CFG->wwwroot) {
+                // This is a production site.
                 // Create a copy of the record that will be displayed in the first column.
                 $prodrecord = clone $record;
-                $prodrecord->value = get_config($record->plugin, $record->config);
+                $prodrecord->name = $record->config;
+                if (self::is_redactable($prodrecord)) {
+                    $prodrecord->value = self::REDACTED;
+                } else {
+                    $prodrecord->value = get_config($record->plugin, $record->config);
+                }
                 $prodrecord->envid = '-1';
                 $prodrecord->id = '-1';
 
@@ -269,6 +289,35 @@ class matrix {
         }
 
         return $data;
+    }
+
+    /**
+     * Returns true if the config value is forced (defined in config.php).
+     *
+     * @param object $record
+     * @return bool
+     */
+    public static function is_forced_value(string $configname, ?string $plugin = null): bool {
+        global $CFG;
+        if ($plugin == 'core' || empty($plugin)) {
+            return array_key_exists($configname, $CFG->config_php_settings);
+        } else {
+            return array_key_exists($plugin, $CFG->forced_plugin_settings) &&
+                   array_key_exists($configname, $CFG->forced_plugin_settings[$plugin]);
+        }
+    }
+
+    /**
+     * Determines if the setting value should be redacted.
+     *
+     * @param object $record
+     * @return bool
+     */
+    protected static function is_redactable(\stdClass $record): bool {
+        return (
+            in_array($record->classname, self::REDACTABLE_SETTING_CLASSES) &&
+            self::is_forced_value($record->config, $record->plugin)
+        );
     }
 
     /**
