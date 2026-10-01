@@ -110,14 +110,20 @@ if ($where) {
                                             ORDER BY c.fullname, ca.name");
     foreach ($itemstoignore as $r) {
         $courselink = html_writer::link(
-            new moodle_url('/course/view.php', ['id' => $r->id]),
-            $r->fullname,
-            ['title' => 'View course']
+            new moodle_url(
+                '/course/view.php',
+                ['id' => $r->id]
+            ),
+            format_string($r->fullname),
+            ['title' => 'View course'],
         );
         $categorylink = html_writer::link(
-            new moodle_url('/course/management.php', ['categoryid' => $r->category]),
-            $r->name,
-            ['title' => 'View category']
+            new moodle_url(
+                '/course/management.php',
+                ['categoryid' => $r->category]
+            ),
+            format_string($r->name),
+            ['title' => 'View category'],
         );
         $table->data[] = [$courselink, $categorylink];
     }
