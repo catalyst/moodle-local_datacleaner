@@ -26,6 +26,8 @@
 
 namespace cleaner_environment_matrix;
 
+use core\setting\root;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
@@ -105,7 +107,7 @@ class clean extends \local_datacleaner\clean {
                         }
 
                         // Generate an admin settings tree
-                        $admintree = admin_get_root(true);
+                        $admintree = root::get(true);
 
                         // Get strings in nicer format for reuse
                         $configname = $config->config;

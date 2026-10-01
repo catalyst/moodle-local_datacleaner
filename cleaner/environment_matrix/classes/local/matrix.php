@@ -29,6 +29,7 @@ namespace cleaner_environment_matrix\local;
 use core\setting\type\editor_html;
 use core\setting\type\textarea;
 use core\setting\heading;
+use core\setting\root;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -69,7 +70,7 @@ class matrix {
     public static function search($search, $configitems = []) {
         $result = [];
 
-        $adminroot = admin_get_root();
+        $adminroot = root::get();
         $findings = $adminroot->search($search);
 
         foreach ($findings as $found) {
