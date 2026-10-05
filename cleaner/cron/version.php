@@ -25,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2026081800;
-$plugin->release   = 2026081800;
+$plugin->version   = 2026081801;
+$plugin->release   = 2026081801;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
 $plugin->component = 'cleaner_cron';
