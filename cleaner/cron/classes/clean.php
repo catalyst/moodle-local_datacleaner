@@ -61,8 +61,7 @@ class clean extends \local_datacleaner\clean {
 
             if (!$dryrun) {
                 foreach (\core\task\manager::get_all_scheduled_tasks() as $task) {
-                    // TODO If backporting, replace set_scheduled_task_nextruntime with clear_fail_delay.
-                    \core\task\manager::set_scheduled_task_nextruntime($task, $task->get_next_scheduled_time());
+                    self::set_scheduled_task_nextruntime($task, $task->get_next_scheduled_time());
                 }
             }
         }
@@ -138,10 +137,29 @@ class clean extends \local_datacleaner\clean {
                     mtrace("Resetting next run time to now: {$classname}");
                 }
                 if (!$dryrun) {
-                    \core\task\manager::set_scheduled_task_nextruntime($task, $time);
+                    self::set_scheduled_task_nextruntime($task, $time);
                 }
             }
         }
+    }
+
+    /**
+     * Set a scheduled task's next run time without changing its failure delay.
+     *
+     * The equivalent task manager method is only available from Moodle 5.3.
+     *
+     * @param \core\task\scheduled_task $task Task to modify.
+     * @param int $nextruntime Timestamp of the next run.
+     */
+    private static function set_scheduled_task_nextruntime(\core\task\scheduled_task $task, int $nextruntime): void {
+        global $DB;
+
+        $DB->set_field(
+            'task_scheduled',
+            'nextruntime',
+            $nextruntime,
+            ['classname' => \core\task\manager::get_canonical_class_name($task)]
+        );
     }
 
     /**
