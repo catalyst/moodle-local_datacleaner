@@ -56,7 +56,7 @@ final class clean_test extends \advanced_testcase {
         $record = manager::record_from_scheduled_task($task);
         $DB->insert_record('task_scheduled', $record);
 
-        return manager::get_canonical_class_name($task);
+        return '\\' . get_class($task);
     }
 
     /**
@@ -177,18 +177,19 @@ final class clean_test extends \advanced_testcase {
     public function test_run_tasks_nextcron_resets_nextruntime_to_now(): void {
         global $DB;
 
-        $this->mock_clock_with_frozen(1000000);
-
         $classname = $this->register_marker_task();
         $DB->set_field('task_scheduled', 'nextruntime', 555, ['classname' => $classname]);
 
+        $early = time();
         clean::run_tasks((object)[
             'taskaction' => clean::TASKACTION_NEXTCRON,
             'scheduledtasks' => $classname,
         ]);
+        $late = time();
 
         $record = $DB->get_record('task_scheduled', ['classname' => $classname]);
-        $this->assertEquals(1000000, (int)$record->nextruntime);
+        $nextruntime = (int)$record->nextruntime;
+        $this->assertTrue($early <= $nextruntime && $nextruntime <= $late);
         $this->assertEquals(0, ran_marker_task::$timesrun);
     }
 
@@ -200,7 +201,7 @@ final class clean_test extends \advanced_testcase {
 
         $this->preventResetByRollback();
         $CFG->task_logtostdout = true;
-        \core\cron::reset_user_cache();
+        \core\session\manager::init_empty_session();
 
         $classname = $this->register_marker_task();
 
@@ -251,7 +252,7 @@ final class clean_test extends \advanced_testcase {
 
         $this->preventResetByRollback();
         $CFG->task_logtostdout = true;
-        \core\cron::reset_user_cache();
+        \core\session\manager::init_empty_session();
 
         // Use non-reentrant locks so contention is enforced within this process.
         $CFG->lock_factory = \core\lock\db_record_lock_factory::class;
@@ -283,7 +284,7 @@ final class clean_test extends \advanced_testcase {
 
         $this->preventResetByRollback();
         $CFG->task_logtostdout = true;
-        \core\cron::reset_user_cache();
+        \core\session\manager::init_empty_session();
 
         $classname = $this->register_marker_task();
         $task = manager::get_scheduled_task($classname);
@@ -311,9 +312,7 @@ final class clean_test extends \advanced_testcase {
 
         $this->preventResetByRollback();
         $CFG->task_logtostdout = true;
-        \core\cron::reset_user_cache();
-
-        $this->mock_clock_with_frozen(1000000);
+        \core\session\manager::init_empty_session();
 
         $classname = $this->register_marker_task();
         set_config('deletemetadata', 1, 'cleaner_cron');
@@ -330,9 +329,11 @@ final class clean_test extends \advanced_testcase {
         ]);
         $this->seed_lock('cron_foo');
 
+        $early = time();
         ob_start();
         clean::execute();
         ob_get_clean();
+        $late = time();
 
         $record = $DB->get_record('task_scheduled', ['classname' => $classname]);
 
@@ -343,7 +344,9 @@ final class clean_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists('lock_db', ['resourcekey' => 'cron_foo']));
 
         // The NEXTCRON action wins over the blanket next-run-time reset.
-        $this->assertEquals(1000000, (int)$record->nextruntime);
+        // We test that the next runtime is within a reasonable range.
+        $nextruntime = (int)$record->nextruntime;
+        $this->assertTrue($early <= $nextruntime && $nextruntime <= $late);
 
         // NEXTCRON must not execute the task.
         $this->assertEquals(0, ran_marker_task::$timesrun);
