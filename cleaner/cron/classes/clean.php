@@ -61,8 +61,7 @@ class clean extends \local_datacleaner\clean {
 
             if (!$dryrun) {
                 foreach (\core\task\manager::get_all_scheduled_tasks() as $task) {
-                    // TODO If backporting, replace set_scheduled_task_nextruntime with clear_fail_delay.
-                    \core\task\manager::set_scheduled_task_nextruntime($task, $task->get_next_scheduled_time());
+                    self::set_scheduled_task_nextruntime($task, $task->get_next_scheduled_time());
                 }
             }
         }
@@ -109,7 +108,7 @@ class clean extends \local_datacleaner\clean {
     public static function run_tasks(object $config) {
         $dryrun = (bool) self::$options['dryrun'];
         $verbose = (bool) self::$options['verbose'];
-        $time = \core\di::get(\core\clock::class)->time();
+        $time = time();
 
         // Apply the configured action to the selected scheduled tasks. This runs
         // after the reset above so a "run on next cron" choice is not overwritten.
@@ -138,10 +137,29 @@ class clean extends \local_datacleaner\clean {
                     mtrace("Resetting next run time to now: {$classname}");
                 }
                 if (!$dryrun) {
-                    \core\task\manager::set_scheduled_task_nextruntime($task, $time);
+                    self::set_scheduled_task_nextruntime($task, $time);
                 }
             }
         }
+    }
+
+    /**
+     * Set a scheduled task's next run time without changing its failure delay.
+     *
+     * The equivalent task manager method is only available from Moodle 5.3.
+     *
+     * @param \core\task\scheduled_task $task Task to modify.
+     * @param int $nextruntime Timestamp of the next run.
+     */
+    private static function set_scheduled_task_nextruntime(\core\task\scheduled_task $task, int $nextruntime): void {
+        global $DB;
+
+        $DB->set_field(
+            'task_scheduled',
+            'nextruntime',
+            $nextruntime,
+            ['classname' => '\\' . get_class($task)]
+        );
     }
 
     /**
@@ -152,17 +170,20 @@ class clean extends \local_datacleaner\clean {
      * call, this acquires the task lock, captures the task's log output, and
      * records success or failure — including setting the fail delay on failure —
      * exactly as a normal cron run would, by delegating to
-     * \core\cron::run_inner_scheduled_task().
+     * cron_run_inner_scheduled_task().
      *
      * @param \core\task\scheduled_task $task The task to run.
      * @return bool True if the task ran, false if its lock could not be acquired.
      */
     public static function run_scheduled_task_with_locking(\core\task\scheduled_task $task): bool {
+        global $CFG;
+        require_once("$CFG->libdir/cronlib.php");
+
         $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
 
         // Use the same resource key core uses (DB classname, including the leading backslash)
         // so we contend on the same per-task lock as a real cron run.
-        $classname = \core\task\manager::get_canonical_class_name($task);
+        $classname = '\\' . get_class($task);
 
         if (!$lock = $cronlockfactory->get_lock($classname, 10)) {
             self::debug("Could not obtain lock to run scheduled task: {$classname}");
@@ -180,10 +201,10 @@ class clean extends \local_datacleaner\clean {
 
         $task->set_lock($lock);
 
-        // The function run_inner_scheduled_task() records the start, starts/ finalises logging,
+        // The function cron_run_inner_scheduled_task() records the start, starts/ finalises logging,
         // marks the task complete or failed (applying the fail delay on failure),
         // and releases the task lock itself.
-        \core\cron::run_inner_scheduled_task($task);
+        cron_run_inner_scheduled_task($task);
 
         return true;
     }
