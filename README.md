@@ -20,6 +20,7 @@ The following maps the plugin version to use depending on your Totara version.
 | Totara verion     | Branch             |
 | ----------------- | -------------------|
 | Totara 13         | TOTARA_13          |
+| Totara 20         | TOTARA_20_STABLE   |
 
 ## How it works
 

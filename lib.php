@@ -28,13 +28,14 @@ defined('MOODLE_INTERNAL') || die();
  *
  * See Issue #2.
  *
+ * @param bool $refresh If true, force a refresh of the cached value.
  * @return array Categories.
  */
-function local_datacleaner_get_categories() {
+function local_datacleaner_get_categories(bool $refresh = false) {
     global $DB;
     static $categories = null;
 
-    if (is_null($categories)) {
+    if (is_null($categories) || $refresh) {
         // Fetch from database.
         $categories = $DB->get_records('course_categories');
 
