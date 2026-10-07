@@ -90,17 +90,17 @@ if (isset($config->courses)) {
 } else {
     $shortnames = [];
 }
-$where = '';
-foreach ($shortnames as $name) {
+$params = [];
+$conditions = [];
+foreach ($shortnames as $i => $name) {
     $name = trim($name);
     if (empty($name)) {
         continue;
     }
-    if ($where) {
-        $where .= " OR ";
-    }
-    $where .= " shortname LIKE '$name'";
+    $conditions[] = $DB->sql_like('shortname', ':sn' . $i);
+    $params['sn' . $i] = $name;
 }
+$where = implode(' OR ', $conditions);
 
 if ($where) {
     $itemstoignore = $DB->get_records_sql("SELECT c.id, c.fullname, c.category, ca.name
@@ -108,7 +108,7 @@ if ($where) {
                                              JOIN {course_categories} ca
                                                ON ca.id = c.category
                                             WHERE ($where)
-                                            ORDER BY c.fullname, ca.name");
+                                            ORDER BY c.fullname, ca.name", $params);
     foreach ($itemstoignore as $r) {
         $courselink = html_writer::link(
             new moodle_url(
