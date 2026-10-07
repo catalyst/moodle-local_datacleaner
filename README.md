@@ -134,6 +134,10 @@ Remove courses older than a specific number of days and/or in specific categorie
 
 Enable this sub-plugin to anonymise user data. This has its own Settings page.
 
+#### Clean tokens
+
+Enable this sub-plugin to remove or replace tokens and access keys.
+
 #### Clean grades:
 
 Enable to delete grade history or replace with fake data. This has its own Settings page.
