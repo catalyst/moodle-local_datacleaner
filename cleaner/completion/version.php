@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2015122202;
-$plugin->release   = 2015122202;
+$plugin->version   = 2015122203;
+$plugin->release   = 2015122203;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2011120500; // Moodle 2.2 release and upwards.
 $plugin->component = 'cleaner_completion';
