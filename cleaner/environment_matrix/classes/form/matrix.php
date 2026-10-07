@@ -19,6 +19,9 @@ namespace cleaner_environment_matrix\form;
 use html_writer;
 use moodleform;
 use stdClass;
+use cleaner_environment_matrix\local\matrix as matrix_local;
+use core\hook\admin_setting_notification;
+use core\output\notification;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -194,6 +197,16 @@ class matrix extends moodleform {
                 }
 
                 $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
+                $notifications = $this->get_admin_setting_notifications($configname, $plugin);
+
+                if (!empty($notifications)) {
+                    $mform->addHelpButton(
+                        "group_$configname",
+                        'configuration',
+                        'cleaner_environment_matrix',
+                        a: implode('<br>', $notifications)
+                    );
+                }
             }
         }
     }
@@ -266,9 +279,63 @@ class matrix extends moodleform {
                     $mform->setType($key, PARAM_RAW);
                 }
 
-                $mform->addGroup($group, "group_$configname", $plugin . ' | ' . $configname, ' ', false);
+                $grouplabel = $plugin . ' | ' . $configname;
+                $mform->addGroup($group, "group_$configname", $grouplabel, ' ', false);
+
+                $notifications = $this->get_admin_setting_notifications($configname, $plugin);
+
+                if (!empty($notifications)) {
+                    $mform->addHelpButton(
+                        "group_$configname",
+                        'configuration',
+                        'cleaner_environment_matrix',
+                        a: implode('<br>', $notifications)
+                    );
+                }
             }
         }
+    }
+
+    /**
+     * Get the notifications for a given admin setting.
+     *
+     * @param string $configname
+     * @param string $plugin
+     * @return array
+     */
+    public function get_admin_setting_notifications(string $configname, string $plugin = ''): array {
+        global $CFG;
+
+        $notifications = [];
+
+        if (class_exists('core\hook\admin_setting_notification')) {
+            $setting = new \stdClass();
+            $setting->name = $configname;
+            $setting->plugin = $plugin;
+
+            // Dispatch the hook for all settings.
+            $notificationhook = new admin_setting_notification($setting);
+            \core\di::get(\core\hook\manager::class)->dispatch($notificationhook);
+
+            // If there are notifications, process them.
+            $hooknotifications = $notificationhook->get_notifications();
+
+            // Collect all the notifications.
+            if (!empty($hooknotifications)) {
+                // Collect all the notifications.
+                foreach ($hooknotifications as $notification) {
+                    $notifications[] = clean_text($notification->get_message());
+                }
+            }
+        }
+
+        // If the setting is forced, add a notification.
+        if (empty($notifications)) {
+            if (matrix_local::is_forced_value($configname, $plugin)) {
+                $notifications[] = get_string('configoverride', 'admin');
+            }
+        }
+        return $notifications;
     }
 
     /**
