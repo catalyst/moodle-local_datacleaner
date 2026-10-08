@@ -53,7 +53,11 @@ $defaultcategories = [];
 $categoriesbyname = [];
 
 foreach ($categories as $category) {
-    $categoriesbyname[$category['id']] = $category['name'];
+    $categoriesbyname[$category['id']] = format_string(
+        $category['name'],
+        true,
+        ['context' => context_coursecat::instance($category['id'])]
+    );
     $defaultcategories[$category['id']] = 0;
 }
 asort($categoriesbyname, SORT_LOCALE_STRING);
