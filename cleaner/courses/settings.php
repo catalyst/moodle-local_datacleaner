@@ -99,7 +99,10 @@ if ($where) {
                                             WHERE ($where)
                                             ORDER BY c.fullname, ca.name");
     foreach ($itemstoignore as $r) {
-        $table->data[] = [$r->fullname, $r->name];
+        $table->data[] = [
+            format_string($r->fullname),
+            format_string($r->name),
+        ];
     }
 }
 
