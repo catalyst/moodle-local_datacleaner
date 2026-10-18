@@ -50,19 +50,21 @@ class clean extends \local_datacleaner\clean {
                 case 'events_queue':
                 case 'events_queue_handlers':
                 case 'events_handlers':
+                case 'sessions':
                 case 'task_adhoc':
                 case 'message':
                 case 'message_popup':
                 case 'message_read':
                 case 'message_working':
-                case 'tool_monitor':
                     $tablelist[] = $table;
                     break;
                 default:
-                    if (substr($table, 0, 5) == 'back_' ||
+                    if (
+                        substr($table, 0, 7) == 'backup_' ||
                         substr($table, 0, 6) == 'stats_' ||
-                        substr($table, 0, 9) == 'sessions_' ||
-                        substr($table, 0, 13) == 'webdav_locks_') {
+                        substr($table, 0, 13) == 'tool_monitor_' ||
+                        substr($table, 0, 13) == 'webdav_locks_'
+                    ) {
                         $tablelist[] = $table;
                     }
             }
