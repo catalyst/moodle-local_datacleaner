@@ -126,18 +126,7 @@ function safety_checks($dryrun, $isscheduledtask = false) {
         $willdie = true;
     }
 
-    // 3. Has cron run recently?
-    $lastrun = -1;
-    if ($CFG->version >= 2014051207) {
-        $lastrun = $DB->get_field_sql("SELECT MAX(lastruntime) FROM {task_scheduled}");
-    }
-
-    if ($lastrun > $timefrom) {
-        abort_message($abort, "Cron has run within the last {$minutes} minutes.", true);
-        $willdie = true;
-    }
-
-    // 4. Check for an explicit flag in config.php just to be extra mega cautious!
+    // 3. Check for an explicit flag in config.php just to be extra mega cautious!
     if (empty($CFG->config_php_settings['local_datacleaner_allowexecution'])) {
         abort_message($abort, get_string('error:explicitconfigphp', 'local_datacleaner'), true);
         $willdie = true;
