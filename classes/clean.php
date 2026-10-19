@@ -445,7 +445,7 @@ abstract class clean {
         $context .= "\$CFG->dbuser: " . $CFG->dbuser . "\n";
         $context .= "\$CFG->dataroot: " . $CFG->dataroot . "\n";
         $context .= "\$CFG->wwwroot: " . $CFG->wwwroot . "\n";
-        $context .= "\$CFG->original_wwwroot: " . $CFG->original_wwwroot . "\n";
+        $context .= "\$CFG->original_wwwroot: " . $CFG->original_wwwroot . " (" . base64_decode($CFG->original_wwwroot) . ")\n";
 
         self::log($context);
 
