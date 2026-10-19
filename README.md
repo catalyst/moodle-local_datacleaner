@@ -57,9 +57,6 @@ which would of course be catastrophic:
 * We store the hostname in the cleaning configuration data. If the hostname
   matches production, DataCleaner will not run. If this data is missing then
   it will not run.
-* Typically a refreshed database will be from a nightly snapshot and so the
-  data should be slightly stale. If a non admin user has logged in recently,
-  that's a sign this Moodle is being used, and the DataCleaner will not run.
 * Cron activity is not used as a signal, so a non-production site (e.g. stage)
   that runs cron can be re-cleaned, including by the post-wash scheduled task.
 * It can only be run if and only if a 'local_datacleaner_allowexecution = true;'

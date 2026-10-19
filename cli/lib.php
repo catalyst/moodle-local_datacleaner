@@ -92,41 +92,7 @@ function safety_checks($dryrun, $isscheduledtask = false) {
         $willdie = true;
     }
 
-    // 2. Non admins logged in recently? Same logic as online users block.
-    $timetoshowusers = 300; // Seconds default.
-    $minutes = $timetoshowusers / 60;
-    $now = time();
-    $timefrom = $now - $timetoshowusers; // Unlike original code, don't care about caches for this.
-    $params = ['timefrom' => $timefrom];
-
-    $namefields = "u." . implode(', u.', \core_user\fields::get_name_fields());
-
-    $sql = "SELECT u.id, u.username, {$namefields}
-              FROM {user} u
-             WHERE u.lastaccess > :timefrom
-               AND u.deleted = 0
-             ORDER BY lastaccess DESC ";
-    $users = $DB->get_records_sql($sql, $params);
-
-    $message = "The following users have logged in within the last {$minutes} minutes:\n";
-    $nonadmins = 0;
-    foreach ($users as $user) {
-        $message .= ' - ' . fullname($user) . ' (' . $user->username . ')';
-        if (is_siteadmin($user)) {
-            $message .= ' (siteadmin)';
-        } else {
-            $nonadmins++;
-        }
-        $message .= "\n";
-    }
-
-    if ($nonadmins) {
-        abort_message($abort, $message);
-        abort_message($abort, "There are non site-administrators in the list of recent users.", true);
-        $willdie = true;
-    }
-
-    // 3. Check for an explicit flag in config.php just to be extra mega cautious!
+    // 2. Check for an explicit flag in config.php just to be extra mega cautious!
     if (empty($CFG->config_php_settings['local_datacleaner_allowexecution'])) {
         abort_message($abort, get_string('error:explicitconfigphp', 'local_datacleaner'), true);
         $willdie = true;
