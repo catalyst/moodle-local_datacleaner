@@ -101,6 +101,13 @@ if ($options['force']) {
     }
 }
 
+// Output goes through debugging(DEBUG_DEVELOPER), so --verbose must raise the debug level.
+if ($options['verbose']) {
+    $CFG->debug = DEBUG_DEVELOPER;
+    $CFG->debugdisplay = 1;
+    set_debugging(DEBUG_DEVELOPER, true);
+}
+
 // Divert all mtrace into datacleaner logger.
 $CFG->mtrace_wrapper = 'local_datacleaner_mtrace_wrapper';
 
