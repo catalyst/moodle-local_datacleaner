@@ -437,6 +437,12 @@ abstract class clean {
     public static function debug_info() {
         global $CFG, $USER;
 
+        // Separate each run in the log file.
+        if (!file_exists("{$CFG->dataroot}/datacleaner")) {
+            mkdir("{$CFG->dataroot}/datacleaner");
+        }
+        file_put_contents("{$CFG->dataroot}/datacleaner/clean.log", str_repeat('=', 80) . "\n", FILE_APPEND);
+
         $context = "Time: " . \userdate(time()) . "\n";
         $context .= "TZ:   " . $CFG->timezone . "\n";
         $context .= "Host: " . gethostname() . "\n";
