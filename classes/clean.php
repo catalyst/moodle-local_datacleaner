@@ -463,14 +463,18 @@ abstract class clean {
 
         debugging($string, DEBUG_DEVELOPER);
 
+        $time = microtime(true);
+        $when = userdate($time, '%H:%M:%S' . substr(round($time - (int)$time, 3), 1));
+
+        // Prefix every non-empty line with the timestamp.
+        $stamped = preg_replace('/^(?=.)/m', $when . ' ', $string);
+
         // Stash a copy into sitedir log file.
         if (!file_exists("{$CFG->dataroot}/datacleaner")) {
             mkdir("{$CFG->dataroot}/datacleaner");
         }
-        file_put_contents("{$CFG->dataroot}/datacleaner/clean.log", $string, FILE_APPEND);
 
-        $time = microtime(true);
-        $when = userdate($time, '%H:%M:%S' . substr(round($time - (int)$time, 3), 1));
+        file_put_contents("{$CFG->dataroot}/datacleaner/clean.log", $stamped, FILE_APPEND);
 
         // Copy into the db so we can see it in the refreshed env as well.
         add_to_config_log($when, '', substr($string, 0, 100), 'local_datacleaner');
