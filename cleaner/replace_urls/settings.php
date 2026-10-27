@@ -99,3 +99,12 @@ $settings->add(
         1
     )
 );
+
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_replace_urls/cleanblocks',
+        new lang_string('cleanblocks', 'cleaner_replace_urls'),
+        new lang_string('cleanblocksdesc', 'cleaner_replace_urls'),
+        1
+    )
+);

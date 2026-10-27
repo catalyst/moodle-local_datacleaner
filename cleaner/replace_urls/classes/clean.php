@@ -276,6 +276,87 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
+     * Replaces the URL in one serialized string token and fixes its length prefix.
+     *
+     * @param array $matches Regex matches: [0] whole token, [1] declared length, [2] string value.
+     * @return string
+     */
+    private static function replace_serialized_string($matches) {
+        // The number in s:12:"..." says how long the text is. If it doesn't match, this isn't real stored text, leave it.
+        if (strlen($matches[2]) !== (int)$matches[1]) {
+            return $matches[0];
+        }
+        // Swap the old address for the new one.
+        $value = str_replace(self::$config->origsiteurl, self::$config->newsiteurl, $matches[2]);
+        // Write the text back with a fresh length number, because the new address may be longer or shorter.
+        return 's:' . strlen($value) . ':"' . $value . '";';
+    }
+
+    /**
+     * Replaces URLs in block_instances.configdata for all block types.
+     *
+     * configdata is base64(serialize()), so a plain replace would break the string length prefixes.
+     * Instead the serialized text is edited directly and each rewritten string gets its length recalculated.
+     * Rows are only written if the result still unserializes and no occurrence of the old URL remains.
+     */
+    private static function generic_block_configdata_replace() {
+        global $DB;
+
+        // The old address we are hunting for.
+        $search = self::$config->origsiteurl;
+        // Verbose output of the block configdata clean.
+        $verbose = !isset(self::$options['verbose']) || self::$options['verbose'] == true;
+
+        // Get every block that has settings saved.
+        $rs = $DB->get_recordset_select('block_instances', 'configdata IS NOT NULL', null, 'id', 'id, blockname, configdata');
+        // Tracking block instances we updated or skipped.
+        $updated = 0;
+        $skipped = 0;
+        foreach ($rs as $instance) {
+            // Unwrap the saved settings from their base64 state.
+            $raw = base64_decode((string)$instance->configdata, true);
+            // Can't unwrap it, or the old address isn't in there? Nothing to do, move on.
+            if ($raw === false || strpos($raw, $search) === false) {
+                continue;
+            }
+
+            // Fix every piece of text that holds the old address.
+            $new = preg_replace_callback('/s:(\d+):"(.*?)";/s', [self::class, 'replace_serialized_string'], $raw);
+            // Double check that the regex worked, the old address is gone, and PHP can still read the result.
+            // Classes are not allowed to load, so this can't run anything nasty.
+            $valid = $new !== null
+                && strpos($new, $search) === false
+                && @unserialize($new, ['allowed_classes' => false]) !== false;
+            if (!$valid) {
+                // Not sure it's safe? Don't touch it, just tell the user.
+                $skipped++;
+                if ($verbose) {
+                    mtrace("Skipping block instance {$instance->id} ({$instance->blockname}): could not safely replace.");
+                }
+                continue;
+            }
+
+            // Good. Put it back to its base64 state and save it.
+            $DB->update_record('block_instances', (object)[
+                'id' => $instance->id,
+                'configdata' => base64_encode($new),
+                'timemodified' => time(),
+            ]);
+            $updated++;
+        }
+        // Close the list of blocks.
+        $rs->close();
+
+        // Report the tracking data.
+        if ($verbose) {
+            mtrace("Block configdata: updated $updated, skipped $skipped.");
+        }
+
+        // Blocks are cached, so clear the caches to make them show the new settings.
+        purge_all_caches();
+    }
+
+    /**
      * Execute the cleaning process.
      */
     public static function execute() {
@@ -317,6 +398,10 @@ class clean extends \local_datacleaner\clean {
         if (!$dryrun) {
             self::db_replace();
             self::blocks_replace();
+            // Only touch block settings if the admin switched this option on.
+            if (!empty(self::$config->cleanblocks)) {
+                self::generic_block_configdata_replace();
+            }
         }
     }
 }
