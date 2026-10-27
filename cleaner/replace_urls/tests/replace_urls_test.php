@@ -103,4 +103,142 @@ class cleaner_replace_urls_test extends advanced_testcase {
         $this->assertEquals($CFG->wwwroot, $namesafter->fullname);
 
     }
+
+    /**
+     * Creates a block instance with the given raw configdata.
+     *
+     * @param string $blockname
+     * @param string|null $configdata
+     * @return int
+     */
+    private function create_block($blockname, $configdata) {
+        global $DB;
+        return $DB->insert_record('block_instances', (object)[
+            'blockname' => $blockname,
+            'parentcontextid' => context_course::instance($this->course->id)->id,
+            'showinsubcontexts' => 0,
+            'pagetypepattern' => 'course-view-*',
+            'defaultregion' => 'side-pre',
+            'defaultweight' => 0,
+            'configdata' => $configdata,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+    }
+
+    /**
+     * Nothing is touched when cleanblocks is disabled.
+     * @group test_replace_blocks
+     */
+    public function test_block_configdata_disabled() {
+        global $DB;
+
+        set_config('newsiteurl', 'new.origin', 'cleaner_replace_urls');
+        // Switch the block cleaning off.
+        set_config('cleanblocks', 0, 'cleaner_replace_urls');
+        // A block that does have the old address in it.
+        $data = base64_encode(serialize((object)['link' => 'local.origin']));
+        $id = $this->create_block('calendar_month', $data);
+
+        $cleaner = new clean(['dryrun' => false, 'verbose' => false]);
+        $cleaner::execute();
+
+        // Cleaning was off, so the block is exactly as it was.
+        $this->assertSame($data, $DB->get_field('block_instances', 'configdata', ['id' => $id]));
+    }
+
+    /**
+     * Data that can't be safely rewritten is skipped untouched.
+     * @group test_replace_blocks
+     */
+    public function test_block_configdata_skipped() {
+        global $DB;
+
+        set_config('newsiteurl', 'new.origin.longer', 'cleaner_replace_urls');
+        set_config('cleanblocks', 1, 'cleaner_replace_urls');
+
+        // Blocks the cleaner should be too careful to touch.
+        $untouched = [
+            // Not a valid base64 envelope at all.
+            'badbase64' => '!!not-base64!!',
+            // A valid envelope, but plain text inside rather than saved settings.
+            'notserialized' => base64_encode('plain local.origin'),
+            // The text has a quote and semicolon in it, which looks like the end of a stored text piece.
+            'quotesemicolon' => base64_encode(serialize((object)['a' => 'x";y local.origin'])),
+            // Saved settings that got cut off, so PHP can't read them.
+            'truncated' => base64_encode(substr(serialize((object)['a' => 'local.origin']), 0, -3)),
+        ];
+        // Create a block for each one.
+        $ids = [];
+        foreach ($untouched as $key => $data) {
+            $ids[$key] = $this->create_block('calendar_month', $data);
+        }
+
+        $cleaner = new clean(['dryrun' => false, 'verbose' => false]);
+        $cleaner::execute();
+
+        // Every one of them is exactly as it was.
+        foreach ($untouched as $key => $data) {
+            $this->assertSame($data, $DB->get_field('block_instances', 'configdata', ['id' => $ids[$key]]), $key);
+        }
+    }
+
+    /**
+     * A real HTML block saved through core: URLs in extra settings (including nested ones) are replaced,
+     * while other settings and other blocks are left intact.
+     * @group test_replace_blocks
+     */
+    public function test_block_configdata_real_html_block() {
+        global $DB;
+
+        // The html block ships with core, but skip rather than fail if it's somehow missing.
+        if (core_component::get_plugin_directory('block', 'html') === null) {
+            $this->markTestSkipped('block_html is not installed.');
+        }
+
+        $this->setAdminUser();
+        set_config('newsiteurl', 'new.origin.longer', 'cleaner_replace_urls');
+        set_config('cleanblocks', 1, 'cleaner_replace_urls');
+
+        // Add an HTML block instance to the course and load it as the real block class.
+        $blockid = $this->create_block('html', null);
+        $block = block_instance('html', $DB->get_record('block_instances', ['id' => $blockid]));
+        $this->assertNotFalse($block);
+
+        // Let the block save its own settings, so core decides how they are stored.
+        $data = (object)[
+            'title' => 'Help',
+            'text' => [
+                'text' => '<a href="http://local.origin/help">Help</a>',
+                'itemid' => file_get_unused_draft_itemid(),
+                'format' => FORMAT_HTML,
+            ],
+            // The html block's own hook only handles "text", so this is only fixed by our step.
+            'customlink' => 'http://local.origin/custom',
+            'nested' => ['a' => (object)['b' => 'http://local.origin/nested']],
+        ];
+        $block->instance_config_save($data);
+
+        // A second block that never mentions the old address.
+        $otherdata = base64_encode(serialize((object)['text' => 'nothing']));
+        $otherid = $this->create_block('calendar_upcoming', $otherdata);
+
+        // Prove the data is stored the way we expect: it really holds the old address.
+        $stored = $DB->get_field('block_instances', 'configdata', ['id' => $blockid]);
+        $before = unserialize_object(base64_decode($stored));
+        $this->assertEquals('http://local.origin/custom', $before->customlink);
+
+        $cleaner = new clean(['dryrun' => false, 'verbose' => false]);
+        $cleaner::execute();
+
+        // The extra settings are swapped and the rest of the settings are intact.
+        $stored = $DB->get_field('block_instances', 'configdata', ['id' => $blockid]);
+        $after = unserialize_object(base64_decode($stored));
+        $this->assertEquals('http://new.origin.longer/custom', $after->customlink);
+        $this->assertEquals('http://new.origin.longer/nested', $after->nested['a']->b);
+        $this->assertEquals('Help', $after->title);
+        $this->assertEquals(FORMAT_HTML, $after->format);
+        // The block without the old address is exactly as it was.
+        $this->assertSame($otherdata, $DB->get_field('block_instances', 'configdata', ['id' => $otherid]));
+    }
 }
