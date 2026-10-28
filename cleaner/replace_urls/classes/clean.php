@@ -276,6 +276,13 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
+     * How many old addresses were swapped in the row being processed.
+     *
+     * @var int
+     */
+    private static $replacedcount = 0;
+
+    /**
      * Replaces the URL in one serialized string token and fixes its length prefix.
      *
      * @param array $matches Regex matches: [0] whole token, [1] declared length, [2] string value.
@@ -286,8 +293,9 @@ class clean extends \local_datacleaner\clean {
         if (strlen($matches[2]) !== (int)$matches[1]) {
             return $matches[0];
         }
-        // Swap the old address for the new one.
-        $value = str_replace(self::$config->origsiteurl, self::$config->newsiteurl, $matches[2]);
+        // Swap the old address for the new one, and keep count of how many swaps we made.
+        $value = str_replace(self::$config->origsiteurl, self::$config->newsiteurl, $matches[2], $count);
+        self::$replacedcount += $count;
         // Write the text back with a fresh length number, because the new address may be longer or shorter.
         return 's:' . strlen($value) . ':"' . $value . '";';
     }
@@ -297,13 +305,17 @@ class clean extends \local_datacleaner\clean {
      *
      * configdata is base64(serialize()), so a plain replace would break the string length prefixes.
      * Instead the serialized text is edited directly and each rewritten string gets its length recalculated.
-     * Rows are only written if the result still unserializes and no occurrence of the old URL remains.
+     * Rows are only written if every occurrence of the old URL was replaced and the result still unserializes.
+     * If the new URL contains the old one (e.g. example.com to example.com/staging), blocks that have their own
+     * global_db_replace hook are skipped, because blocks_replace() has already done them.
      */
     private static function generic_block_configdata_replace() {
         global $DB;
 
         // The old address we are hunting for.
         $search = self::$config->origsiteurl;
+        // Does the new address contain the old one? Then swapping a second time would double it up.
+        $overlap = strpos(self::$config->newsiteurl, $search) !== false;
         // Verbose output of the block configdata clean.
         $verbose = !isset(self::$options['verbose']) || self::$options['verbose'] == true;
 
@@ -313,6 +325,10 @@ class clean extends \local_datacleaner\clean {
         $updated = 0;
         $skipped = 0;
         foreach ($rs as $instance) {
+            // This block's own hook already did it (blocks_replace() ran first), so don't swap its address twice.
+            if ($overlap && function_exists('block_' . $instance->blockname . '_global_db_replace')) {
+                continue;
+            }
             // Unwrap the saved settings from their base64 state.
             $raw = base64_decode((string)$instance->configdata, true);
             // Can't unwrap it, or the old address isn't in there? Nothing to do, move on.
@@ -320,12 +336,14 @@ class clean extends \local_datacleaner\clean {
                 continue;
             }
 
-            // Fix every piece of text that holds the old address.
+            // Fix every piece of text that holds the old address, counting the swaps as we go.
+            self::$replacedcount = 0;
             $new = preg_replace_callback('/s:(\d+):"(.*?)";/s', [self::class, 'replace_serialized_string'], $raw);
-            // Double check that the regex worked, the old address is gone, and PHP can still read the result.
+            // Double check that the regex worked, we swapped every old address we found (none missed),
+            // and PHP can still read the result.
             // Classes are not allowed to load, so this can't run anything nasty.
             $valid = $new !== null
-                && strpos($new, $search) === false
+                && self::$replacedcount === substr_count($raw, $search)
                 && @unserialize($new, ['allowed_classes' => false]) !== false;
             if (!$valid) {
                 // Not sure it's safe? Don't touch it, just tell the user.
@@ -379,10 +397,13 @@ class clean extends \local_datacleaner\clean {
         $willconfig  = !empty(self::$config->cleanconfig);
         $willtext    = !empty(self::$config->cleantext);
         $willwysiwyg = !empty(self::$config->cleanwysiwyg);
+        // Never saved means on, which is the default.
+        $willblocks  = !isset(self::$config->cleanblocks) || !empty(self::$config->cleanblocks);
 
-        if (!$willconfig && !$willtext && !$willwysiwyg) {
+        if (!$willconfig && !$willtext && !$willwysiwyg && !$willblocks) {
             mtrace("WARNING: No replacement targets enabled. " .
-                "Enable 'Replace in config tables', 'Replace in text/varchar' or 'Replace in wysiwyg' in settings.");
+                "Enable 'Replace in config tables', 'Replace in text/varchar', 'Replace in wysiwyg' " .
+                "or 'Replace in block configuration' in settings.");
             return;
         }
 
@@ -393,13 +414,16 @@ class clean extends \local_datacleaner\clean {
             mtrace("  config tables:   " . ($willconfig ? 'YES' : 'NO'));
             mtrace("  text/varchar:    " . ($willtext ? 'YES' : 'NO'));
             mtrace("  wysiwyg fields:  " . ($willwysiwyg ? 'YES' : 'NO'));
+            mtrace("  block config:    " . ($willblocks ? 'YES' : 'NO'));
         }
 
         if (!$dryrun) {
-            self::db_replace();
+            // With only block config switched on there are no tables to replace in.
+            if ($willconfig || $willtext || $willwysiwyg) {
+                self::db_replace();
+            }
             self::blocks_replace();
-            // Only touch block settings if the admin switched this option on.
-            if (!empty(self::$config->cleanblocks)) {
+            if ($willblocks) {
                 self::generic_block_configdata_replace();
             }
         }

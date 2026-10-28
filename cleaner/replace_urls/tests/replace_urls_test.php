@@ -274,4 +274,80 @@ final class replace_urls_test extends advanced_testcase {
         // The block without the old address is exactly as it was.
         $this->assertSame($otherdata, $DB->get_field('block_instances', 'configdata', ['id' => $otherid]));
     }
+
+    /**
+     * A new URL that contains the old one is applied once, not doubled up.
+     * @group test_replace_blocks
+     */
+    public function test_block_configdata_overlapping_urls(): void {
+        global $DB;
+
+        $this->setAdminUser();
+        // The new address contains the old one.
+        set_config('newsiteurl', 'local.origin/staging', 'cleaner_replace_urls');
+        set_config('cleanblocks', 1, 'cleaner_replace_urls');
+
+        // A real html block, which has its own hook that swaps the address in its text.
+        $htmlid = $this->create_block('html', null);
+        $block = block_instance('html', $DB->get_record('block_instances', ['id' => $htmlid]));
+        $block->instance_config_save((object)[
+            'title' => 'Help',
+            'text' => [
+                'text' => '<a href="http://local.origin/help">Help</a>',
+                'itemid' => file_get_unused_draft_itemid(),
+                'format' => FORMAT_HTML,
+            ],
+        ]);
+        // A block without a hook, which only our step handles.
+        $otherid = $this->create_block('calendar_month', base64_encode(serialize((object)['link' => 'http://local.origin/x'])));
+
+        $cleaner = new clean(['dryrun' => false, 'verbose' => false]);
+        $cleaner::execute();
+
+        $html = unserialize_object(base64_decode($DB->get_field('block_instances', 'configdata', ['id' => $htmlid])));
+        $other = unserialize_object(base64_decode($DB->get_field('block_instances', 'configdata', ['id' => $otherid])));
+        // Each address was swapped exactly once.
+        $this->assertEquals('<a href="http://local.origin/staging/help">Help</a>', $html->text);
+        $this->assertEquals('http://local.origin/staging/x', $other->link);
+    }
+
+    /**
+     * Block cleaning is on when the setting was never saved.
+     * @group test_replace_blocks
+     */
+    public function test_block_configdata_default_on(): void {
+        global $DB;
+
+        set_config('newsiteurl', 'new.origin', 'cleaner_replace_urls');
+        // Pretend the setting has never been saved.
+        unset_config('cleanblocks', 'cleaner_replace_urls');
+        $id = $this->create_block('calendar_month', base64_encode(serialize((object)['link' => 'http://local.origin/x'])));
+
+        $cleaner = new clean(['dryrun' => false, 'verbose' => false]);
+        $cleaner::execute();
+
+        $new = unserialize_object(base64_decode($DB->get_field('block_instances', 'configdata', ['id' => $id])));
+        $this->assertEquals('http://new.origin/x', $new->link);
+    }
+
+    /**
+     * Block cleaning runs even when every other replace target is off.
+     * @group test_replace_blocks
+     */
+    public function test_block_configdata_only_target(): void {
+        global $DB;
+
+        set_config('newsiteurl', 'new.origin', 'cleaner_replace_urls');
+        set_config('cleanconfig', 0, 'cleaner_replace_urls');
+        set_config('cleantext', 0, 'cleaner_replace_urls');
+        set_config('cleanwysiwyg', 0, 'cleaner_replace_urls');
+        set_config('cleanblocks', 1, 'cleaner_replace_urls');
+        $id = $this->create_block('calendar_month', base64_encode(serialize((object)['link' => 'http://local.origin/x'])));
+
+        $cleaner = new clean(['dryrun' => false, 'verbose' => false]);
+        $cleaner::execute();
+
+        $new = unserialize_object(base64_decode($DB->get_field('block_instances', 'configdata', ['id' => $id])));
+        $this->assertEquals('http://new.origin/x', $new->link);
+    }
 }
