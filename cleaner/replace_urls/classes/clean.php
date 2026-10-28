@@ -237,8 +237,10 @@ class clean extends \local_datacleaner\clean {
             return str_replace($orig, $new, $text);
         }
         // Look for the new address first, so when we find one we know to leave it alone.
-        // It only counts as the new address if the URL doesn't carry on (e.g. /staging-news is still an old path).
-        $pattern = '/' . preg_quote($new, '/') . '(?![\w-])|' . preg_quote($orig, '/') . '/';
+        // It only counts as the new address if the URL doesn't carry on (e.g. /staging-news or /staging.old is still
+        // an old path). A new address ending in a slash always carries on into a path, so it needs no such check.
+        $boundary = substr($new, -1) === '/' ? '' : '(?![\w%-]|\.\w)';
+        $pattern = '/' . preg_quote($new, '/') . $boundary . '|' . preg_quote($orig, '/') . '/';
         return preg_replace_callback($pattern, function ($matches) use ($new) {
             return $new;
         }, $text);
