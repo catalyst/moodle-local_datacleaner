@@ -168,6 +168,12 @@ class cleaner_replace_urls_test extends advanced_testcase {
             'notserialized' => base64_encode('plain local.origin'),
             // Saved settings that got cut off, so PHP can't read them.
             'truncated' => base64_encode(substr(serialize((object)['a' => 'local.origin']), 0, -3)),
+            // A text length number far bigger than the data.
+            'hugelength' => base64_encode('s:99999999999999999999999:"local.origin";'),
+            // Serialized data stored inside a text value.
+            'nested' => base64_encode(serialize((object)['a' => serialize(['u' => 'local.origin'])])),
+            // An old address the cleaner can't reach (inside a custom serialized object).
+            'opaque' => base64_encode('a:2:{s:1:"a";s:12:"local.origin";s:1:"b";C:3:"Foo":12:{local.origin}}'),
         ];
         // Create a block for each one.
         $ids = [];
