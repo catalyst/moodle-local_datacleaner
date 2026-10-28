@@ -276,28 +276,56 @@ class clean extends \local_datacleaner\clean {
     }
 
     /**
-     * How many old addresses were swapped in the row being processed.
+     * Replaces the old URL in one piece of text.
      *
-     * @var int
-     */
-    private static $replacedcount = 0;
-
-    /**
-     * Replaces the URL in one serialized string token and fixes its length prefix.
+     * If the new URL contains the old one (e.g. example.com to example.com/staging), addresses that are
+     * already the new URL are left alone, so they don't get doubled up.
      *
-     * @param array $matches Regex matches: [0] whole token, [1] declared length, [2] string value.
+     * @param string $text
      * @return string
      */
-    private static function replace_serialized_string($matches) {
-        // The number in s:12:"..." says how long the text is. If it doesn't match, this isn't real stored text, leave it.
-        if (strlen($matches[2]) !== (int)$matches[1]) {
-            return $matches[0];
+    private static function replace_in_text($text) {
+        $orig = self::$config->origsiteurl;
+        $new = self::$config->newsiteurl;
+        // Plain case: the new address doesn't contain the old one, so a simple swap is safe.
+        if (strpos($new, $orig) === false) {
+            return str_replace($orig, $new, $text);
         }
-        // Swap the old address for the new one, and keep count of how many swaps we made.
-        $value = str_replace(self::$config->origsiteurl, self::$config->newsiteurl, $matches[2], $count);
-        self::$replacedcount += $count;
-        // Write the text back with a fresh length number, because the new address may be longer or shorter.
-        return 's:' . strlen($value) . ':"' . $value . '";';
+        // Look for the new address first, so when we find one we know to leave it alone.
+        $pattern = '/' . preg_quote($new, '/') . '|' . preg_quote($orig, '/') . '/';
+        return preg_replace_callback($pattern, function ($matches) use ($new) {
+            return $new;
+        }, $text);
+    }
+
+    /**
+     * Replaces the old URL in every text piece of a serialized string, fixing each length number.
+     *
+     * Text pieces look like s:12:"some text"; and are read using their declared length, so quotes and
+     * semicolons inside the text can't confuse it.
+     *
+     * @param string $raw Serialized data.
+     * @return string|null The updated serialized data, or null if it doesn't look safe to touch.
+     */
+    private static function replace_in_serialized($raw) {
+        $out = '';
+        $pos = 0;
+        // Find each stored text piece.
+        while (preg_match('/s:(\d+):"/', $raw, $m, PREG_OFFSET_CAPTURE, $pos)) {
+            $tokenstart = $m[0][1];
+            $textstart = $tokenstart + strlen($m[0][0]);
+            $length = (int)$m[1][0];
+            // The text must be exactly that long and then end with ";. If not, it isn't safe to touch.
+            if (substr($raw, $textstart + $length, 2) !== '";') {
+                return null;
+            }
+            $text = self::replace_in_text(substr($raw, $textstart, $length));
+            // Copy everything before this piece, then the piece itself with a fresh length number.
+            $out .= substr($raw, $pos, $tokenstart - $pos) . 's:' . strlen($text) . ':"' . $text . '";';
+            // Carry on after this piece, skipping over its text so we never look inside it.
+            $pos = $textstart + $length + 2;
+        }
+        return $out . substr($raw, $pos);
     }
 
     /**
@@ -305,17 +333,18 @@ class clean extends \local_datacleaner\clean {
      *
      * configdata is base64(serialize()), so a plain replace would break the string length prefixes.
      * Instead the serialized text is edited directly and each rewritten string gets its length recalculated.
-     * Rows are only written if every occurrence of the old URL was replaced and the result still unserializes.
-     * If the new URL contains the old one (e.g. example.com to example.com/staging), blocks that have their own
-     * global_db_replace hook are skipped, because blocks_replace() has already done them.
+     * Rows are only written if the result still unserializes. Rows that can't be handled safely are skipped
+     * and reported.
      */
     private static function generic_block_configdata_replace() {
         global $DB;
 
         // The old address we are hunting for.
-        $search = self::$config->origsiteurl;
-        // Does the new address contain the old one? Then swapping a second time would double it up.
-        $overlap = strpos(self::$config->newsiteurl, $search) !== false;
+        $search = (string)self::$config->origsiteurl;
+        if ($search === '') {
+            mtrace("WARNING: Original site URL is empty, not replacing in block configuration.");
+            return;
+        }
         // Verbose output of the block configdata clean.
         $verbose = !isset(self::$options['verbose']) || self::$options['verbose'] == true;
 
@@ -325,10 +354,6 @@ class clean extends \local_datacleaner\clean {
         $updated = 0;
         $skipped = 0;
         foreach ($rs as $instance) {
-            // This block's own hook already did it (blocks_replace() ran first), so don't swap its address twice.
-            if ($overlap && function_exists('block_' . $instance->blockname . '_global_db_replace')) {
-                continue;
-            }
             // Unwrap the saved settings from their base64 state.
             $raw = base64_decode((string)$instance->configdata, true);
             // Can't unwrap it, or the old address isn't in there? Nothing to do, move on.
@@ -336,21 +361,20 @@ class clean extends \local_datacleaner\clean {
                 continue;
             }
 
-            // Fix every piece of text that holds the old address, counting the swaps as we go.
-            self::$replacedcount = 0;
-            $new = preg_replace_callback('/s:(\d+):"(.*?)";/s', [self::class, 'replace_serialized_string'], $raw);
-            // Double check that the regex worked, we swapped every old address we found (none missed),
-            // and PHP can still read the result.
+            // Fix every piece of text that holds the old address.
+            $new = self::replace_in_serialized($raw);
+            // Double check that PHP can still read the result.
             // Classes are not allowed to load, so this can't run anything nasty.
-            $valid = $new !== null
-                && self::$replacedcount === substr_count($raw, $search)
-                && @unserialize($new, ['allowed_classes' => false]) !== false;
+            $valid = $new !== null && @unserialize($new, ['allowed_classes' => false]) !== false;
             if (!$valid) {
-                // Not sure it's safe? Don't touch it, just tell the user.
+                // Not sure it's safe? Don't touch it, and always tell the user.
                 $skipped++;
-                if ($verbose) {
-                    mtrace("Skipping block instance {$instance->id} ({$instance->blockname}): could not safely replace.");
-                }
+                mtrace("WARNING: Skipping block instance {$instance->id} ({$instance->blockname}): could not safely replace.");
+                continue;
+            }
+
+            // Nothing changed (e.g. it already has the new address)? Nothing to save.
+            if ($new === $raw) {
                 continue;
             }
 
