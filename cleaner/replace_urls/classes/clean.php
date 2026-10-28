@@ -292,7 +292,8 @@ class clean extends \local_datacleaner\clean {
             return str_replace($orig, $new, $text);
         }
         // Look for the new address first, so when we find one we know to leave it alone.
-        $pattern = '/' . preg_quote($new, '/') . '|' . preg_quote($orig, '/') . '/';
+        // It only counts as the new address if the URL doesn't carry on (e.g. /staging-news is still an old path).
+        $pattern = '/' . preg_quote($new, '/') . '(?![\w-])|' . preg_quote($orig, '/') . '/';
         return preg_replace_callback($pattern, function ($matches) use ($new) {
             return $new;
         }, $text);
@@ -316,10 +317,16 @@ class clean extends \local_datacleaner\clean {
             $textstart = $tokenstart + strlen($m[0][0]);
             $length = (int)$m[1][0];
             // The text must be exactly that long and then end with ";. If not, it isn't safe to touch.
-            if (substr($raw, $textstart + $length, 2) !== '";') {
+            // Check the length against what's left first, so a huge bogus number can't break the maths.
+            if ($length > strlen($raw) - $textstart - 2 || substr($raw, $textstart + $length, 2) !== '";') {
                 return null;
             }
-            $text = self::replace_in_text(substr($raw, $textstart, $length));
+            $original = substr($raw, $textstart, $length);
+            $text = self::replace_in_text($original);
+            // Serialized data stored inside a text piece would end up with wrong inner length numbers.
+            if ($text !== $original && preg_match('/^[a-zA-Z]:\d+[:;]/', $original)) {
+                return null;
+            }
             // Copy everything before this piece, then the piece itself with a fresh length number.
             $out .= substr($raw, $pos, $tokenstart - $pos) . 's:' . strlen($text) . ':"' . $text . '";';
             // Carry on after this piece, skipping over its text so we never look inside it.
@@ -365,7 +372,10 @@ class clean extends \local_datacleaner\clean {
             $new = self::replace_in_serialized($raw);
             // Double check that PHP can still read the result.
             // Classes are not allowed to load, so this can't run anything nasty.
-            $valid = $new !== null && @unserialize($new, ['allowed_classes' => false]) !== false;
+            // Also make sure no old address is left anywhere (e.g. in a custom serialized object).
+            $valid = $new !== null
+                && self::replace_in_text($new) === $new
+                && @unserialize($new, ['allowed_classes' => false]) !== false;
             if (!$valid) {
                 // Not sure it's safe? Don't touch it, and always tell the user.
                 $skipped++;
