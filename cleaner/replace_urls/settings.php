@@ -79,3 +79,10 @@ $settings->add(new checkbox(
     new lang_string('cleantextdesc', 'cleaner_replace_urls'),
     0
 ));
+
+$settings->add(new checkbox(
+    'cleaner_replace_urls/cleanblocks',
+    new lang_string('cleanblocks', 'cleaner_replace_urls'),
+    new lang_string('cleanblocksdesc', 'cleaner_replace_urls'),
+    1
+));
