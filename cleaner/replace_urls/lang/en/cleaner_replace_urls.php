@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['cleanblocks'] = 'Replace in block configuration';
+$string['cleanblocksdesc'] = 'This will enable replacing URLs in the configuration data of all block instances, regardless of block type.';
 $string['cleanconfig'] = 'Replace in config tables';
 $string['cleanconfigdesc'] = 'This will enable replacing URLs in the config and config_plugins tables.';
 $string['cleantext'] = 'Replace in database fields text / varchar';
