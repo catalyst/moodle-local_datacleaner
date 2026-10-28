@@ -157,14 +157,15 @@ class cleaner_replace_urls_test extends advanced_testcase {
         set_config('newsiteurl', 'new.origin.longer', 'cleaner_replace_urls');
         set_config('cleanblocks', 1, 'cleaner_replace_urls');
 
+        // Skipped rows are always reported.
+        $this->expectOutputRegex('/Skipping block instance/');
+
         // Blocks the cleaner should be too careful to touch.
         $untouched = [
             // Not a valid base64 envelope at all.
             'badbase64' => '!!not-base64!!',
             // A valid envelope, but plain text inside rather than saved settings.
             'notserialized' => base64_encode('plain local.origin'),
-            // The text has a quote and semicolon in it, which looks like the end of a stored text piece.
-            'quotesemicolon' => base64_encode(serialize((object)['a' => 'x";y local.origin'])),
             // Saved settings that got cut off, so PHP can't read them.
             'truncated' => base64_encode(substr(serialize((object)['a' => 'local.origin']), 0, -3)),
         ];
@@ -214,7 +215,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
                 'format' => FORMAT_HTML,
             ],
             // The html block's own hook only handles "text", so this is only fixed by our step.
-            'customlink' => 'http://local.origin/custom',
+            'customlink' => 'go("http://local.origin/custom"); // x',
             'nested' => ['a' => (object)['b' => 'http://local.origin/nested']],
         ];
         $block->instance_config_save($data);
@@ -226,7 +227,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
         // Prove the data is stored the way we expect: it really holds the old address.
         $stored = $DB->get_field('block_instances', 'configdata', ['id' => $blockid]);
         $before = unserialize_object(base64_decode($stored));
-        $this->assertEquals('http://local.origin/custom', $before->customlink);
+        $this->assertEquals('go("http://local.origin/custom"); // x', $before->customlink);
 
         $cleaner = new clean(['dryrun' => false, 'verbose' => false]);
         $cleaner::execute();
@@ -234,7 +235,8 @@ class cleaner_replace_urls_test extends advanced_testcase {
         // The extra settings are swapped and the rest of the settings are intact.
         $stored = $DB->get_field('block_instances', 'configdata', ['id' => $blockid]);
         $after = unserialize_object(base64_decode($stored));
-        $this->assertEquals('http://new.origin.longer/custom', $after->customlink);
+        // The text has a quote and semicolon right after the address, which must not confuse the replace.
+        $this->assertEquals('go("http://new.origin.longer/custom"); // x', $after->customlink);
         $this->assertEquals('http://new.origin.longer/nested', $after->nested['a']->b);
         $this->assertEquals('Help', $after->title);
         $this->assertEquals(FORMAT_HTML, $after->format);
@@ -243,7 +245,7 @@ class cleaner_replace_urls_test extends advanced_testcase {
     }
 
     /**
-     * A new URL that contains the old one is applied once, not doubled up.
+     * A new URL that contains the old one is applied once, not doubled up (including on hook blocks).
      * @group test_replace_blocks
      */
     public function test_block_configdata_overlapping_urls() {
@@ -264,7 +266,13 @@ class cleaner_replace_urls_test extends advanced_testcase {
                 'itemid' => file_get_unused_draft_itemid(),
                 'format' => FORMAT_HTML,
             ],
+            // The html hook only handles "text", so these are only fixed by our step.
+            'customlink' => 'http://local.origin/custom',
+            'nested' => ['a' => (object)['b' => 'http://local.origin/nested']],
         ]);
+        // A block that already has the new address, which must not be doubled up.
+        $alreadydata = base64_encode(serialize((object)['link' => 'http://local.origin/staging/y']));
+        $alreadyid = $this->create_block('calendar_upcoming', $alreadydata);
         // A block without a hook, which only our step handles.
         $otherid = $this->create_block('calendar_month', base64_encode(serialize((object)['link' => 'http://local.origin/x'])));
 
@@ -276,6 +284,11 @@ class cleaner_replace_urls_test extends advanced_testcase {
         // Each address was swapped exactly once.
         $this->assertEquals('<a href="http://local.origin/staging/help">Help</a>', $html->text);
         $this->assertEquals('http://local.origin/staging/x', $other->link);
+        // The html block's other settings were converted once too.
+        $this->assertEquals('http://local.origin/staging/custom', $html->customlink);
+        $this->assertEquals('http://local.origin/staging/nested', $html->nested['a']->b);
+        // The block that already had the new address is exactly as it was.
+        $this->assertSame($alreadydata, $DB->get_field('block_instances', 'configdata', ['id' => $alreadyid]));
     }
 
     /**
