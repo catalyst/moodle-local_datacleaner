@@ -124,6 +124,70 @@ final class grades_clean_test extends \advanced_testcase {
     }
 
     /**
+     * Create a grade and a grade history record with a negative maximum grade.
+     */
+    private function create_negative_range_grade(): void {
+        global $DB;
+
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $gradeitem = $this->getDataGenerator()->create_grade_item(['courseid' => $course->id]);
+        $grade = (object) [
+            'itemid' => $gradeitem->id,
+            'userid' => $user->id,
+            'rawgrade' => -10,
+            'rawgrademax' => -5,
+            'rawgrademin' => -20,
+            'finalgrade' => -12,
+        ];
+        $grade->id = $DB->insert_record('grade_grades', $grade);
+        $grade->action = 1;
+        $grade->oldid = $grade->id;
+        unset($grade->id);
+        $DB->insert_record('grade_grades_history', $grade);
+    }
+
+    /**
+     * Function execute() should also replace grades whose maximum grade is negative.
+     */
+    public function test_execute_scrambles_negative_rawgrademax(): void {
+        global $DB;
+
+        $this->create_negative_range_grade();
+        set_config('deleteall', 0, 'cleaner_grades');
+
+        clean::execute();
+
+        foreach (['grade_grades', 'grade_grades_history'] as $table) {
+            $record = $DB->get_record($table, [], '*', MUST_EXIST);
+            $this->assertEquals((int) $record->id % 5, (int) $record->rawgrade);
+            $this->assertEquals((int) $record->id % 5, (int) $record->finalgrade);
+        }
+    }
+
+    /**
+     * Function execute() in dry run mode should count grades with a negative maximum but keep them.
+     */
+    public function test_execute_dryrun_counts_negative_rawgrademax(): void {
+        global $DB;
+
+        $this->create_negative_range_grade();
+        set_config('deleteall', 0, 'cleaner_grades');
+        new clean(['dryrun' => true, 'verbose' => false]);
+
+        ob_start();
+        clean::execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Would update 2 fields on 2 records', $output);
+        foreach (['grade_grades', 'grade_grades_history'] as $table) {
+            $record = $DB->get_record($table, [], '*', MUST_EXIST);
+            $this->assertEquals(-10, (int) $record->rawgrade);
+            $this->assertEquals(-12, (int) $record->finalgrade);
+        }
+    }
+  
+    /**
      * Create a grade and a grade history record with feedback and information text.
      *
      * @return int The id of the user the grade belongs to.
@@ -149,7 +213,7 @@ final class grades_clean_test extends \advanced_testcase {
         $grade->oldid = $grade->id;
         unset($grade->id);
         $DB->insert_record('grade_grades_history', $grade);
-
+ 
         return $user->id;
     }
 
