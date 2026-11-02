@@ -59,8 +59,9 @@ class clean extends \local_datacleaner\clean {
                 $count += $DB->count_records_select('grade_grades_history', 'rawgrademax <> 0');
                 $count += $DB->count_records_select('grade_grades_history', 'rawgrademax = 0');
                 echo "Would update 2 fields on {$count} records in the grade_grades and grade_grades_history tables.\n";
+                echo "Would clear the feedback and information fields in the grade_grades and grade_grades_history tables.\n";
             } else {
-                self::new_task(8);
+                self::new_task(10);
                 $DB->execute('UPDATE {grade_grades} SET rawgrade = ABS(id % rawgrademax) WHERE rawgrademax <> 0');
                 self::next_step();
                 $DB->execute('UPDATE {grade_grades} SET rawgrade = 0 WHERE rawgrademax = 0');
@@ -76,6 +77,10 @@ class clean extends \local_datacleaner\clean {
                 $DB->execute('UPDATE {grade_grades_history} SET finalgrade = ABS(id % rawgrademax) WHERE rawgrademax <> 0');
                 self::next_step();
                 $DB->execute('UPDATE {grade_grades_history} SET finalgrade = 0 WHERE rawgrademax = 0');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades} SET feedback = NULL, information = NULL');
+                self::next_step();
+                $DB->execute('UPDATE {grade_grades_history} SET feedback = NULL, information = NULL');
                 self::next_step();
             }
         }
