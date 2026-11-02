@@ -182,7 +182,7 @@ SQL;
 
         echo "Deleting profile pictures...\n";
 
-        [$insql, $params] = $DB->get_in_or_equal(self::$idstoupdate);
+        [$insql, $params] = $DB->get_in_or_equal(explode(',', self::$idstoupdate));
         $sql = "SELECT DISTINCT f.contextid
                   FROM {files} f
                   JOIN {context} c ON c.id = f.contextid
