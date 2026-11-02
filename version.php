@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2021073002; // Increment last digit only. See issue #138 for more details.
-$plugin->release   = 2021073002;
+$plugin->version   = 2021073003; // Increment last digit only. See issue #138 for more details.
+$plugin->release   = 2021073003;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires  = 2013111800; // Moodle 2.6 release and upwards.
 $plugin->component = 'local_datacleaner';
