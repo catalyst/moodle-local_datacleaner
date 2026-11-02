@@ -70,6 +70,7 @@ class clean extends \local_datacleaner\clean {
         }
 
         self::set_fixed_fields();
+        self::delete_pictures();
         self::replace_usernames();
         self::scramble_fields();
     }
@@ -104,12 +105,20 @@ class clean extends \local_datacleaner\clean {
 
         $where = 'id IN (' . self::$idstoupdate . ')';
         $prefix = self::USERNAME_PREFIX;
+        $transaction = $DB->start_delegated_transaction();
+
+        // Move the users to unpredictable interim usernames first, so that an account
+        // already holding one of the target usernames cannot block the rename below.
+        $interimname = $DB->sql_concat('?', 'id');
+        $DB->execute("UPDATE {user} SET username = $interimname WHERE $where", ['datacleaner_' . random_string(20) . '_']);
+
         $sql = <<<SQL
 UPDATE {user}
 SET username = CONCAT('{$prefix}', id)
 WHERE $where
 SQL;
         $DB->execute($sql);
+        $transaction->allow_commit();
     }
 
     /**
@@ -162,6 +171,31 @@ SQL;
         foreach ($fields as $field => $value) {
             self::debug("* Erasing contents for: {$field} ...\n");
             $DB->set_field_select('user', $field, $value, $select);
+        }
+    }
+
+    /**
+     * Delete the stored profile pictures, as resetting the picture field does not remove the files.
+     */
+    private static function delete_pictures() {
+        global $DB;
+
+        echo "Deleting profile pictures...\n";
+
+        [$insql, $params] = $DB->get_in_or_equal(self::$idstoupdate);
+        $sql = "SELECT DISTINCT f.contextid
+                  FROM {files} f
+                  JOIN {context} c ON c.id = f.contextid
+                 WHERE c.instanceid $insql
+                   AND c.contextlevel = ?
+                   AND f.component = ?
+                   AND f.filearea = ?";
+        $params = array_merge($params, [CONTEXT_USER, 'user', 'icon']);
+        $contextids = $DB->get_fieldset_sql($sql, $params);
+
+        $fs = get_file_storage();
+        foreach ($contextids as $contextid) {
+            $fs->delete_area_files($contextid, 'user', 'icon');
         }
     }
 }

@@ -122,4 +122,74 @@ final class grades_clean_test extends \advanced_testcase {
         $this->assertSame(0, $DB->count_records('grade_grades'));
         $this->assertSame(0, $DB->count_records('grade_grades_history'));
     }
+
+    /**
+     * Create a grade and a grade history record with feedback and information text.
+     *
+     * @return int The id of the user the grade belongs to.
+     */
+    private function create_grade_with_feedback(): int {
+        global $DB;
+
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $gradeitem = $this->getDataGenerator()->create_grade_item(['courseid' => $course->id]);
+        $grade = (object) [
+            'itemid' => $gradeitem->id,
+            'userid' => $user->id,
+            'rawgrade' => 7,
+            'rawgrademax' => 10,
+            'rawgrademin' => 0,
+            'finalgrade' => 8,
+            'feedback' => 'Personal feedback',
+            'information' => 'Personal information',
+        ];
+        $grade->id = $DB->insert_record('grade_grades', $grade);
+        $grade->action = 1;
+        $grade->oldid = $grade->id;
+        unset($grade->id);
+        $DB->insert_record('grade_grades_history', $grade);
+
+        return $user->id;
+    }
+
+    /**
+     * Function execute() should clear the feedback and information text in both grade tables.
+     */
+    public function test_execute_clears_feedback_and_information(): void {
+        global $DB;
+
+        $userid = $this->create_grade_with_feedback();
+        set_config('deleteall', 0, 'cleaner_grades');
+
+        clean::execute();
+
+        foreach (['grade_grades', 'grade_grades_history'] as $table) {
+            $record = $DB->get_record($table, ['userid' => $userid], '*', MUST_EXIST);
+            $this->assertNull($record->feedback);
+            $this->assertNull($record->information);
+        }
+    }
+
+    /**
+     * Function execute() in dry run mode should announce clearing the text but keep it.
+     */
+    public function test_execute_dryrun_keeps_feedback_and_information(): void {
+        global $DB;
+
+        $userid = $this->create_grade_with_feedback();
+        set_config('deleteall', 0, 'cleaner_grades');
+        new clean(['dryrun' => true, 'verbose' => false]);
+
+        ob_start();
+        clean::execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Would clear the feedback and information fields', $output);
+        foreach (['grade_grades', 'grade_grades_history'] as $table) {
+            $record = $DB->get_record($table, ['userid' => $userid], '*', MUST_EXIST);
+            $this->assertSame('Personal feedback', $record->feedback);
+            $this->assertSame('Personal information', $record->information);
+        }
+    }
 }
