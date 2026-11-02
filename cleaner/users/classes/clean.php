@@ -104,12 +104,20 @@ class clean extends \local_datacleaner\clean {
 
         $where = 'id IN (' . self::$idstoupdate . ')';
         $prefix = self::USERNAME_PREFIX;
+        $transaction = $DB->start_delegated_transaction();
+
+        // Move the users to unpredictable interim usernames first, so that an account
+        // already holding one of the target usernames cannot block the rename below.
+        $interimname = $DB->sql_concat('?', 'id');
+        $DB->execute("UPDATE {user} SET username = $interimname WHERE $where", ['datacleaner_' . random_string(20) . '_']);
+
         $sql = <<<SQL
 UPDATE {user}
 SET username = CONCAT('{$prefix}', id)
 WHERE $where
 SQL;
         $DB->execute($sql);
+        $transaction->allow_commit();
     }
 
     /**
