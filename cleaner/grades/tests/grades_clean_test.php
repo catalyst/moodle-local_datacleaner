@@ -186,7 +186,7 @@ final class grades_clean_test extends \advanced_testcase {
             $this->assertEquals(-12, (int) $record->finalgrade);
         }
     }
-  
+
     /**
      * Create a grade and a grade history record with feedback and information text.
      *
@@ -213,7 +213,7 @@ final class grades_clean_test extends \advanced_testcase {
         $grade->oldid = $grade->id;
         unset($grade->id);
         $DB->insert_record('grade_grades_history', $grade);
- 
+
         return $user->id;
     }
 
