@@ -23,6 +23,7 @@
  */
 
 use local_datacleaner\clean;
+use local_datacleaner\lib;
 
 /**
  * Print a message to the terminal.
@@ -77,9 +78,7 @@ function safety_checks($dryrun, $isscheduledtask = false) {
     $abort = $dryrun ? 'Would abort' : 'Aborting';
 
     // 1. Is $CFG->wwwroot the same as it was when this module was installed.
-    $saved = isset($CFG->original_wwwroot) ? $CFG->original_wwwroot : false;
-
-    if (empty($saved)) {
+    if (!lib::is_original_wwwroot_set()) {
         abort_message(
             $abort,
             "No \$CFG->original_wwwroot has been saved yet. This needs to be set explicitly to run\n" .
@@ -87,7 +86,7 @@ function safety_checks($dryrun, $isscheduledtask = false) {
             true
         );
         $willdie = true;
-    } else if ($CFG->wwwroot == base64_decode($saved)) {
+    } else if (lib::is_original_wwwroot()) {
         abort_message($abort, "\$CFG->wwwroot is '{$CFG->wwwroot}'. This is what I have saved as the production URL.", true);
         $willdie = true;
     }

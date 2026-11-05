@@ -52,6 +52,12 @@ class clean extends \local_datacleaner\clean {
 
         self::debugmemory();
 
+        // Warn, but continue, if the data cleaner and Environment bar production URLs disagree.
+        $warning = local\matrix::get_production_config_warning();
+        if ($warning) {
+            mtrace("WARNING: {$warning}");
+        }
+
         $environments = local\matrix::get_environments();
 
         self::new_task(1);

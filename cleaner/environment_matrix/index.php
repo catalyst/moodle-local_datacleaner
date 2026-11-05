@@ -41,6 +41,26 @@ if (!class_exists('\local_envbar\local\envbarlib')) {
     exit;
 }
 
+// The data cleaner and Environment bar production URLs must be set and equal.
+// Checked before the form is processed, so nothing can be saved either.
+$warning = \cleaner_environment_matrix\local\matrix::get_production_config_warning(true);
+if ($warning) {
+    $links = [
+        html_writer::link(
+            new moodle_url('/admin/settings.php', ['section' => 'local_datacleaner_generalsettings']),
+            get_string('prodconfig_datacleanersettings', 'cleaner_environment_matrix')
+        ),
+        html_writer::link(
+            new moodle_url('/local/envbar/index.php'),
+            get_string('prodconfig_envbarsettings', 'cleaner_environment_matrix')
+        ),
+    ];
+    echo $OUTPUT->header();
+    echo $OUTPUT->notification($warning . html_writer::empty_tag('br') . implode(' | ', $links), 'warning');
+    echo $OUTPUT->footer();
+    exit;
+}
+
 $configitems = \cleaner_environment_matrix\local\matrix::get_matrix_data();
 $environments = \cleaner_environment_matrix\local\matrix::get_environments();
 $searchitems = [];
