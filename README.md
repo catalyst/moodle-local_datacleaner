@@ -159,15 +159,25 @@ Also this will allow you to configure following Moodle settings:
 
 This facilitates searching values in the {config} and {config_plugins} tables to allow setting those values. Useful for scrubbing API keys to prevent them calling home on a development environment.
 
+The data cleaner `Production Site URL` and the Environment bar `Production wwwroot` must both be set, and be the same.
+If they are not, the matrix page displays a warning instead of the matrix, and the cleaner prints a warning.
+
+On the production site, the production values of secrets (password settings and the admin presets
+"sensible settings" list) and of settings forced in config.php are redacted. Production values cannot be
+edited via the matrix. Values for non-production environments are not redacted.
+
 A CLI script exists to run the Environment matrix cleaner as a standalone operation.
 
 ```sh
-sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/environment_matrix/cli/matrix_replace.php --run
+sudo -u apache /usr/bin/php /<your_moodle_directory>/local/datacleaner/cleaner/environment_matrix/cli/matrix_replace.php --run
 ```
+
+Like the main CLI script, it will not run on the production site. The --force flag skips these safety checks.
 
 An additional CLI flag has been implemented. --reset.
 
 This flag will purge all other saved environment configuration so that the new instance only has one set of environment data.
+Note that --force --reset on the production site will purge all saved environment configuration.
 
 ## Running
 

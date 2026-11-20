@@ -490,7 +490,7 @@ abstract class clean {
      * Run a data wash for the given plugins.
      *
      * @param array $plugins The plugins to run.
-     * @param array $options The options to pass to the plugins.
+     * @param mixed $options The options to pass to the plugins.
      * @return void
      */
     public static function run_wash(array $plugins, mixed $options) {

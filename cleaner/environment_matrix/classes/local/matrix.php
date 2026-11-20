@@ -19,6 +19,7 @@ namespace cleaner_environment_matrix\local;
 use admin_setting_confightmleditor;
 use admin_setting_configtextarea;
 use admin_setting_heading;
+use local_datacleaner\lib;
 use stdClass;
 
 /**
@@ -29,8 +30,191 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class matrix {
-    /** @var string */
+    /** @var string Placeholder displayed instead of secret or forced production values. */
     const REDACTED = '*****';
+
+    /** @var array|null Cache of secret settings, keyed by plugin then setting name. */
+    private static $secretsettings = null;
+
+    /**
+     * Is the admin setting a password type setting?
+     *
+     * @param mixed $setting An admin_setting instance.
+     * @return bool
+     */
+    public static function is_password_setting($setting): bool {
+        return $setting instanceof \admin_setting_configpasswordunmask
+            || $setting instanceof \admin_setting_encryptedpassword;
+    }
+
+    /**
+     * Returns the list of settings that contain secrets (passwords, keys, tokens, etc).
+     *
+     * This is built from the password type settings in the admin tree and from the
+     * admin presets "sensible settings" list.
+     *
+     * @return array Keyed by plugin ('core' for core settings), then setting name.
+     */
+    public static function get_secret_settings(): array {
+        global $CFG;
+
+        if (self::$secretsettings !== null) {
+            return self::$secretsettings;
+        }
+
+        $secrets = [];
+
+        // Settings flagged as sensitive by admin presets, in the format name@@plugin.
+        $sensible = get_config('adminpresets', 'sensiblesettings');
+        if (!empty($sensible)) {
+            foreach (explode(',', $sensible) as $entry) {
+                $parts = explode('@@', trim($entry));
+                if (count($parts) != 2 || $parts[0] === '') {
+                    continue;
+                }
+                [$name, $plugin] = $parts;
+                $plugin = ($plugin === '' || $plugin === 'none') ? 'core' : $plugin;
+                $secrets[$plugin][$name] = true;
+            }
+        }
+
+        // Password type settings from the admin tree.
+        require_once($CFG->libdir . '/adminlib.php');
+        self::collect_password_settings(admin_get_root(), $secrets);
+
+        self::$secretsettings = $secrets;
+        return $secrets;
+    }
+
+    /**
+     * Recursively collect password settings from an admin tree node.
+     *
+     * @param mixed $node An admin tree node.
+     * @param array $secrets Collected secrets, keyed by plugin then setting name.
+     */
+    private static function collect_password_settings($node, array &$secrets): void {
+        if ($node instanceof \admin_settingpage) {
+            foreach ((array) $node->settings as $setting) {
+                if (self::is_password_setting($setting)) {
+                    $plugin = empty($setting->plugin) ? 'core' : $setting->plugin;
+                    $secrets[$plugin][$setting->name] = true;
+                }
+            }
+        } else if ($node instanceof \admin_category && method_exists($node, 'get_children')) {
+            foreach ($node->get_children() as $child) {
+                self::collect_password_settings($child, $secrets);
+            }
+        }
+    }
+
+    /**
+     * Returns true if the setting holds a secret value.
+     *
+     * @param string $configname
+     * @param string $plugin
+     * @return bool
+     */
+    public static function is_secret(string $configname, string $plugin): bool {
+        $plugin = empty($plugin) ? 'core' : $plugin;
+        $secrets = self::get_secret_settings();
+        return !empty($secrets[$plugin][$configname]);
+    }
+
+    /**
+     * Returns true if the setting name looks like a secret.
+     *
+     * @param string $configname
+     * @return bool
+     */
+    public static function is_secret_like(string $configname): bool {
+        return preg_match(
+            '/pass(word|wd)?|secret|token|apikey|api_key|privatekey|salt|credential/i',
+            $configname
+        );
+    }
+
+    /**
+     * Returns true if the value of this setting must not be displayed.
+     *
+     * Only production values are redacted, as non-production values are not real.
+     * On production, secrets and values forced in config.php are redacted.
+     *
+     * @param string $configname
+     * @param string $plugin
+     * @return bool
+     */
+    public static function should_redact(string $configname, string $plugin): bool {
+        return lib::is_original_wwwroot() &&
+            (
+                self::is_forced_value($configname, $plugin) ||
+                self::is_secret($configname, $plugin) ||
+                self::is_secret_like($configname)
+            );
+    }
+
+    /**
+     * Redact a value if the setting is a secret or forced. Empty values are left as is.
+     *
+     * @param mixed $value
+     * @param string $configname
+     * @param string $plugin
+     * @return mixed
+     */
+    public static function redact_value($value, string $configname, string $plugin) {
+        if ($value === null || $value === false || $value === '') {
+            return $value;
+        }
+        return self::should_redact($configname, $plugin) ? self::REDACTED : $value;
+    }
+
+    /**
+     * Does the search term match the setting by anything other than its value?
+     *
+     * Used to prevent the search from being used as an oracle to discover secret values.
+     *
+     * @param string $search
+     * @param array $fields Strings to match against (name, plugin, visible name, description).
+     * @return bool - True if the search term matches the setting by anything other than its value, false otherwise.
+     */
+    private static function matches_non_value(string $search, array $fields): bool {
+        $search = \core_text::strtolower($search);
+        foreach ($fields as $field) {
+            if ($field !== null && strpos(\core_text::strtolower((string) $field), $search) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check that the data cleaner and Environment bar production URLs are both set and equal.
+     *
+     * The matrix relies on Environment bar to identify production (the Production column), and
+     * on the data cleaner production URL for redaction. These must agree.
+     *
+     * @param bool $html Escape the URLs in the message for HTML output.
+     * @return string|null A warning message if there is a problem, null if the configuration is consistent.
+     */
+    public static function get_production_config_warning(bool $html = false): ?string {
+        $original = lib::get_original_wwwroot();
+        $envbar = self::environmentbar_exists() ? \local_envbar\local\envbarlib::getprodwwwroot() : '';
+
+        if (empty($original)) {
+            $key = 'prodconfig_nooriginalwwwroot';
+        } else if (empty($envbar)) {
+            $key = 'prodconfig_noenvbarprodwwwroot';
+        } else if ($original !== $envbar) {
+            $key = 'prodconfig_mismatch';
+        } else {
+            return null;
+        }
+
+        $a = (object) [
+            'original' => $html ? s($original) : $original,
+            'envbar' => $html ? s($envbar) : $envbar,
+        ];
+        return get_string($key, 'cleaner_environment_matrix', $a);
+    }
 
     /**
      * Checks to see if environment bar is installed and exists.
@@ -74,11 +258,19 @@ class matrix {
                 $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
                 $record->name = $setting->name;
 
-                if (self::is_forced_value($record->name, $record->plugin)) {
-                    $record->value = self::REDACTED;
-                } else {
-                    $record->value = get_config($record->plugin, $record->name);
+                $redact = self::should_redact($record->name, $record->plugin);
+
+                // The admin search also matches on values, do not reveal that a redacted value matched.
+                if (
+                    $redact && !self::matches_non_value(
+                        $search,
+                        [$record->name, $record->plugin, $setting->visiblename, $setting->description]
+                    )
+                ) {
+                    continue;
                 }
+
+                $record->value = self::redact_value(get_config($record->plugin, $record->name), $record->name, $record->plugin);
 
                 $record->textarea = false;
                 $record->display = true;
@@ -128,8 +320,18 @@ class matrix {
         foreach ($nontreefindings as $setting) {
             $record = new stdClass();
             $record->plugin = (empty($setting->plugin) ? 'core' : $setting->plugin);
-            $record->value = get_config($record->plugin, $setting->name);
             $record->name = $setting->name;
+
+            // Do not reveal that a redacted value matched the search term.
+            if (
+                self::should_redact($record->name, $record->plugin) &&
+                !self::matches_non_value($search, [$record->name, $record->plugin])
+            ) {
+                continue;
+            }
+
+            $value = get_config($record->plugin, $record->name);
+            $record->value = self::redact_value($value, $record->name, $record->plugin);
             $record->textarea = false;
             $record->display = true;
             // Make sure we don't overwrite things that have already been added to the result array,
@@ -243,11 +445,13 @@ class matrix {
     /**
      * Obtains the saved matrix values for all or a specified environment.
      *
-     * @param null $environment
+     * Values for secret or forced settings are redacted in the production column.
+     *
+     * @param stdClass|null $environment
      * @return array
      */
     public static function get_matrix_data($environment = null) {
-        global $CFG, $DB;
+        global $DB;
 
         $data = [];
 
@@ -259,17 +463,19 @@ class matrix {
 
         $records = $DB->get_records('cleaner_environment_matrixd', $params);
 
+        $isprod = lib::is_original_wwwroot();
+
         foreach ($records as $record) {
-            if (\local_envbar\local\envbarlib::getprodwwwroot() === $CFG->wwwroot) {
+            if ($isprod) {
                 // This is a production site.
                 // Create a copy of the record that will be displayed in the first column.
                 $prodrecord = clone $record;
                 $prodrecord->name = $record->config;
-                if (self::is_forced_value($prodrecord->name, $prodrecord->plugin)) {
-                    $prodrecord->value = self::REDACTED;
-                } else {
-                    $prodrecord->value = get_config($record->plugin, $record->config);
-                }
+                $prodrecord->value = self::redact_value(
+                    get_config($record->plugin, $record->config),
+                    $record->config,
+                    $record->plugin
+                );
                 $prodrecord->envid = '-1';
                 $prodrecord->id = '-1';
 
@@ -285,7 +491,8 @@ class matrix {
     /**
      * Returns true if the config value is forced (defined in config.php).
      *
-     * @param object $record
+     * @param string $configname
+     * @param string $plugin
      * @return bool
      */
     public static function is_forced_value(string $configname, string $plugin): bool {
