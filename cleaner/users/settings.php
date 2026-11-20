@@ -46,3 +46,12 @@ $settings->add(
         PARAM_RAW
     )
 );
+
+$settings->add(
+    new admin_setting_configcheckbox(
+        'cleaner_users/renameusers',
+        new lang_string('renameusers', 'cleaner_users'),
+        new lang_string('renameusersdesc', 'cleaner_users'),
+        0
+    )
+);
